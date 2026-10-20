@@ -31,13 +31,16 @@ class LokerLensSeeder extends Seeder
         'Kepala Bidang' => 'rizky.kb@lokerlens.go.id',
     ];
 
+    /** Kata sandi semua akun demo. Jangan gunakan di produksi. */
+    public const PASSWORD_DEMO = 'password123';
+
     public function run(): void
     {
         // ─── Pengguna ─────────────────────────────────────────────────────
         $masyarakat = User::create([
             'name'     => 'Adela Ulin Nadhroh',
             'email'    => self::AKUN_DEMO['Masyarakat'],
-            'password' => Hash::make('password123'), // Jangan gunakan password demo di produksi
+            'password' => Hash::make(self::PASSWORD_DEMO), // Jangan gunakan password demo di produksi
             'role'     => 'Masyarakat',
             'no_telepon' => '081234567890',
         ]);
@@ -45,7 +48,7 @@ class LokerLensSeeder extends Seeder
         $analis = User::create([
             'name'     => 'Budi Santoso',
             'email'    => self::AKUN_DEMO['Analis'],
-            'password' => Hash::make('password123'),
+            'password' => Hash::make(self::PASSWORD_DEMO),
             'role'     => 'Analis',
             'no_telepon' => '081234567891',
         ]);
@@ -53,7 +56,7 @@ class LokerLensSeeder extends Seeder
         $kepalaBidang = User::create([
             'name'     => 'Rizky Pratama',
             'email'    => self::AKUN_DEMO['Kepala Bidang'],
-            'password' => Hash::make('password123'),
+            'password' => Hash::make(self::PASSWORD_DEMO),
             'role'     => 'Kepala Bidang',
             'no_telepon' => '081234567892',
         ]);

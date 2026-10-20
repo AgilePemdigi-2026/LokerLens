@@ -80,6 +80,24 @@ class DevPreviewTest extends TestCase
         $this->get('/dev')->assertNotFound();
     }
 
+    public function test_dev_bisa_dibuka_tanpa_login_saat_dev_preview_true(): void
+    {
+        $this->seed(LokerLensSeeder::class);
+        $this->muatUlangRoute('local', true);
+
+        $this->assertGuest();
+        $this->get('/dev')
+            ->assertOk()
+            ->assertSee('Belum masuk')
+            ->assertSee('Masuk sebagai Analis');
+        $this->assertGuest();
+
+        // Route /dev tidak berada di dalam middleware auth maupun role
+        $middleware = app('router')->getRoutes()->getByName('dev.index')->gatherMiddleware();
+        $this->assertNotContains('auth', $middleware);
+        $this->assertEmpty(array_filter($middleware, fn ($m) => str_starts_with($m, 'role')));
+    }
+
     public function test_tombol_masuk_login_sebagai_akun_demo_lalu_kembali_ke_dev(): void
     {
         $this->seed(LokerLensSeeder::class);

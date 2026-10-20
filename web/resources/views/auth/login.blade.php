@@ -164,9 +164,10 @@
                 <div class="mt-6 p-3 bg-white rounded-lg border border-gray-200 text-[11px] text-gray-600">
                     <p class="font-bold text-navy-900 mb-1">Akun Uji Coba Demo (Sprint 1):</p>
                     <div class="grid grid-cols-3 gap-1">
-                        <div><strong class="text-teal-700">Masyarakat:</strong><br>budi@gmail.com / password</div>
-                        <div><strong class="text-teal-700">Analis:</strong><br>analis@disnaker.go.id / password</div>
-                        <div><strong class="text-teal-700">Kepala Bidang:</strong><br>kabid@disnaker.go.id / password</div>
+                        {{-- Harus sama dengan akun di database/seeders/LokerLensSeeder.php --}}
+                        <div><strong class="text-teal-700">Masyarakat:</strong><br>adelulinn@gmail.com / password123</div>
+                        <div><strong class="text-teal-700">Analis:</strong><br>budi.analis@lokerlens.go.id / password123</div>
+                        <div><strong class="text-teal-700">Kepala Bidang:</strong><br>rizky.kb@lokerlens.go.id / password123</div>
                     </div>
                 </div>
                 @endif

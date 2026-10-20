@@ -54,11 +54,17 @@ class Pengaduan extends Model
 
     /**
      * Generate nomor tiket unik, mis: #LKR-8821
+     * Dimulai dari 8821 + id terakhir, lalu dinaikkan sampai belum dipakai
+     * (nomor tiket pada data seeder bisa saja sudah menempati angka tersebut).
      */
     public static function generateNomorTiket(): string
     {
-        $last = self::latest('id_pengaduan')->first();
-        $next = $last ? ($last->id_pengaduan + 8820) : 8821;
-        return '#LKR-' . $next;
+        $angka = 8821 + (int) self::max('id_pengaduan');
+
+        while (self::where('nomor_tiket', '#LKR-' . $angka)->exists()) {
+            $angka++;
+        }
+
+        return '#LKR-' . $angka;
     }
 }

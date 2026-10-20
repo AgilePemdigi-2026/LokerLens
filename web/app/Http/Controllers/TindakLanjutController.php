@@ -107,26 +107,6 @@ class TindakLanjutController extends Controller
     }
 
     /**
-     * Tampilkan pop-up konfirmasi sebelum keputusan disimpan.
-     */
-    public function konfirmasi(Request $request, int $id): View
-    {
-        $request->validate([
-            'keputusan'         => ['required', 'in:Tindaklanjuti,Tidak Ditindaklanjuti'],
-            'catatan_keputusan' => ['nullable', 'string'],
-        ]);
-
-        $pengaduan = Pengaduan::with(['lowonganKerja.perusahaan', 'hasilKlasifikasi'])
-            ->findOrFail($id);
-
-        return view('tindak-lanjut.konfirmasi', [
-            'pengaduan'         => $pengaduan,
-            'keputusan'         => $request->keputusan,
-            'catatan_keputusan' => $request->catatan_keputusan,
-        ]);
-    }
-
-    /**
      * Simpan keputusan akhir Kepala Bidang.
      * BR-03: "Tidak Ditindaklanjuti" → ditandai & diarsipkan.
      * FR-ST-02: "Tindaklanjuti" → buka akses /buat-surat/.

@@ -223,6 +223,21 @@
                 </p>
             </div>
 
+            @if($pengaduan->status_pengaduan !== \App\Enums\StatusKasus::SedangDitinjau)
+                {{-- Tinjauan sudah selesai: kasus tidak bisa ditinjau ulang --}}
+                <div class="bg-navy-800 border border-navy-700 rounded-control p-4 text-xs sm:text-sm text-gray-300">
+                    Tinjauan untuk kasus ini sudah selesai. Status saat ini:
+                    <strong class="text-white">{{ $pengaduan->status_pengaduan }}</strong>.
+                    @if($tinjauan)
+                        Hasil tinjauan: <strong class="text-white">{{ $tinjauan->hasil_tinjauan }}</strong>.
+                    @endif
+                </div>
+                <div class="pt-4">
+                    <a href="{{ route('tinjau-lowongan.index') }}" class="inline-block px-5 py-2.5 rounded-control border border-navy-700 text-gray-300 hover:bg-navy-800 text-xs font-semibold transition">
+                        Kembali ke Antrean
+                    </a>
+                </div>
+            @else
             <form method="POST" action="{{ route('tinjau-lowongan.simpan', $klasifikasi->id_klasifikasi) }}" class="space-y-5">
                 @csrf
 
@@ -247,10 +262,13 @@
                     <select id="hasil_tinjauan" name="hasil_tinjauan" required
                         class="w-full sm:w-80 px-3.5 py-2.5 rounded-control border border-navy-700 bg-navy-800 text-white text-xs sm:text-sm focus:ring-2 focus:ring-teal-500 focus:outline-none">
                         <option value="">Pilih Hasil Tinjauan</option>
-                        <option value="Mencurigakan" {{ old('hasil_tinjauan', $tinjauan->hasil_tinjauan ?? '') === 'Mencurigakan' ? 'selected' : '' }}>Mencurigakan</option>
-                        <option value="Perlu Penyelidikan Lapangan" {{ old('hasil_tinjauan', $tinjauan->hasil_tinjauan ?? '') === 'Perlu Penyelidikan Lapangan' ? 'selected' : '' }}>Perlu Penyelidikan Lapangan</option>
-                        <option value="Bukan Penipuan" {{ old('hasil_tinjauan', $tinjauan->hasil_tinjauan ?? '') === 'Bukan Penipuan' ? 'selected' : '' }}>Bukan Penipuan (Lolos Verifikasi)</option>
+                        @foreach(\App\Enums\HasilTinjauan::cases() as $hasil)
+                            <option value="{{ $hasil->value }}" {{ old('hasil_tinjauan') === $hasil->value ? 'selected' : '' }}>{{ $hasil->value }}</option>
+                        @endforeach
                     </select>
+                    <p class="text-[11px] text-gray-400 mt-1">
+                        "Terkonfirmasi Mencurigakan" diteruskan ke Kepala Bidang. "Tidak Terbukti" menutup kasus.
+                    </p>
                     @error('hasil_tinjauan')
                         <p class="text-xs text-red-400 mt-1">{{ $message }}</p>
                     @enderror
@@ -288,6 +306,7 @@
                     </div>
                 </div>
             </form>
+            @endif
         </div>
     </div>
 </x-app-layout>

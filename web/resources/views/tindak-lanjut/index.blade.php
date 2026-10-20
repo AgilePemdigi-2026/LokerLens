@@ -49,8 +49,9 @@
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Status</label>
                     <select name="status" class="w-full px-3 py-2.5 rounded-control border border-gray-300 text-xs sm:text-sm text-navy-900 focus:ring-2 focus:ring-teal-600 focus:outline-none bg-white">
                         <option value="">Semua Status</option>
-                        <option value="Menunggu Keputusan" {{ request('status') === 'Menunggu Keputusan' ? 'selected' : '' }}>Menunggu Keputusan</option>
-                        <option value="Tindak Lanjut Disetujui" {{ request('status') === 'Tindak Lanjut Disetujui' ? 'selected' : '' }}>Tindak Lanjut Disetujui</option>
+                        @foreach(\App\Enums\StatusKasus::tahapKepalaBidang() as $status)
+                            <option value="{{ $status->value }}" {{ request('status') === $status->value ? 'selected' : '' }}>{{ $status->value }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="w-full sm:w-48">
@@ -82,7 +83,8 @@
                     $perusahaan = $lowongan->perusahaan ?? null;
                     $klasifikasi = $kasus->hasilKlasifikasi;
                     $score = $klasifikasi ? $klasifikasi->confidence_score : 0;
-                    $isApproved = $kasus->status_pengaduan === 'Tindak Lanjut Disetujui';
+                    $isApproved = $kasus->status_pengaduan === \App\Enums\StatusKasus::TindakLanjutDisetujui;
+                    $isMenunggu = $kasus->status_pengaduan === \App\Enums\StatusKasus::MenungguKeputusan;
                 @endphp
                 <div class="bg-white rounded-card shadow-md p-5 sm:p-6 border border-gray-100 hover:shadow-lg transition flex flex-col md:flex-row md:items-center justify-between gap-5">
                     <div class="flex-1 space-y-2">
@@ -93,15 +95,9 @@
                             <span class="text-xs text-gray-400">
                                 {{ $kasus->tanggal_pengaduan->translatedFormat('d M Y, H:i') }} WIB
                             </span>
-                            @if($isApproved)
-                                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-ok border border-emerald-200">
-                                    Tindak Lanjut Disetujui
-                                </span>
-                            @else
-                                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-risk-mid border border-amber-200">
-                                    Menunggu Keputusan
-                                </span>
-                            @endif
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold {{ $isMenunggu ? 'bg-amber-100 text-risk-mid border border-amber-200' : ($isApproved ? 'bg-emerald-100 text-ok border border-emerald-200' : 'bg-gray-100 text-gray-600 border border-gray-200') }}">
+                                {{ $kasus->status_pengaduan }}
+                            </span>
                         </div>
 
                         <h3 class="text-lg font-bold text-navy-900 leading-snug">

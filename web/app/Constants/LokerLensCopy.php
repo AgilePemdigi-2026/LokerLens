@@ -20,6 +20,7 @@ final class LokerLensCopy
     public const KASUS_DIARSIPKAN          = 'Kasus ditandai tidak dilanjuti dan diarsipkan';
     public const DRAF_TERSIMPAN            = 'Draf berhasil disimpan';
     public const GAGAL_TERBITKAN           = 'Gagal menerbitkan dokumen, draf telah disimpan';
+    public const LAPORAN_SUDAH_TERBIT      = 'Laporan sudah diterbitkan dan tidak dapat diubah lagi';
     public const GAGAL_LOGIN               = 'Gagal masuk. Email atau kata sandi yang Anda masukkan tidak sesuai. Silakan periksa kembali dan coba lagi.';
     public const BELUM_ADA_PENGADUAN       = 'Belum ada pengaduan yang diajukan';
     public const KASUS_TERDOKUMENTASI      = 'Kasus terdokumentasi otomatis';
@@ -71,15 +72,8 @@ final class LokerLensCopy
     public const BTN_KEMBALI_LAPORAN       = 'Kembali ke Laporan';
 
     // ──────────────────────────────────────────────
-    //  Status Kasus (Bagian 10 — simpan di satu enum)
+    //  Status Kasus → lihat App\Enums\StatusKasus (satu-satunya daftar status)
     // ──────────────────────────────────────────────
-    public const STATUS_PERLU_TINJAUAN     = 'Perlu Tinjauan Segera';
-    public const STATUS_SEDANG_DITINJAU    = 'Sedang Ditinjau';
-    public const STATUS_MENUNGGU_KEPUTUSAN = 'Menunggu Keputusan';
-    public const STATUS_TINDAK_LANJUT      = 'Tindak Lanjut Disetujui';
-    public const STATUS_TERDOKUMENTASI     = 'Kasus terdokumentasi otomatis';
-    public const STATUS_SELESAI            = 'Kasus selesai';
-    public const STATUS_TIDAK_DILANJUTI    = 'Tidak dilanjuti';
 
     // ──────────────────────────────────────────────
     //  Label Tambahan Mockup Analis

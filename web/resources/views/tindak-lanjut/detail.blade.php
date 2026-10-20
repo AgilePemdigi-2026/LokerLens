@@ -13,7 +13,8 @@
             $klasifikasi = $pengaduan->hasilKlasifikasi;
             $tinjauan = $klasifikasi ? $klasifikasi->tinjauanAnalis : null;
             $score = $klasifikasi ? $klasifikasi->confidence_score : 0;
-            $sudahDiputuskan = $pengaduan->tindakLanjutKasus !== null;
+            // Keputusan hanya bisa dibuat sekali, untuk kasus "Menunggu Keputusan"
+            $bisaDiputuskan = $pengaduan->status_pengaduan === \App\Enums\StatusKasus::MenungguKeputusan;
         @endphp
 
         <!-- Navigasi & Breadcrumb -->
@@ -217,7 +218,7 @@
         </div>
 
         <!-- 7. Panel Keputusan Kepala Bidang (BR-01, BR-02: Tindaklanjuti / Tidak Ditindaklanjuti) -->
-        @if(!$sudahDiputuskan)
+        @if($bisaDiputuskan)
             <div class="bg-navy-900 rounded-card shadow-xl p-6 sm:p-8 text-white border border-navy-800">
                 <div class="border-b border-navy-800 pb-4 mb-6">
                     <h2 class="text-xl font-bold text-teal-400">
@@ -293,7 +294,7 @@
                     <a href="{{ route('tindak-lanjut.index') }}" class="px-4 py-2 rounded bg-navy-800 text-xs font-semibold hover:bg-navy-700">
                         Kembali ke Daftar Laporan
                     </a>
-                    @if($pengaduan->tindakLanjutKasus->keputusan === 'Tindaklanjuti')
+                    @if($pengaduan->status_pengaduan === \App\Enums\StatusKasus::TindakLanjutDisetujui)
                         <a href="{{ route('buat-surat.index', $pengaduan->id_pengaduan) }}" class="px-4 py-2 rounded bg-teal-600 text-xs font-semibold hover:bg-teal-500">
                             Lanjut ke Pembuatan Surat →
                         </a>

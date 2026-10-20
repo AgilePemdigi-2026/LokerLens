@@ -58,7 +58,7 @@
                         <a href="{{ route('tindak-lanjut.index') }}" class="px-3 py-2 rounded-md text-sm font-medium transition flex items-center gap-2 {{ request()->routeIs('tindak-lanjut.*') || request()->routeIs('buat-surat.*') ? 'text-teal-400 bg-navy-800 font-semibold' : 'text-gray-300 hover:text-white hover:bg-navy-800/60' }}">
                             <span>Laporan</span>
                             @php
-                                $badgeCount = \App\Models\Pengaduan::where('status_pengaduan', 'Menunggu Keputusan')->count();
+                                $badgeCount = \App\Models\Pengaduan::where('status_pengaduan', \App\Enums\StatusKasus::MenungguKeputusan)->count();
                             @endphp
                             @if($badgeCount > 0)
                                 <span class="bg-risk-high text-white text-xs px-2 py-0.5 rounded-full font-bold">

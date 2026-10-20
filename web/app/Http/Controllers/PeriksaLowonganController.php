@@ -3,15 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Constants\LokerLensCopy;
+use App\Enums\StatusKasus;
 use App\Models\HasilKlasifikasi;
 use App\Models\IndikatorMencurigakan;
 use App\Models\LowonganKerja;
 use App\Models\Pengaduan;
 use App\Models\Perusahaan;
-use App\Models\RiwayatKasus;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 /**
@@ -45,60 +46,66 @@ class PeriksaLowonganController extends Controller
             'link_lowongan.url'            => 'Format URL tidak valid.',
         ]);
 
-        // Simpan atau cari perusahaan
-        $perusahaan = Perusahaan::firstOrCreate(
-            ['nama_perusahaan' => $request->nama_perusahaan],
-            [
-                'status_terdaftar' => 'Belum Diverifikasi',
-                'domain_email'     => $this->extractDomain($request->informasi_tambahan ?? ''),
-            ]
-        );
-
-        // Simpan lowongan
-        $lowongan = LowonganKerja::create([
-            'id_perusahaan'       => $perusahaan->id_perusahaan,
-            'posisi_lowongan'     => $request->posisi_lowongan,
-            'link_lowongan'       => $request->link_lowongan,
-            'deskripsi_lowongan'  => $request->deskripsi_lowongan,
-            'informasi_tambahan'  => $request->informasi_tambahan,
-        ]);
-
-        // Buat pengaduan
-        $pengaduan = Pengaduan::create([
-            'id_lowongan'     => $lowongan->id_lowongan,
-            'id_pengguna'     => Auth::id(),
-            'nomor_tiket'     => Pengaduan::generateNomorTiket(),
-            'deskripsi_singkat' => 'Periksa lowongan: ' . $request->posisi_lowongan . ' di ' . $request->nama_perusahaan,
-            'status_pengaduan' => LokerLensCopy::STATUS_PERLU_TINJAUAN,
-        ]);
-
         // Simulasi klasifikasi ML (mock — integrasi backend/ML Sprint berikutnya)
         $hasilMock = $this->simulasiKlasifikasi($request);
 
-        $klasifikasi = HasilKlasifikasi::create([
-            'id_pengaduan'      => $pengaduan->id_pengaduan,
-            'confidence_score'  => $hasilMock['score'],
-            'kategori_hasil'    => $hasilMock['kategori'],
-            'status_prioritas'  => $hasilMock['score'] >= 60,
-            'metode_analisis'   => 'Mock ML v1.0 (TF-IDF + Rule-based) — TODO: integrasi model real',
-        ]);
+        // Status awal: di bawah ambang prioritas langsung "Selesai - Risiko Rendah" (BR-05)
+        $statusAwal = StatusKasus::awalDariSkor($hasilMock['score']);
 
-        // Simpan indikator/kata pemicu dari checklist & analisis mock
-        foreach ($hasilMock['indikator'] as $ind) {
-            IndikatorMencurigakan::create([
-                'id_klasifikasi'    => $klasifikasi->id_klasifikasi,
-                'nama_indikator'    => $ind['nama'],
-                'kategori_indikator' => $ind['kategori'],
-                'bobot_indikator'   => $ind['bobot'],
+        // NFR-SAF-04: semua data tersimpan utuh atau tidak sama sekali
+        $pengaduan = DB::transaction(function () use ($request, $hasilMock, $statusAwal) {
+            // Simpan atau cari perusahaan
+            $perusahaan = Perusahaan::firstOrCreate(
+                ['nama_perusahaan' => $request->nama_perusahaan],
+                [
+                    'status_terdaftar' => 'Belum Diverifikasi',
+                    'domain_email'     => $this->extractDomain($request->informasi_tambahan ?? ''),
+                ]
+            );
+
+            // Simpan lowongan
+            $lowongan = LowonganKerja::create([
+                'id_perusahaan'       => $perusahaan->id_perusahaan,
+                'posisi_lowongan'     => $request->posisi_lowongan,
+                'link_lowongan'       => $request->link_lowongan,
+                'deskripsi_lowongan'  => $request->deskripsi_lowongan,
+                'informasi_tambahan'  => $request->informasi_tambahan,
             ]);
-        }
 
-        // Catat riwayat kasus (NFR-SAF-06, BR-11)
-        RiwayatKasus::create([
-            'id_pengaduan' => $pengaduan->id_pengaduan,
-            'status_kasus' => LokerLensCopy::STATUS_PERLU_TINJAUAN,
-            'keterangan'   => 'Pengaduan diterima dan klasifikasi dilakukan.',
-        ]);
+            // Buat pengaduan
+            $pengaduan = Pengaduan::create([
+                'id_lowongan'     => $lowongan->id_lowongan,
+                'id_pengguna'     => Auth::id(),
+                'nomor_tiket'     => Pengaduan::generateNomorTiket(),
+                'deskripsi_singkat' => 'Periksa lowongan: ' . $request->posisi_lowongan . ' di ' . $request->nama_perusahaan,
+                'status_pengaduan' => $statusAwal,
+            ]);
+
+            $klasifikasi = HasilKlasifikasi::create([
+                'id_pengaduan'      => $pengaduan->id_pengaduan,
+                'confidence_score'  => $hasilMock['score'],
+                'kategori_hasil'    => $hasilMock['kategori'],
+                'status_prioritas'  => $statusAwal === StatusKasus::PerluTinjauan,
+                'metode_analisis'   => 'Mock ML v1.0 (TF-IDF + Rule-based) — TODO: integrasi model real',
+            ]);
+
+            // Simpan indikator/kata pemicu dari checklist & analisis mock
+            foreach ($hasilMock['indikator'] as $ind) {
+                IndikatorMencurigakan::create([
+                    'id_klasifikasi'    => $klasifikasi->id_klasifikasi,
+                    'nama_indikator'    => $ind['nama'],
+                    'kategori_indikator' => $ind['kategori'],
+                    'bobot_indikator'   => $ind['bobot'],
+                ]);
+            }
+
+            // Catat riwayat kasus (NFR-SAF-06, BR-11)
+            $pengaduan->catatRiwayat($statusAwal === StatusKasus::PerluTinjauan
+                ? 'Pengaduan diterima dan klasifikasi dilakukan. Masuk antrean tinjauan Analis.'
+                : 'Pengaduan diterima dan klasifikasi dilakukan. Skor di bawah ambang prioritas, kasus selesai.');
+
+            return $pengaduan;
+        });
 
         return redirect()->route('periksa-lowongan.hasil', $pengaduan->id_pengaduan);
     }

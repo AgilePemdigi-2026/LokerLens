@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\StatusKasus;
+use App\Exceptions\PerubahanStatusTidakValid;
 use Illuminate\Database\Eloquent\Model;
 
 class Pengaduan extends Model
@@ -20,6 +22,7 @@ class Pengaduan extends Model
 
     protected $casts = [
         'tanggal_pengaduan' => 'datetime',
+        'status_pengaduan'  => StatusKasus::class,
     ];
 
     public function lowonganKerja()
@@ -53,12 +56,46 @@ class Pengaduan extends Model
     }
 
     /**
+     * Ubah status kasus satu langkah maju dan catat ke Riwayat Kasus (BR-11, NFR-SAF-06).
+     * Perubahan yang melompat, mundur, atau dari status akhir ditolak.
+     *
+     * @throws PerubahanStatusTidakValid
+     */
+    public function ubahStatus(StatusKasus $tujuan, string $keterangan): void
+    {
+        if (! $this->status_pengaduan->bolehMenjadi($tujuan)) {
+            throw PerubahanStatusTidakValid::dari($this->status_pengaduan, $tujuan);
+        }
+
+        $this->update(['status_pengaduan' => $tujuan]);
+        $this->catatRiwayat($keterangan);
+    }
+
+    /**
+     * Catat status saat ini ke Riwayat Kasus.
+     */
+    public function catatRiwayat(string $keterangan): RiwayatKasus
+    {
+        return RiwayatKasus::create([
+            'id_pengaduan' => $this->id_pengaduan,
+            'status_kasus' => $this->status_pengaduan->value,
+            'keterangan'   => $keterangan,
+        ]);
+    }
+
+    /**
      * Generate nomor tiket unik, mis: #LKR-8821
+     * Dimulai dari 8821 + id terakhir, lalu dinaikkan sampai belum dipakai
+     * (nomor tiket pada data seeder bisa saja sudah menempati angka tersebut).
      */
     public static function generateNomorTiket(): string
     {
-        $last = self::latest('id_pengaduan')->first();
-        $next = $last ? ($last->id_pengaduan + 8820) : 8821;
-        return '#LKR-' . $next;
+        $angka = 8821 + (int) self::max('id_pengaduan');
+
+        while (self::where('nomor_tiket', '#LKR-' . $angka)->exists()) {
+            $angka++;
+        }
+
+        return '#LKR-' . $angka;
     }
 }

@@ -65,8 +65,6 @@ Route::middleware('auth')->group(function () {
             ->name('tindak-lanjut.index');
         Route::get('/tindak-lanjut/{id}', [TindakLanjutController::class, 'detail'])
             ->name('tindak-lanjut.detail');
-        Route::post('/tindak-lanjut/{id}/konfirmasi', [TindakLanjutController::class, 'konfirmasi'])
-            ->name('tindak-lanjut.konfirmasi');
         Route::post('/tindak-lanjut/{id}/keputusan', [TindakLanjutController::class, 'simpanKeputusan'])
             ->name('tindak-lanjut.keputusan');
         Route::get('/tindak-lanjut/{id}/hasil', [TindakLanjutController::class, 'hasil'])

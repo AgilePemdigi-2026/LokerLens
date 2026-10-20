@@ -3,13 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Constants\LokerLensCopy;
+use App\Enums\StatusKasus;
 use App\Models\BuktiPendukung;
 use App\Models\Pengaduan;
-use App\Models\RiwayatKasus;
 use App\Models\SuratTeguranLaporanPolisi;
-use App\Models\TindakLanjutKasus;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 /**
@@ -47,6 +47,11 @@ class BuatSuratController extends Controller
         // Cek apakah sudah ada surat sebelumnya (draf)
         $surat = $tindakLanjut->suratTeguranLaporanPolisi;
 
+        // Surat hanya terbit sekali: yang sudah terbit tidak bisa dibuka lagi sebagai form
+        if ($surat && $surat->status_penerbitan === 'Terbit') {
+            return redirect()->route('buat-surat.terbit', ['pengaduanId' => $pengaduanId, 'suratId' => $surat->id_surat]);
+        }
+
         // Kronologi otomatis dari data kasus (dapat diedit)
         $kronologiDefault = $this->buatKronologiDefault($pengaduan);
 
@@ -63,6 +68,10 @@ class BuatSuratController extends Controller
         $pengaduan    = $this->getPengaduanTindaklanjuti($pengaduanId);
         $tindakLanjut = $pengaduan->tindakLanjutKasus;
 
+        if ($tolak = $this->tolakJikaSudahTerbit($pengaduan)) {
+            return $tolak;
+        }
+
         $request->validate([
             'kronologi'         => ['required', 'string'],
             'tujuan_kepolisian' => ['required', 'string', 'max:255'],
@@ -73,15 +82,22 @@ class BuatSuratController extends Controller
 
         // Tangani upload bukti tambahan (NFR-SEC-07: hanya pdf/jpg/png)
         if ($request->hasFile('bukti_tambahan')) {
+            $request->validate([
+                'bukti_tambahan.*' => ['mimes:pdf,jpg,jpeg,png', 'max:10240'],
+            ]);
+
             foreach ($request->file('bukti_tambahan') as $file) {
-                $request->validate([
-                    'bukti_tambahan.*' => ['mimes:pdf,jpg,jpeg,png', 'max:10240'],
-                ]);
+                // Enum tipe_file hanya pdf/jpg/png, jadi .jpeg disamakan menjadi jpg
+                $tipeFile = strtolower($file->getClientOriginalExtension());
+                if ($tipeFile === 'jpeg') {
+                    $tipeFile = 'jpg';
+                }
+
                 $path = $file->store('bukti', 'public');
                 BuktiPendukung::create([
                     'id_pengaduan' => $pengaduan->id_pengaduan,
                     'nama_file'    => $file->getClientOriginalName(),
-                    'tipe_file'    => strtolower($file->getClientOriginalExtension()),
+                    'tipe_file'    => $tipeFile,
                     'ukuran_file'  => $file->getSize(),
                     'path_file'    => $path,
                 ]);
@@ -103,56 +119,66 @@ class BuatSuratController extends Controller
     }
 
     /**
-     * Terbitkan laporan secara resmi.
-     * FR-ST-08, BR-10: status → Terbit; kasus selesai & terdokumentasi.
-     * FR-ST-09, NFR-SAF-04: Jika gagal → pesan error, data isian tidak hilang.
+     * Terbitkan laporan secara resmi (hanya sekali).
+     * FR-ST-08, BR-10: status → Terbit; kasus Selesai & terdokumentasi.
+     * FR-ST-09, NFR-SAF-04: isian disimpan dulu sebagai draf; jika penerbitan gagal,
+     * draf tetap ada dan tidak ada data penerbitan yang tersimpan sebagian.
      */
     public function terbitkan(Request $request, int $pengaduanId): RedirectResponse
     {
         $pengaduan    = $this->getPengaduanTindaklanjuti($pengaduanId);
         $tindakLanjut = $pengaduan->tindakLanjutKasus;
 
+        if ($tolak = $this->tolakJikaSudahTerbit($pengaduan)) {
+            return $tolak;
+        }
+
         $request->validate([
             'kronologi'         => ['required', 'string'],
             'tujuan_kepolisian' => ['required', 'string', 'max:255'],
         ]);
 
+        $surat = SuratTeguranLaporanPolisi::updateOrCreate(
+            ['id_tindaklanjut' => $tindakLanjut->id_tindaklanjut],
+            [
+                'jenis_dokumen'      => 'Laporan Polisi',
+                'kronologi_kejadian' => $request->kronologi,
+                'tujuan_instansi'    => $request->tujuan_kepolisian,
+                'status_penerbitan'  => 'Draft',
+            ]
+        );
+
         try {
-            $nomorSurat = SuratTeguranLaporanPolisi::generateNomorSurat($pengaduan->nomor_tiket);
+            DB::transaction(function () use ($pengaduan, $surat) {
+                $nomorSurat = SuratTeguranLaporanPolisi::generateNomorSurat($pengaduan->nomor_tiket);
 
-            $surat = SuratTeguranLaporanPolisi::updateOrCreate(
-                ['id_tindaklanjut' => $tindakLanjut->id_tindaklanjut],
-                [
-                    'nomor_surat'        => $nomorSurat,
-                    'jenis_dokumen'      => 'Laporan Polisi',
-                    'kronologi_kejadian' => $request->kronologi,
-                    'tujuan_instansi'    => $request->tujuan_kepolisian,
-                    'status_penerbitan'  => 'Terbit',
-                    'tanggal_terbit'     => now(),
-                ]
-            );
+                $surat->update([
+                    'nomor_surat'       => $nomorSurat,
+                    'status_penerbitan' => 'Terbit',
+                    'tanggal_terbit'    => now(),
+                ]);
 
-            // Update status pengaduan → Kasus selesai (BR-10)
-            $pengaduan->update(['status_pengaduan' => LokerLensCopy::STATUS_SELESAI]);
-
-            // Catat riwayat kasus (BR-11)
-            RiwayatKasus::create([
-                'id_pengaduan' => $pengaduan->id_pengaduan,
-                'status_kasus' => LokerLensCopy::STATUS_SELESAI,
-                'keterangan'   => 'Laporan Polisi ' . $nomorSurat . ' berhasil diterbitkan. ' . LokerLensCopy::KASUS_TERDOKUMENTASI . '.',
-            ]);
-
-            return redirect()->route('buat-surat.terbit', ['pengaduanId' => $pengaduanId, 'suratId' => $surat->id_surat]);
+                // BR-10, BR-11: kasus Selesai dan tercatat di riwayat
+                $pengaduan->ubahStatus(
+                    StatusKasus::Selesai,
+                    'Laporan Polisi ' . $nomorSurat . ' berhasil diterbitkan. ' . LokerLensCopy::KASUS_TERDOKUMENTASI . '.'
+                );
+            });
         } catch (\Exception $e) {
-            // FR-ST-09, NFR-SAF-04: Gagal → data isian tidak hilang
+            report($e);
+
+            // FR-ST-09, NFR-SAF-04: Gagal → draf tetap tersimpan, data isian tidak hilang
             return redirect()->route('buat-surat.index', $pengaduanId)
                 ->withInput()
                 ->with('error', LokerLensCopy::GAGAL_TERBITKAN);
         }
+
+        return redirect()->route('buat-surat.terbit', ['pengaduanId' => $pengaduanId, 'suratId' => $surat->id_surat]);
     }
 
     /**
      * Halaman sukses setelah laporan diterbitkan.
+     * Surat harus milik tindak lanjut dari pengaduan yang dibuka.
      */
     public function terbit(int $pengaduanId, int $suratId): View
     {
@@ -160,11 +186,30 @@ class BuatSuratController extends Controller
             'lowonganKerja.perusahaan',
             'buktiPendukung',
             'tindakLanjutKasus.suratTeguranLaporanPolisi',
-        ])->findOrFail($pengaduanId);
+        ])->whereHas('tindakLanjutKasus')
+          ->findOrFail($pengaduanId);
 
-        $surat = SuratTeguranLaporanPolisi::findOrFail($suratId);
+        $surat = SuratTeguranLaporanPolisi::where('id_surat', $suratId)
+            ->where('id_tindaklanjut', $pengaduan->tindakLanjutKasus->id_tindaklanjut)
+            ->where('status_penerbitan', 'Terbit')
+            ->firstOrFail();
 
         return view('buat-surat.terbit', compact('pengaduan', 'surat'));
+    }
+
+    /**
+     * Surat yang sudah terbit (kasus Selesai) tidak bisa diubah atau diterbitkan ulang.
+     */
+    private function tolakJikaSudahTerbit(Pengaduan $pengaduan): ?RedirectResponse
+    {
+        $surat = $pengaduan->tindakLanjutKasus->suratTeguranLaporanPolisi;
+
+        if ($pengaduan->status_pengaduan !== StatusKasus::Selesai || ! $surat) {
+            return null;
+        }
+
+        return redirect()->route('buat-surat.terbit', ['pengaduanId' => $pengaduan->id_pengaduan, 'suratId' => $surat->id_surat])
+            ->with('error', LokerLensCopy::LAPORAN_SUDAH_TERBIT);
     }
 
     /**

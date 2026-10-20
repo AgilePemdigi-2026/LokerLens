@@ -2,7 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Constants\LokerLensCopy;
+use App\Enums\HasilTinjauan;
+use App\Enums\StatusKasus;
 use App\Models\HasilKlasifikasi;
 use App\Models\IndikatorMencurigakan;
 use App\Models\LowonganKerja;
@@ -118,7 +119,7 @@ class LokerLensSeeder extends Seeder
             'id_pengguna'      => $masyarakat->id,
             'nomor_tiket'      => '#LKR-8821',
             'deskripsi_singkat' => 'Lowongan Staff Administrasi PT Mandiri Sukses Global terindikasi penipuan',
-            'status_pengaduan' => LokerLensCopy::STATUS_SEDANG_DITINJAU,
+            'status_pengaduan' => StatusKasus::SedangDitinjau,
         ]);
 
         $klasifikasi1 = HasilKlasifikasi::create([
@@ -137,14 +138,14 @@ class LokerLensSeeder extends Seeder
         ]);
 
         RiwayatKasus::insert([
-            ['id_pengaduan' => $pengaduan1->id_pengaduan, 'status_kasus' => LokerLensCopy::STATUS_PERLU_TINJAUAN, 'keterangan' => 'Tiket diterima sistem', 'tanggal_update' => now()->subDays(3), 'created_at' => now(), 'updated_at' => now()],
-            ['id_pengaduan' => $pengaduan1->id_pengaduan, 'status_kasus' => LokerLensCopy::STATUS_SEDANG_DITINJAU, 'keterangan' => 'Laporan masuk ke Analis', 'tanggal_update' => now()->subDays(2), 'created_at' => now(), 'updated_at' => now()],
+            ['id_pengaduan' => $pengaduan1->id_pengaduan, 'status_kasus' => StatusKasus::PerluTinjauan->value, 'keterangan' => 'Tiket diterima sistem', 'tanggal_update' => now()->subDays(3), 'created_at' => now(), 'updated_at' => now()],
+            ['id_pengaduan' => $pengaduan1->id_pengaduan, 'status_kasus' => StatusKasus::SedangDitinjau->value, 'keterangan' => 'Laporan masuk ke Analis', 'tanggal_update' => now()->subDays(2), 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         // ─── #LKR-8819 ──────────────────────────────────────────────────
         $pengaduan2 = Pengaduan::create([
             'id_lowongan' => $lowongan2->id_lowongan, 'id_pengguna' => $masyarakat->id,
-            'nomor_tiket' => '#LKR-8819', 'status_pengaduan' => LokerLensCopy::STATUS_PERLU_TINJAUAN,
+            'nomor_tiket' => '#LKR-8819', 'status_pengaduan' => StatusKasus::PerluTinjauan,
         ]);
         $klasifikasi2 = HasilKlasifikasi::create(['id_pengaduan' => $pengaduan2->id_pengaduan, 'confidence_score' => 88.00, 'kategori_hasil' => 'Lowongan berpotensi penipuan', 'status_prioritas' => true, 'metode_analisis' => 'Mock ML v1.0']);
         IndikatorMencurigakan::create(['id_klasifikasi' => $klasifikasi2->id_klasifikasi, 'nama_indikator' => 'Transfer biaya seragam sebelum kerja', 'kategori_indikator' => 'Biaya Fiktif', 'bobot_indikator' => 25]);
@@ -152,14 +153,14 @@ class LokerLensSeeder extends Seeder
         // ─── #LKR-8790 ──────────────────────────────────────────────────
         $pengaduan3 = Pengaduan::create([
             'id_lowongan' => $lowongan3->id_lowongan, 'id_pengguna' => $masyarakat->id,
-            'nomor_tiket' => '#LKR-8790', 'status_pengaduan' => LokerLensCopy::STATUS_PERLU_TINJAUAN,
+            'nomor_tiket' => '#LKR-8790', 'status_pengaduan' => StatusKasus::PerluTinjauan,
         ]);
         HasilKlasifikasi::create(['id_pengaduan' => $pengaduan3->id_pengaduan, 'confidence_score' => 85.00, 'kategori_hasil' => 'Lowongan berpotensi penipuan', 'status_prioritas' => true, 'metode_analisis' => 'Mock ML v1.0']);
 
         // ─── #LKR-8765 ──────────────────────────────────────────────────
         $pengaduan4 = Pengaduan::create([
             'id_lowongan' => $lowongan4->id_lowongan, 'id_pengguna' => $masyarakat->id,
-            'nomor_tiket' => '#LKR-8765', 'status_pengaduan' => LokerLensCopy::STATUS_PERLU_TINJAUAN,
+            'nomor_tiket' => '#LKR-8765', 'status_pengaduan' => StatusKasus::PerluTinjauan,
         ]);
         HasilKlasifikasi::create(['id_pengaduan' => $pengaduan4->id_pengaduan, 'confidence_score' => 79.00, 'kategori_hasil' => 'Lowongan berpotensi penipuan', 'status_prioritas' => true, 'metode_analisis' => 'Mock ML v1.0']);
 
@@ -169,7 +170,7 @@ class LokerLensSeeder extends Seeder
             'id_pengguna'      => $masyarakat->id,
             'nomor_tiket'      => '#LKR-2025-0842',
             'deskripsi_singkat' => 'Staff Administrasi Operasional PT Maju Sejahtera Energi Nusantara',
-            'status_pengaduan' => LokerLensCopy::STATUS_MENUNGGU_KEPUTUSAN,
+            'status_pengaduan' => StatusKasus::MenungguKeputusan,
         ]);
 
         $klasifikasi5 = HasilKlasifikasi::create([
@@ -191,14 +192,14 @@ class LokerLensSeeder extends Seeder
             'id_klasifikasi'   => $klasifikasi5->id_klasifikasi,
             'id_pengguna'      => $analis->id,
             'catatan_tinjauan' => 'Berdasarkan investigasi, ditemukan pola permintaan biaya yang tidak wajar. Lowongan ini sangat mencurigakan dan perlu ditindaklanjuti oleh pihak berwajib.',
-            'hasil_tinjauan'   => 'Mencurigakan',
+            'hasil_tinjauan'   => HasilTinjauan::TerkonfirmasiMencurigakan->value,
             'tanggal_tinjauan' => now()->subDay(),
         ]);
 
         RiwayatKasus::insert([
-            ['id_pengaduan' => $pengaduan5->id_pengaduan, 'status_kasus' => LokerLensCopy::STATUS_PERLU_TINJAUAN, 'keterangan' => 'Tiket diterima', 'tanggal_update' => now()->subDays(5), 'created_at' => now(), 'updated_at' => now()],
-            ['id_pengaduan' => $pengaduan5->id_pengaduan, 'status_kasus' => LokerLensCopy::STATUS_SEDANG_DITINJAU, 'keterangan' => 'Laporan masuk ke Analis', 'tanggal_update' => now()->subDays(3), 'created_at' => now(), 'updated_at' => now()],
-            ['id_pengaduan' => $pengaduan5->id_pengaduan, 'status_kasus' => LokerLensCopy::STATUS_MENUNGGU_KEPUTUSAN, 'keterangan' => 'Tinjauan Analis selesai: Mencurigakan. Diteruskan ke Kepala Bidang.', 'tanggal_update' => now()->subDay(), 'created_at' => now(), 'updated_at' => now()],
+            ['id_pengaduan' => $pengaduan5->id_pengaduan, 'status_kasus' => StatusKasus::PerluTinjauan->value, 'keterangan' => 'Tiket diterima', 'tanggal_update' => now()->subDays(5), 'created_at' => now(), 'updated_at' => now()],
+            ['id_pengaduan' => $pengaduan5->id_pengaduan, 'status_kasus' => StatusKasus::SedangDitinjau->value, 'keterangan' => 'Laporan masuk ke Analis', 'tanggal_update' => now()->subDays(3), 'created_at' => now(), 'updated_at' => now()],
+            ['id_pengaduan' => $pengaduan5->id_pengaduan, 'status_kasus' => StatusKasus::MenungguKeputusan->value, 'keterangan' => 'Tinjauan Analis selesai: Terkonfirmasi Mencurigakan. Diteruskan ke Kepala Bidang.', 'tanggal_update' => now()->subDay(), 'created_at' => now(), 'updated_at' => now()],
         ]);
     }
 }

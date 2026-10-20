@@ -35,3 +35,6 @@ Thumbs.db
 /ml/.venv/
 /ml/models/*.pkl
 /ml/data/raw/
+
+# ─── Dokumen referensi (berisi data pribadi anggota) ──
+/docs/referensi/

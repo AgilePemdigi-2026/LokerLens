@@ -73,15 +73,22 @@ class BuatSuratController extends Controller
 
         // Tangani upload bukti tambahan (NFR-SEC-07: hanya pdf/jpg/png)
         if ($request->hasFile('bukti_tambahan')) {
+            $request->validate([
+                'bukti_tambahan.*' => ['mimes:pdf,jpg,jpeg,png', 'max:10240'],
+            ]);
+
             foreach ($request->file('bukti_tambahan') as $file) {
-                $request->validate([
-                    'bukti_tambahan.*' => ['mimes:pdf,jpg,jpeg,png', 'max:10240'],
-                ]);
+                // Enum tipe_file hanya pdf/jpg/png, jadi .jpeg disamakan menjadi jpg
+                $tipeFile = strtolower($file->getClientOriginalExtension());
+                if ($tipeFile === 'jpeg') {
+                    $tipeFile = 'jpg';
+                }
+
                 $path = $file->store('bukti', 'public');
                 BuktiPendukung::create([
                     'id_pengaduan' => $pengaduan->id_pengaduan,
                     'nama_file'    => $file->getClientOriginalName(),
-                    'tipe_file'    => strtolower($file->getClientOriginalExtension()),
+                    'tipe_file'    => $tipeFile,
                     'ukuran_file'  => $file->getSize(),
                     'path_file'    => $path,
                 ]);

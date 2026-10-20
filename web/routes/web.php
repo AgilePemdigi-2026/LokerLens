@@ -26,6 +26,12 @@ Route::get('/', function () {
 // ─── Autentikasi (Laravel Breeze) ────────────────────────────────────────────
 require __DIR__ . '/auth.php';
 
+// ─── Mode Preview Pengembangan (/dev) ────────────────────────────────────────
+// Hanya terdaftar jika APP_ENV=local DAN DEV_PREVIEW=true.
+if (\App\Support\DevPreview::aktif()) {
+    require __DIR__ . '/dev.php';
+}
+
 // ─── Rute Terproteksi (wajib login) ──────────────────────────────────────────
 Route::middleware('auth')->group(function () {
 

@@ -3,12 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Constants\LokerLensCopy;
+use App\Enums\StatusKasus;
 use App\Models\Pengaduan;
-use App\Models\RiwayatKasus;
 use App\Models\TindakLanjutKasus;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 /**
@@ -33,14 +34,12 @@ class TindakLanjutController extends Controller
             'tindakLanjutKasus',
         ]);
 
-        // Filter berdasarkan status (§6.5.1)
-        if ($request->filled('status')) {
-            $query->where('status_pengaduan', $request->status);
+        // Filter berdasarkan status (§6.5.1) — hanya status tahap Kepala Bidang
+        $status = StatusKasus::tryFrom((string) $request->status);
+        if ($status && in_array($status, StatusKasus::tahapKepalaBidang(), true)) {
+            $query->where('status_pengaduan', $status);
         } else {
-            $query->where(function ($q) {
-                $q->where('status_pengaduan', 'Menunggu Keputusan')
-                  ->orWhere('status_pengaduan', 'Tindak Lanjut Disetujui');
-            });
+            $query->whereIn('status_pengaduan', [StatusKasus::MenungguKeputusan, StatusKasus::TindakLanjutDisetujui]);
         }
 
         // Filter berdasarkan prioritas (§6.5.1: via confidence_score)
@@ -73,10 +72,10 @@ class TindakLanjutController extends Controller
 
         $laporan = $query->paginate(10)->withQueryString();
 
-        $jumlahMenunggu = Pengaduan::where('status_pengaduan', 'Menunggu Keputusan')->count();
+        $jumlahMenunggu = Pengaduan::where('status_pengaduan', StatusKasus::MenungguKeputusan)->count();
 
         // Rincian prioritas (§6.5.1: "2 Prioritas tinggi · 1 Prioritas sedang")
-        $jumlahPrioritasTinggi = Pengaduan::where('status_pengaduan', 'Menunggu Keputusan')
+        $jumlahPrioritasTinggi = Pengaduan::where('status_pengaduan', StatusKasus::MenungguKeputusan)
             ->whereHas('hasilKlasifikasi', fn ($q) => $q->where('confidence_score', '>=', 75))
             ->count();
         $jumlahPrioritasSedang = $jumlahMenunggu - $jumlahPrioritasTinggi;
@@ -101,7 +100,8 @@ class TindakLanjutController extends Controller
             'buktiPendukung',
             'riwayatKasus',
             'tindakLanjutKasus',
-        ])->findOrFail($id);
+        ])->whereIn('status_pengaduan', StatusKasus::tahapKepalaBidang())
+          ->findOrFail($id);
 
         return view('tindak-lanjut.detail', compact('pengaduan'));
     }
@@ -110,6 +110,7 @@ class TindakLanjutController extends Controller
      * Simpan keputusan akhir Kepala Bidang.
      * BR-03: "Tidak Ditindaklanjuti" → ditandai & diarsipkan.
      * FR-ST-02: "Tindaklanjuti" → buka akses /buat-surat/.
+     * Hanya kasus "Menunggu Keputusan" yang bisa diputuskan, dan hanya sekali.
      */
     public function simpanKeputusan(Request $request, int $id): RedirectResponse
     {
@@ -120,36 +121,22 @@ class TindakLanjutController extends Controller
 
         $pengaduan = Pengaduan::findOrFail($id);
 
-        // Cegah keputusan ganda
-        if ($pengaduan->tindakLanjutKasus()->exists()) {
-            return redirect()->route('tindak-lanjut.detail', $id)
-                ->with('error', 'Keputusan sudah pernah dibuat untuk laporan ini.');
-        }
+        DB::transaction(function () use ($request, $pengaduan) {
+            if ($request->keputusan === 'Tindaklanjuti') {
+                $pengaduan->ubahStatus(StatusKasus::TindakLanjutDisetujui, 'Keputusan Kepala Bidang: Tindaklanjuti. Kasus dilanjutkan ke tahap pembuatan surat.');
+            } else {
+                // BR-03: ditandai tidak dilanjuti dan diarsipkan
+                $pengaduan->ubahStatus(StatusKasus::TidakDitindaklanjuti, LokerLensCopy::KASUS_DIARSIPKAN);
+            }
 
-        $tindakLanjut = TindakLanjutKasus::create([
-            'id_pengaduan'     => $pengaduan->id_pengaduan,
-            'id_pengguna'      => Auth::id(),
-            'keputusan'        => $request->keputusan,
-            'catatan_keputusan' => $request->catatan_keputusan,
-            'tanggal_keputusan' => now(),
-        ]);
-
-        // Update status pengaduan
-        if ($request->keputusan === 'Tindaklanjuti') {
-            $pengaduan->update(['status_pengaduan' => LokerLensCopy::STATUS_TINDAK_LANJUT]);
-            $keterangan = 'Keputusan Kepala Bidang: Tindaklanjuti. Kasus dilanjutkan ke tahap pembuatan surat.';
-        } else {
-            // BR-03: ditandai tidak dilanjuti dan diarsipkan
-            $pengaduan->update(['status_pengaduan' => LokerLensCopy::STATUS_TIDAK_DILANJUTI]);
-            $keterangan = LokerLensCopy::KASUS_DIARSIPKAN;
-        }
-
-        // Catat riwayat kasus (BR-11, NFR-SAF-06)
-        RiwayatKasus::create([
-            'id_pengaduan' => $pengaduan->id_pengaduan,
-            'status_kasus' => $pengaduan->status_pengaduan,
-            'keterangan'   => $keterangan,
-        ]);
+            TindakLanjutKasus::create([
+                'id_pengaduan'     => $pengaduan->id_pengaduan,
+                'id_pengguna'      => Auth::id(),
+                'keputusan'        => $request->keputusan,
+                'catatan_keputusan' => $request->catatan_keputusan,
+                'tanggal_keputusan' => now(),
+            ]);
+        });
 
         return redirect()->route('tindak-lanjut.hasil', [
             'id'        => $id,
@@ -166,7 +153,8 @@ class TindakLanjutController extends Controller
             'lowonganKerja.perusahaan',
             'tindakLanjutKasus',
             'riwayatKasus',
-        ])->findOrFail($id);
+        ])->whereHas('tindakLanjutKasus')
+          ->findOrFail($id);
 
         return view('tindak-lanjut.hasil', compact('pengaduan'));
     }

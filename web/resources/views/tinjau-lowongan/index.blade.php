@@ -154,7 +154,7 @@
 
                                 <!-- Aksi (BDD Hook: "Lihat Detail") -->
                                 <td class="px-4 py-3.5 text-right">
-                                    @if($pengaduan->status_pengaduan === 'Sedang Ditinjau')
+                                    @if($pengaduan->status_pengaduan === \App\Enums\StatusKasus::SedangDitinjau)
                                         <a href="{{ route('tinjau-lowongan.detail', $item->id_klasifikasi) }}" class="inline-flex items-center px-3 py-1.5 rounded-control bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs shadow transition">
                                             Sedang Ditinjau
                                         </a>

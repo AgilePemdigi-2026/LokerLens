@@ -15,6 +15,7 @@
         @php
             $klasifikasi = $pengaduan->hasilKlasifikasi;
             $score = $klasifikasi ? $klasifikasi->confidence_score : 0;
+            $ambang = config('lokerlens.ambang_prioritas');
             $lowongan = $pengaduan->lowonganKerja;
             $perusahaan = $lowongan->perusahaan ?? null;
         @endphp
@@ -26,8 +27,8 @@
                     <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">
                         Analisis selesai
                     </span>
-                    <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider {{ $score >= 70 ? 'bg-red-100 text-risk-high border border-red-200' : ($score >= 40 ? 'bg-amber-100 text-risk-mid border border-amber-200' : 'bg-emerald-100 text-ok border border-emerald-200') }}">
-                        {{ $klasifikasi->tingkat_risiko ?? ($score >= 70 ? 'Risiko tinggi' : 'Risiko sedang') }}
+                    <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider {{ $score >= $ambang ? 'bg-red-100 text-risk-high border border-red-200' : ($score >= 40 ? 'bg-amber-100 text-risk-mid border border-amber-200' : 'bg-emerald-100 text-ok border border-emerald-200') }}">
+                        {{ $klasifikasi->tingkat_risiko ?? ($score >= $ambang ? 'Risiko tinggi' : 'Risiko sedang') }}
                     </span>
                 </div>
                 <span class="text-xs text-gray-500 font-mono">
@@ -65,7 +66,7 @@
             <!-- Bar Merah Skor -->
             <div class="mb-6">
                 <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                    <div class="h-3 rounded-full transition-all duration-500 {{ $score >= 70 ? 'bg-risk-high' : ($score >= 40 ? 'bg-risk-mid' : 'bg-ok') }}" style="width: {{ $score }}%"></div>
+                    <div class="h-3 rounded-full transition-all duration-500 {{ $score >= $ambang ? 'bg-risk-high' : ($score >= 40 ? 'bg-risk-mid' : 'bg-ok') }}" style="width: {{ $score }}%"></div>
                 </div>
                 <div class="flex justify-between text-[11px] text-gray-400 mt-1">
                     <span>0% (Asli/Aman)</span>

@@ -48,7 +48,7 @@
                     </div>
                     <div class="flex justify-between pb-2 border-b border-gray-200">
                         <span class="text-gray-500">Status Kasus Terbaru:</span>
-                        <strong class="text-ok font-bold">Tindak Lanjut Disetujui</strong>
+                        <strong class="text-ok font-bold">{{ $pengaduan->status_pengaduan }}</strong>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-500">Riwayat Kasus:</span>

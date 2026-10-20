@@ -21,7 +21,7 @@ Semua path controller relatif terhadap `web/app/Http/Controllers/`. Status ditul
 | FR-PL-01 | Sistem harus menyediakan form untuk memasukkan nama perusahaan, posisi lowongan, dan deskripsi lowongan. | `GET /periksa-lowongan` → `PeriksaLowonganController@index` | ✅ | |
 | FR-PL-02 | Sistem harus memvalidasi kelengkapan data wajib sebelum proses pemeriksaan dilakukan. | `POST /periksa-lowongan` → `PeriksaLowonganController@store` | ✅ | Deskripsi minimal 50 karakter. |
 | FR-PL-03 | Sistem harus menyimpan data Perusahaan dan Lowongan_Kerja yang diperiksa. | `PeriksaLowonganController@store` | ✅ | |
-| FR-PL-04 | Sistem harus membuat data Pengaduan berdasarkan lowongan kerja yang diperiksa. | `PeriksaLowonganController@store`, `Pengaduan::generateNomorTiket()` | 🟡 | Nomor tiket bisa dobel saat DB kosong (diperbaiki di Tahap 2). |
+| FR-PL-04 | Sistem harus membuat data Pengaduan berdasarkan lowongan kerja yang diperiksa. | `PeriksaLowonganController@store`, `Pengaduan::generateNomorTiket()` | ✅ | Nomor tiket selalu unik, termasuk saat database kosong. |
 | FR-PL-05 | Sistem harus melakukan *preprocessing* teks dan ekstraksi fitur menggunakan TF-IDF. | — (rencana: API ML di `ml/`) | ❌ | Saat ini masih simulasi kata kunci (`simulasiKlasifikasi`). |
 | FR-PL-06 | Sistem harus mengklasifikasikan lowongan sebagai asli atau palsu dan menghasilkan *confidence score*. | `PeriksaLowonganController@store` | 🟡 | Skor dari simulasi, bukan model. `kategori_hasil` disimpan tapi tidak ditampilkan di view mana pun. |
 | FR-PL-07 | Sistem harus menghasilkan Indikator_Mencurigakan berdasarkan hasil pemeriksaan. | `PeriksaLowonganController@store` | 🟡 | Dari aturan kata kunci + checklist, belum dari model. |
@@ -34,14 +34,14 @@ Semua path controller relatif terhadap `web/app/Http/Controllers/`. Status ditul
 | Kode | Kebutuhan (SRS) | Route / Controller | Status | Catatan |
 |---|---|---|---|---|
 | FR-ML-01 | Sistem harus hanya mengizinkan Analis yang sudah login mengakses fitur ini. | Middleware `auth` + `role:Analis` (`routes/web.php`) | ✅ | |
-| FR-ML-02 | Sistem harus menampilkan Daftar Lowongan Prioritas Tinggi yang hanya memuat lowongan berstatus prioritas tinggi pada Hasil_Klasifikasi. | `GET /tinjau-lowongan` → `TinjauLowonganController@index` | 🟡 | Ambang prioritas masih ditulis langsung di kode (≥ 60). Daftar masih memuat kasus yang sudah selesai. |
+| FR-ML-02 | Sistem harus menampilkan Daftar Lowongan Prioritas Tinggi yang hanya memuat lowongan berstatus prioritas tinggi pada Hasil_Klasifikasi. | `GET /tinjau-lowongan` → `TinjauLowonganController@index` | ✅ | Ambang prioritas diambil dari `config/lokerlens.php` (default 70). Daftar hanya memuat kasus berstatus *Perlu Tinjauan* / *Sedang Ditinjau*. |
 | FR-ML-03 | Sistem harus menampilkan daftar sesuai kriteria ketika Analis memilih filter skor dan urutan skor. | `TinjauLowonganController@index` | 🟡 | Urutan "Skor Terendah" dan "Terbaru" tidak berpengaruh karena urutan default (skor tertinggi) selalu dipasang lebih dulu. |
 | FR-ML-04 | Sistem harus menampilkan lowongan yang sesuai ketika Analis memasukkan nomor tiket dan menekan "Cari". | `TinjauLowonganController@index` | ✅ | Juga bisa mencari nama perusahaan. |
 | FR-ML-05 | Sistem harus menampilkan "Data lowongan tidak ditemukan" jika nomor tiket atau data lowongan tidak ditemukan. | `TinjauLowonganController@index`, `@detail` | 🟡 | Daftar sudah menampilkan pesan. Untuk detail dengan ID salah, sistem menampilkan 404, bukan notifikasi + kembali ke daftar (SRS UC-02 skenario alternatif). |
 | FR-ML-06 | Sistem harus menampilkan informasi lowongan, *confidence score*, dan Indikator_Mencurigakan ketika Analis menekan "Lihat Detail". | `GET /tinjau-lowongan/detail/{id}` → `TinjauLowonganController@detail` | ✅ | Bagian "Ringkasan Analisis Sistem" dan "Bukti Pendukung" di view masih teks contoh tetap. |
-| FR-ML-07 | Sistem harus menyediakan isian catatan tinjauan dan hasil tinjauan. | View `tinjau-lowongan/detail` | 🟡 | Pilihan hasil belum sesuai keputusan tim ("Terkonfirmasi Mencurigakan" / "Tidak Terbukti"). |
+| FR-ML-07 | Sistem harus menyediakan isian catatan tinjauan dan hasil tinjauan. | View `tinjau-lowongan/detail` | ✅ | Dua pilihan tetap sesuai keputusan tim: "Terkonfirmasi Mencurigakan" / "Tidak Terbukti" (`App\Enums\HasilTinjauan`). |
 | FR-ML-08 | Sistem harus menyimpan catatan tinjauan, hasil tinjauan, dan tanggal tinjauan ke Tinjauan_Analis ketika Analis menekan "Lanjutkan", lalu menampilkan "Hasil Tinjauan Berhasil Disimpan". | `POST /tinjau-lowongan/detail/{id}/simpan` → `TinjauLowonganController@simpanTinjauan` | ✅ | |
-| FR-ML-09 | Sistem harus menjalankan use case Menindaklanjuti Laporan Lowongan Kerja yang Mencurigakan setelah tinjauan tersimpan. | `TinjauLowonganController@simpanTinjauan` | 🟡 | Semua hasil diteruskan ke Kepala Bidang. Menurut keputusan tim, hanya "Terkonfirmasi Mencurigakan" yang diteruskan (lihat §4). Kasus yang sudah diputuskan pun bisa ditimpa ulang. |
+| FR-ML-09 | Sistem harus menjalankan use case Menindaklanjuti Laporan Lowongan Kerja yang Mencurigakan setelah tinjauan tersimpan. | `TinjauLowonganController@simpanTinjauan` | ✅ | Hanya "Terkonfirmasi Mencurigakan" yang diteruskan (*Menunggu Keputusan*); "Tidak Terbukti" menutup kasus. Kasus di luar tahap tinjauan tidak bisa ditinjau ulang. |
 
 ### 1.3 F-03 Menindaklanjuti Laporan Lowongan Kerja yang Mencurigakan (SRS Table 4.7) — Kepala Bidang
 
@@ -50,7 +50,7 @@ Semua path controller relatif terhadap `web/app/Http/Controllers/`. Status ditul
 | FR-TL-01 | Sistem harus membatasi akses fitur ini hanya untuk pengguna dengan peran Kepala Bidang. | Middleware `auth` + `role:Kepala Bidang` | ✅ | |
 | FR-TL-02 | Sistem harus menampilkan detail laporan yang meliputi informasi lowongan, hasil pemeriksaan sistem (kategori hasil, *confidence score*, kata pemicu), dan hasil tinjauan Analis. | `GET /tindak-lanjut/{id}` → `TindakLanjutController@detail` | 🟡 | Kata pemicu di view masih ditulis tetap ("Biaya akomodasi", dll.), tidak diambil dari database. |
 | FR-TL-03 | Sistem harus menyediakan dua pilihan keputusan, yaitu "Tindaklanjuti" dan "Tidak Ditindaklanjuti". | View `tindak-lanjut/detail` | ✅ | Dengan pop-up konfirmasi (Data Mockup Gambar 2.12). |
-| FR-TL-04 | Sistem harus menyimpan keputusan Kepala Bidang beserta tanggal keputusan ke data Tindak Lanjut Kasus. | `POST /tindak-lanjut/{id}/keputusan` → `TindakLanjutController@simpanKeputusan` | 🟡 | Keputusan bisa dibuat untuk kasus yang belum ditinjau Analis (status tidak dicek). |
+| FR-TL-04 | Sistem harus menyimpan keputusan Kepala Bidang beserta tanggal keputusan ke data Tindak Lanjut Kasus. | `POST /tindak-lanjut/{id}/keputusan` → `TindakLanjutController@simpanKeputusan` | ✅ | Hanya kasus *Menunggu Keputusan* yang bisa diputuskan, dan hanya sekali. |
 | FR-TL-05 | Sistem harus menandai kasus "tidak dilanjuti", mengarsipkan laporan, dan menampilkan "Kasus ditandai tidak dilanjuti dan diarsipkan" ketika Kepala Bidang memilih "Tidak Ditindaklanjuti". | `TindakLanjutController@simpanKeputusan`, `@hasil` | ✅ | |
 | FR-TL-06 | Sistem harus menampilkan halaman Buat Surat Teguran/Laporan Polisi ketika Kepala Bidang memilih "Tindaklanjuti". | `GET /tindak-lanjut/{id}/hasil` → tombol "Lanjut ke Pembuatan Surat" | ✅ | Mengikuti Data Mockup (Gambar 2.13): hasil keputusan dulu, baru tombol ke pembuatan surat. |
 | FR-TL-07 | Sistem harus mencatat setiap perubahan status kasus akibat keputusan tindak lanjut ke dalam Riwayat Kasus. | `TindakLanjutController@simpanKeputusan` | ✅ | |
@@ -63,11 +63,11 @@ Semua path controller relatif terhadap `web/app/Http/Controllers/`. Status ditul
 | FR-ST-02 | Sistem harus membuka halaman pembuatan surat hanya setelah Kepala Bidang memilih Tindaklanjuti. | `GET /buat-surat/{pengaduanId}` → `BuatSuratController@index` | ✅ | Ditolak 403 jika belum "Tindaklanjuti". |
 | FR-ST-03 | Sistem harus menampilkan Data Kasus (nomor tiket kasus dan tanggal validasi) terisi otomatis dan hanya dapat dibaca. | View `buat-surat/index` | ✅ | |
 | FR-ST-04 | Sistem harus menyediakan isian Nama Perusahaan (Terlapor), Kronologi Kejadian, Detail Pelanggaran, Bukti Pendukung, dan Tujuan Kepolisian. | View `buat-surat/index` | 🟡 | Pilihan "Detail Pelanggaran" (pasal) tidak disimpan karena belum ada kolomnya. Daftar bukti yang "terlampir" masih teks contoh tetap. |
-| FR-ST-05 | Sistem harus menyimpan isian sebagai draf ketika Kepala Bidang menekan Simpan Draft, lalu menampilkan "Draf berhasil disimpan". | `POST /buat-surat/{pengaduanId}/draft` → `BuatSuratController@simpanDraft` | 🟡 | Upload bukti `.jpeg` gagal tersimpan (diperbaiki di Tahap 2). |
-| FR-ST-06 | Sistem harus menyimpan surat dan memperbarui status penerbitan menjadi terbit ketika Kepala Bidang menekan Terbitkan Laporan. | `POST /buat-surat/{pengaduanId}/terbitkan` → `BuatSuratController@terbitkan` | 🟡 | Surat bisa diterbitkan berkali-kali. |
+| FR-ST-05 | Sistem harus menyimpan isian sebagai draf ketika Kepala Bidang menekan Simpan Draft, lalu menampilkan "Draf berhasil disimpan". | `POST /buat-surat/{pengaduanId}/draft` → `BuatSuratController@simpanDraft` | ✅ | Bukti `.jpeg` disimpan sebagai `jpg`. Draf tidak bisa disimpan lagi setelah surat terbit. |
+| FR-ST-06 | Sistem harus menyimpan surat dan memperbarui status penerbitan menjadi terbit ketika Kepala Bidang menekan Terbitkan Laporan. | `POST /buat-surat/{pengaduanId}/terbitkan` → `BuatSuratController@terbitkan` | ✅ | Surat hanya bisa terbit satu kali (dicek di kode + constraint unique `id_tindaklanjut`). |
 | FR-ST-07 | Sistem harus mencatat penerbitan dokumen ke Riwayat_Kasus. | `BuatSuratController@terbitkan` | ✅ | |
 | FR-ST-08 | Sistem harus menandai kasus terdokumentasi otomatis dan kasus selesai setelah dokumen terbit. | `BuatSuratController@terbitkan`, `GET /buat-surat/{pengaduanId}/terbit/{suratId}` | ✅ | |
-| FR-ST-09 | Sistem harus menampilkan "Gagal menerbitkan dokumen, draf telah disimpan" dan mempertahankan draf ketika penerbitan gagal. | `BuatSuratController@terbitkan` | 🟡 | Pesan sudah ada, tapi draf tidak benar-benar disimpan saat gagal, dan prosesnya tidak memakai transaksi database. |
+| FR-ST-09 | Sistem harus menampilkan "Gagal menerbitkan dokumen, draf telah disimpan" dan mempertahankan draf ketika penerbitan gagal. | `BuatSuratController@terbitkan` | ✅ | Isian disimpan sebagai draf lebih dulu; penerbitan memakai transaksi database, sehingga draf tetap ada bila gagal. |
 
 ---
 
@@ -86,12 +86,12 @@ Semua path controller relatif terhadap `web/app/Http/Controllers/`. Status ditul
 | Kode | Kebutuhan (SRS) | Bagian kode | Status | Catatan |
 |---|---|---|---|---|
 | NFR-SEC-01 | Mewajibkan login sebelum mengakses fitur Section 4. | Middleware `auth` di `routes/web.php` | ✅ | |
-| NFR-SEC-02 | Membatasi fitur sesuai peran: Masyarakat hanya Periksa Lowongan, Analis hanya Meninjau, Kepala Bidang hanya Menindaklanjuti dan Membuat Laporan Polisi. | `app/Http/Middleware/CheckRole.php` (alias `role`) | 🟡 | Pembatasan per peran sudah ada. Di dalam peran, halaman terbit surat belum memastikan surat milik pengaduan yang dibuka. |
+| NFR-SEC-02 | Membatasi fitur sesuai peran: Masyarakat hanya Periksa Lowongan, Analis hanya Meninjau, Kepala Bidang hanya Menindaklanjuti dan Membuat Laporan Polisi. | `app/Http/Middleware/CheckRole.php` (alias `role`) | ✅ | Pembatasan per peran diuji di `HakAksesPeranTest`. Halaman terbit memastikan surat milik pengaduan yang dibuka; detail Kepala Bidang hanya untuk kasus yang sudah diteruskan Analis. |
 | NFR-SEC-03 | Pesan gagal login sama untuk email tidak terdaftar dan kata sandi salah. | `Auth/AuthenticatedSessionController`, `Requests/Auth/LoginRequest` | ✅ | Memakai `LokerLensCopy::GAGAL_LOGIN`. |
 | NFR-SEC-04 | Kata sandi disimpan ter-hash. | Model `User` (cast `hashed`), bcrypt bawaan Laravel | ✅ | Algoritma di SRS masih TBD; sementara memakai bcrypt. |
 | NFR-SEC-05 | Data pribadi pengguna hanya untuk pemilik akun dan peran berwenang. | `PeriksaLowonganController@hasil` (filter pemilik) | 🟡 | **[PERLU DISKUSI]** Peran mana yang berwenang melihat nama/email pelapor? Saat ini Kepala Bidang melihat email pelapor di halaman detail. |
 | NFR-SEC-06 | Mengenkripsi komunikasi peramban–server. | — (konfigurasi server) | ❌ | Bergantung pada lingkungan *deploy* (HTTPS). |
-| NFR-SEC-07 | Bukti Pendukung hanya pdf, jpg, atau png. | `BuatSuratController@simpanDraft` | 🟡 | Validasi `mimes:pdf,jpg,jpeg,png`, maks 10 MB. File `.jpeg` gagal disimpan (Tahap 2). Batas ukuran di SRS masih TBD. |
+| NFR-SEC-07 | Bukti Pendukung hanya pdf, jpg, atau png. | `BuatSuratController@simpanDraft` | 🟡 | Validasi `mimes:pdf,jpg,jpeg,png`, maks 10 MB; `.jpeg` disimpan sebagai `jpg`. Batas ukuran di SRS masih TBD. |
 
 ### 2.3 Keselamatan (SRS Table 5.3)
 
@@ -99,10 +99,10 @@ Semua path controller relatif terhadap `web/app/Http/Controllers/`. Status ditul
 |---|---|---|---|---|
 | NFR-SAF-01 | Hasil Pemeriksaan ditampilkan sebagai prediksi dengan *confidence score*, tidak menetapkan penipuan otomatis. | View `periksa-lowongan/hasil` | 🟡 | Catatan "rekomendasi pendukung keputusan" sudah ada, tapi judul selalu "Lowongan berpotensi penipuan". |
 | NFR-SAF-02 | Hanya Kepala Bidang yang bisa menetapkan keputusan tindak lanjut. | Middleware `role:Kepala Bidang` | ✅ | |
-| NFR-SAF-03 | Halaman Buat Laporan Polisi hanya terbuka setelah "Tindaklanjuti"; tidak ada dokumen terbit tanpa tindakan Kepala Bidang. | `BuatSuratController` | 🟡 | Prasyarat sudah dicek. Surat belum dicegah terbit dua kali. |
-| NFR-SAF-04 | Jika simpan gagal, data isian dipertahankan dan tidak ada data tersimpan sebagian. | Semua controller penyimpan | ❌ | Belum memakai transaksi database. |
+| NFR-SAF-03 | Halaman Buat Laporan Polisi hanya terbuka setelah "Tindaklanjuti"; tidak ada dokumen terbit tanpa tindakan Kepala Bidang. | `BuatSuratController` | ✅ | Halaman surat hanya setelah "Tindaklanjuti"; surat tidak bisa terbit dua kali. |
+| NFR-SAF-04 | Jika simpan gagal, data isian dipertahankan dan tidak ada data tersimpan sebagian. | Semua controller penyimpan | 🟡 | Alur kasus (periksa, tinjau, keputusan, terbit) sudah memakai transaksi database. Form lain (profil, upload bukti) belum. |
 | NFR-SAF-05 | Menolak pemeriksaan dengan field wajib kosong dan menampilkan pesan resmi. | `PeriksaLowonganController@store` | ✅ | |
-| NFR-SAF-06 | Mencatat setiap perubahan status kasus ke Riwayat Kasus beserta waktunya. | `RiwayatKasus::create` di tiap controller | 🟡 | Status "Sedang Ditinjau" tidak pernah dicatat oleh kode. |
+| NFR-SAF-06 | Mencatat setiap perubahan status kasus ke Riwayat Kasus beserta waktunya. | `RiwayatKasus::create` di tiap controller | ✅ | Semua perubahan status lewat `Pengaduan::ubahStatus()` yang otomatis mencatat Riwayat Kasus. |
 
 ### 2.4 Atribut Kualitas (SRS Table 5.4)
 
@@ -127,13 +127,13 @@ Semua path controller relatif terhadap `web/app/Http/Controllers/`. Status ditul
 | BR-02 | Keputusan hanya Tindaklanjuti atau Tidak Ditindaklanjuti. | Validasi `in:` di `TindakLanjutController` + enum DB | ✅ | |
 | BR-03 | Laporan Tidak Ditindaklanjuti ditandai tidak dilanjuti dan diarsipkan. | `TindakLanjutController@simpanKeputusan` | ✅ | |
 | BR-04 | Hasil pemeriksaan sistem adalah prediksi pendukung keputusan, bukan penetapan penipuan. | View hasil | 🟡 | Lihat NFR-SAF-01. |
-| BR-05 | Hanya lowongan berprioritas tinggi yang masuk daftar tinjauan Analis. Ambang batas TBD. | `PeriksaLowonganController@store` (`status_prioritas`) | 🟡 | Ambang 60 masih ditulis langsung di kode. Keputusan tim: dijadikan pengaturan config dengan default 70%. **[PERLU DISKUSI]** Nilai final. |
-| BR-06 | *(SRS)* Analis hanya memberikan catatan dan hasil tinjauan, dan tidak membuat keputusan akhir. | `TinjauLowonganController@simpanTinjauan` | 🟡 | **Berbeda dengan keputusan tim**, lihat §4. |
-| BR-07 | *(SRS)* Laporan yang telah selesai ditinjau Analis diteruskan ke proses tindak lanjut oleh Kepala Bidang. | `TinjauLowonganController@simpanTinjauan` | 🟡 | **Berbeda dengan keputusan tim**, lihat §4. |
+| BR-05 | Hanya lowongan berprioritas tinggi yang masuk daftar tinjauan Analis. Ambang batas TBD. | `PeriksaLowonganController@store` (`status_prioritas`) | 🟡 | Ambang di `config/lokerlens.php` (`LOKERLENS_AMBANG_PRIORITAS`, default 70). **[PERLU DISKUSI]** Nilai final. |
+| BR-06 | *(SRS)* Analis hanya memberikan catatan dan hasil tinjauan, dan tidak membuat keputusan akhir. | `TinjauLowonganController@simpanTinjauan` | ✅ | Diterapkan sesuai keputusan tim (lihat §4): Analis menutup kasus "Tidak Terbukti". |
+| BR-07 | *(SRS)* Laporan yang telah selesai ditinjau Analis diteruskan ke proses tindak lanjut oleh Kepala Bidang. | `TinjauLowonganController@simpanTinjauan` | ✅ | Diterapkan sesuai keputusan tim (lihat §4): hanya "Terkonfirmasi Mencurigakan" yang diteruskan. |
 | BR-08 | Surat hanya dibuat dan diterbitkan Kepala Bidang, dan hanya untuk laporan Tindaklanjuti. | `BuatSuratController` + `role:Kepala Bidang` | ✅ | |
 | BR-09 | Draf belum dianggap terbit; resmi setelah diterbitkan. | Kolom `status_penerbitan` (Draft/Terbit) | ✅ | |
 | BR-10 | Kasus selesai dan terdokumentasi setelah dokumen resmi terbit. | `BuatSuratController@terbitkan` | ✅ | |
-| BR-11 | Setiap perubahan status kasus dicatat dalam Riwayat Kasus. | `RiwayatKasus::create` | 🟡 | Lihat NFR-SAF-06. |
+| BR-11 | Setiap perubahan status kasus dicatat dalam Riwayat Kasus. | `RiwayatKasus::create` | ✅ | Lihat NFR-SAF-06. |
 
 ---
 
@@ -188,7 +188,13 @@ Aturan:
 - Surat hanya bisa terbit satu kali.
 - Setiap perubahan status dicatat di Riwayat Kasus.
 
-> Label status lama di kode (misalnya "Perlu Tinjauan Segera", "Kasus selesai", "Tidak dilanjuti", "Kasus terdokumentasi otomatis") berbeda dengan daftar di atas. Penyesuaian dilakukan di Tahap 3. Teks "Kasus terdokumentasi otomatis" dan "Kasus selesai" tetap dipakai sebagai **pesan** di halaman hasil terbit (SRS FR-ST-08, BDD Table B.5).
+**Implementasi:**
+- Daftar status ada di satu tempat: `web/app/Enums/StatusKasus.php` (beserta aturan status berikutnya). Hasil tinjauan Analis ada di `web/app/Enums/HasilTinjauan.php`.
+- Semua perubahan status lewat `Pengaduan::ubahStatus()`. Perubahan yang melompat, mundur, atau dari status akhir ditolak dengan pesan error, dan setiap perubahan otomatis dicatat ke Riwayat Kasus.
+- Ambang prioritas ada di `web/config/lokerlens.php` (`LOKERLENS_AMBANG_PRIORITAS`, default 70).
+- Migration `2026_10_20_000001_ubah_status_pengaduan_dan_unique_surat` mengganti nilai enum `status_pengaduan` dan memindahkan data lama: "Perlu Tinjauan Segera" → "Perlu Tinjauan", "Kasus selesai" / "Kasus terdokumentasi otomatis" → "Selesai", "Tidak dilanjuti" → "Tidak Ditindaklanjuti". Migration yang sama memasang constraint unique pada `surat_teguran_laporan_polisi.id_tindaklanjut`.
+- Catatan lama di tabel `riwayat_kasus` **tidak diubah**, karena merupakan jejak audit dan boleh tetap memuat label lama.
+- Teks "Kasus terdokumentasi otomatis" dan "Kasus selesai" tetap dipakai sebagai **pesan** di halaman hasil terbit (SRS FR-ST-08, BDD Table B.5), bukan sebagai status.
 
 ---
 
@@ -217,4 +223,4 @@ Hal yang masih TBD di SRS (Appendix C) dan belum diputuskan tim:
 | 17 | FR-ST-04 | Apakah pilihan "Detail Pelanggaran" (pasal) perlu disimpan ke database? Kalau ya, perlu kolom baru di tabel surat. |
 | 18 | Appendix C no. 2, 3, 19, 21 | Nama resmi fitur, format penamaan class di diagram, dan nama proyek dalam bahasa Inggris. |
 | 19 | Appendix C no. 20 | Master mock data (akun, perusahaan, nomor tiket, dll.). |
-| 20 | Alur status | Kapan tepatnya status berubah menjadi "Sedang Ditinjau": saat Analis membuka detail, atau saat Analis menekan tombol khusus? (Sementara: saat Analis pertama kali membuka detail.) |
+| 20 | Alur status | Kapan tepatnya status berubah menjadi "Sedang Ditinjau": saat Analis membuka detail, atau saat Analis menekan tombol khusus? (Sudah diterapkan sementara: saat Analis pertama kali membuka detail.) |

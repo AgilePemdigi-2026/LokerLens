@@ -102,7 +102,7 @@ Contoh kasus dari Data Mockup: lowongan *Staff Administrasi – PT Mandiri Sukse
 
 **Di luar cakupan versi 1.0:**
 - Menetapkan secara otomatis bahwa suatu lowongan adalah penipuan. Hasil klasifikasi hanya rekomendasi.
-- Mengambil data lowongan secara otomatis dari media sosial atau situs lowongan. Data hanya masuk lewat pemeriksaan Masyarakat. *(Scraping hanya dipakai untuk menyiapkan data latih model, bukan fitur sistem.)*
+- Mengambil data lowongan secara otomatis dari media sosial atau situs lowongan. Data hanya masuk lewat pemeriksaan Masyarakat. *(Scraping hanya dipakai untuk menyiapkan data latih model dan dilakukan terpisah di `ml/`, bukan fitur aplikasi web.)*
 - Mengirim laporan secara langsung ke sistem kepolisian.
 - Verifikasi lapangan terhadap perusahaan pemberi lowongan.
 

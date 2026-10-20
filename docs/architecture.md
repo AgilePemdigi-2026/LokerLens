@@ -11,7 +11,7 @@ LokerLens terdiri dari tiga bagian (SRS 2.1, 3.2):
 | Bagian | Folder | Teknologi | Tugas |
 |---|---|---|---|
 | Aplikasi web | `web/` | Laravel 13, PHP 8.3+, Blade + Tailwind CSS + Alpine.js, Laravel Breeze (autentikasi) | Semua halaman, alur kasus, hak akses per peran, penyimpanan data |
-| Layanan ML | `ml/` | Python, scikit-learn (TF-IDF + model terbaik), FastAPI + Uvicorn | Menerima teks deskripsi lowongan, mengembalikan probabilitas penipuan dan kata pemicu |
+| Layanan ML | `ml/` | Python, scikit-learn (TF-IDF + model terbaik), FastAPI + Uvicorn | Menerima teks deskripsi lowongan, mengembalikan probabilitas penipuan dan kata pemicu. *Scraping* data latih juga dilakukan di sini, terpisah dari aplikasi web (§5.5). |
 | Basis data | `web/database/` | Relasional. Saat pengembangan memakai SQLite. **[PERLU DISKUSI]** DBMS produksi (SRS 2.4: TBD) | Menyimpan 11 tabel domain sesuai PDM |
 
 LokerLens **tidak terhubung dengan sistem eksternal** (SRS 2.1). Layanan ML adalah bagian internal LokerLens, bukan sistem luar.
@@ -82,8 +82,8 @@ LokerLens/
 │   ├── database/migrations/              ← skema tabel
 │   ├── resources/views/                  ← halaman per fitur
 │   └── routes/web.php                    ← daftar route per peran
-├── ml/                      ← komponen machine learning
-│   ├── data/      (data mentah di data/raw/ diabaikan git)
+├── ml/                      ← komponen machine learning (termasuk scraping data latih)
+│   ├── data/      (data mentah hasil scraping di data/raw/ diabaikan git)
 │   ├── notebooks/ (eksplorasi & perbandingan model)
 │   ├── src/       (kode training & API)
 │   └── models/    (file *.pkl diabaikan git)
@@ -293,7 +293,7 @@ Output dua kelas (asli/palsu) dalam bentuk probabilitas penipuan:
 | `versi_model` | identitas model untuk jejak audit | `hasil_klasifikasi.metode_analisis` |
 
 Laravel lalu menentukan:
-- `status_prioritas = confidence_score >= config('lokerlens.ambang_prioritas')`, dengan default 70 (dibuat di Tahap 3).
+- `status_prioritas = confidence_score >= config('lokerlens.ambang_prioritas')`, dengan default 70 (sudah diterapkan lewat `StatusKasus::awalDariSkor()`).
 - Status awal kasus: *Perlu Tinjauan* (prioritas tinggi) atau *Selesai - Risiko Rendah* (di bawah ambang).
 
 > **[PERLU DISKUSI]** Ambang label asli/palsu (SRS 6.2) belum ditetapkan. Apakah 50%, atau sama dengan ambang prioritas?
@@ -317,29 +317,47 @@ Catatan praktis:
 - BDD SRS Table B.2 mengharuskan kata **"biaya"** muncul di elemen `kata-pemicu` untuk contoh "wajib transfer biaya pendaftaran". Jadikan ini salah satu uji model.
 - **[PERLU DISKUSI]** Nilai *k* (jumlah minimal kata pemicu, NFR-QUA-06).
 
-### 5.5 Risiko: model belajar sumber data, bukan ciri penipuan
+### 5.5 Sumber data latih
 
-**Masalahnya:** data palsu berasal dari Kaggle, sedangkan data asli dari hasil *scraping*. Dua sumber ini punya "gaya" yang berbeda, misalnya nama situs, URL, kalimat template portal ("Lamar sekarang di …", "Diposting 3 hari lalu"), format gaji, atau bagian footer. Model bisa mendapat akurasi tinggi hanya karena mengenali **asal sumber**, bukan ciri penipuan. Saat dipakai untuk lowongan baru dari sumber lain, hasilnya bisa salah total. Kata pemicu juga akan berisi hal tak bermakna, seperti nama portal.
+**Keputusan tim (revisi):** **semua** data latih, baik lowongan asli maupun palsu, diambil dari **hasil *scraping*** lowongan berbahasa Indonesia. Kaggle tidak lagi dipakai.
+
+Batasan penting:
+- ***Scraping* dilakukan terpisah di `ml/`** (skrip di `ml/src/`, hasilnya disimpan di `ml/data/raw/`), dan hanya untuk menyiapkan data latih model.
+- **Aplikasi web (`web/`) tidak melakukan *scraping*** dan tidak mengambil data lowongan dari situs mana pun. Sesuai SRS 1.2, data lowongan di sistem hanya masuk lewat pemeriksaan oleh Masyarakat. Aplikasi web hanya memanggil API ML (§5.1).
+- Hasil *scraping* mentah tidak masuk git (`/ml/data/raw/` diabaikan).
+
+Hal yang belum diputuskan (lihat [requirements.md §6](requirements.md#6-daftar-perlu-diskusi)):
+- **[PERLU DISKUSI]** Bagaimana cara memberi label "palsu" pada data hasil *scraping*?
+- **[PERLU DISKUSI]** Bagaimana dan kapan data pribadi (nomor HP, nama, email) dihapus dari hasil *scraping* sebelum disimpan?
+- **[PERLU DISKUSI]** Situs apa saja yang di-*scrape*, berapa jumlah datanya, dan apakah syarat layanan situs tersebut mengizinkan *scraping*?
+
+### 5.6 Risiko: model belajar sumber data, bukan ciri penipuan
+
+**Masalahnya:** walaupun semua data berasal dari *scraping*, lowongan asli dan palsu kemungkinan besar diambil dari **situs atau kanal yang berbeda**. Contohnya, lowongan asli dari portal lowongan resmi, sedangkan lowongan palsu dari unggahan media sosial atau daftar laporan penipuan. Tiap sumber punya "gaya" sendiri, misalnya nama situs, URL, kalimat template portal ("Lamar sekarang di …", "Diposting 3 hari lalu"), format gaji, tagar, atau bagian footer.
+
+Akibatnya, model bisa mendapat akurasi tinggi hanya karena mengenali **asal sumber**, bukan ciri penipuan. Saat dipakai untuk lowongan baru dari sumber lain (yang dimasukkan Masyarakat), hasilnya bisa salah total. Kata pemicu juga akan berisi hal tak bermakna, seperti nama portal.
 
 **Cara mengatasi:**
 1. **Bersihkan teks khas sumber sebelum training**, pada kedua kelas:
-   - Hapus URL, alamat email, nomor telepon, dan *mention* (atau ganti dengan token umum seperti `<URL>`, `<EMAIL>`, `<TELEPON>`). Jangan menghapus ciri yang memang tanda penipuan, misalnya domain email gratisan. Ganti menjadi token seperti `<EMAIL_GRATIS>` vs `<EMAIL_PERUSAHAAN>`.
-   - Hapus nama situs/portal dan merek (misalnya nama portal lowongan, "Kaggle").
-   - Hapus kalimat template portal: header, footer, tombol, tanggal posting, jumlah pelamar.
-   - Seragamkan format: huruf kecil, spasi, tanda baca, format angka/gaji.
+   - Hapus URL, alamat email, nomor telepon, dan *mention* (atau ganti dengan token umum seperti `<URL>`, `<EMAIL>`, `<TELEPON>`). Jangan menghapus ciri yang memang tanda penipuan, misalnya domain email gratisan. Ganti menjadi token seperti `<EMAIL_GRATIS>` vs `<EMAIL_PERUSAHAAN>`. Langkah ini sekaligus membantu menghapus data pribadi.
+   - Hapus nama situs/portal, akun media sosial, dan merek sumber.
+   - Hapus kalimat template portal: header, footer, tombol, tanggal posting, jumlah pelamar, tagar.
+   - Seragamkan format: huruf kecil, spasi, tanda baca, emoji, format angka/gaji.
 2. **Periksa kata berbobot terbesar** setelah training. Kalau 20 kata teratas berisi nama situs atau potongan template, berarti pembersihan belum cukup.
-3. **Uji dengan lowongan baru dari sumber campuran**, yaitu data yang tidak ikut training dan berasal dari sumber yang tidak dipakai saat training. Bandingkan metriknya dengan data uji biasa. Kalau turun jauh, model masih bergantung pada sumber.
-4. Kalau memungkinkan, ambil juga sebagian data asli dan palsu dari **sumber yang sama**, supaya model terpaksa belajar dari isi teks.
+3. **Uji dengan lowongan baru dari sumber campuran**, yaitu data yang tidak ikut training dan berasal dari situs yang tidak dipakai saat training. Bandingkan metriknya dengan data uji biasa. Kalau turun jauh, model masih bergantung pada sumber.
+4. Kalau memungkinkan, ambil lowongan asli dan palsu dari **situs yang sama** (misalnya lowongan di portal yang sama yang kemudian terbukti palsu), supaya model terpaksa belajar dari isi teks.
+5. **Catat sumber setiap baris data** (kolom `sumber`, tidak dipakai sebagai fitur). Dengan begitu pembagian data uji per sumber (langkah 3) bisa dilakukan.
 
-### 5.6 Rencana struktur `ml/`
+### 5.7 Rencana struktur `ml/`
 
 ```
 ml/
-├── data/raw/          ← data mentah Kaggle & hasil scraping (diabaikan git)
-├── data/processed/    ← data setelah dibersihkan
+├── data/raw/          ← data mentah hasil scraping (diabaikan git)
+├── data/processed/    ← data setelah dibersihkan dan dilabeli
 ├── notebooks/         ← eksplorasi, perbandingan NB / LR / SVM / RF
 ├── src/
-│   ├── preprocess.py  ← pembersihan teks (termasuk §5.5)
+│   ├── scrape.py      ← pengumpulan data latih (dijalankan terpisah, bukan oleh web/)
+│   ├── preprocess.py  ← pembersihan teks & penghapusan data pribadi (§5.5, §5.6)
 │   ├── train.py       ← training + evaluasi (accuracy, precision, recall, F1)
 │   ├── explain.py     ← ekstraksi kata pemicu (§5.4)
 │   └── api.py         ← FastAPI: /health, /predict

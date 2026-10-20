@@ -163,7 +163,7 @@ Semua path controller relatif terhadap `web/app/Http/Controllers/`. Status ditul
 |---|---|---|---|
 | SRS 2.1 (BPMN To-Be) | Kasus yang tidak disetujui "ditandai dipantau". | Keputusan tim memakai status *Tidak Ditindaklanjuti* (diarsipkan), sama dengan BR-03. | Selaraskan BPMN To-Be (Appendix C no. 6). |
 | SRS 3.2, 6.2 | Output model: kategori asli/palsu + *confidence score* + kata pemicu. | *Confidence score* dimaknai sebagai **probabilitas penipuan 0–100%** (makin tinggi makin tidak aman). | Perjelas definisi *confidence score* di Glossary (Appendix A). |
-| SRS 6.2 (Dataset) | Sumber, jumlah, dan bahasa dataset TBD. | Data palsu dari Kaggle (bahasa Indonesia), data asli dari hasil *scraping*. Jumlah data masih TBD. | Isi Table 6.2. |
+| SRS 6.2 (Dataset) | Sumber, jumlah, dan bahasa dataset TBD. | **Semua** data latih (asli dan palsu) dari hasil *scraping* lowongan berbahasa Indonesia. *Scraping* dilakukan terpisah di `ml/`, bukan oleh aplikasi web. Jumlah data masih TBD. | Isi Table 6.2. Lihat [architecture.md §5.5](architecture.md#55-sumber-data-latih). |
 | Data Mockup 2.3 | Sistem memproses deskripsi **dan** informasi tambahan. | Input model **hanya teks deskripsi lowongan**. | Lihat [architecture.md §5](architecture.md#5-rencana-integrasi-laravel--api-ml). |
 | Appendix C no. 18 | "Ambang batas skor prioritas tinggi (**BR-09**)". | Rujukan seharusnya **BR-05**. | Perbaiki rujukan di Appendix C. |
 | Appendix C no. 15 | Urutan status resmi kasus TBD. | Sudah ditetapkan tim (lihat §5). | Tandai selesai di Appendix C. |
@@ -208,7 +208,7 @@ Hal yang masih TBD di SRS (Appendix C) dan belum diputuskan tim:
 | 2 | SRS 6.2 (Ambang batas) | Berapa ambang probabilitas untuk label "asli" vs "palsu"? Apakah sama dengan ambang prioritas? |
 | 3 | NFR-QUA-04, Appendix C no. 17 | Berapa target minimum accuracy, precision, recall, dan F1-score? |
 | 4 | NFR-QUA-06 | Minimal berapa kata pemicu yang ditampilkan per hasil? |
-| 5 | SRS 6.2 (Dataset) | Berapa jumlah data latih (palsu dari Kaggle, asli dari *scraping*)? Situs apa saja yang di-*scrape*? |
+| 5 | SRS 6.2 (Dataset) | Berapa jumlah data latih hasil *scraping* (asli dan palsu)? Situs atau kanal apa saja yang di-*scrape*, dan apakah syarat layanannya mengizinkan *scraping*? |
 | 6 | SRS 6.2 (Pembaruan model) | Bagaimana jadwal dan mekanisme pelatihan ulang model? |
 | 7 | Appendix C no. 13 | Link lowongan, informasi tambahan, dan checklist sifatnya wajib atau opsional? Karena model hanya membaca deskripsi, apa fungsi checklist dan informasi tambahan: hanya disimpan, atau ikut memengaruhi skor? |
 | 8 | Appendix C no. 4 | Apakah Surat Teguran termasuk cakupan, atau hanya Laporan Polisi? Apa nama resmi fiturnya? |
@@ -224,3 +224,5 @@ Hal yang masih TBD di SRS (Appendix C) dan belum diputuskan tim:
 | 18 | Appendix C no. 2, 3, 19, 21 | Nama resmi fitur, format penamaan class di diagram, dan nama proyek dalam bahasa Inggris. |
 | 19 | Appendix C no. 20 | Master mock data (akun, perusahaan, nomor tiket, dll.). |
 | 20 | Alur status | Kapan tepatnya status berubah menjadi "Sedang Ditinjau": saat Analis membuka detail, atau saat Analis menekan tombol khusus? (Sudah diterapkan sementara: saat Analis pertama kali membuka detail.) |
+| 21 | SRS 6.2 (Dataset) | Bagaimana cara memberi label **"palsu"** pada data hasil *scraping*? Misalnya: hanya lowongan yang sudah dinyatakan palsu oleh sumber tepercaya (pengumuman resmi perusahaan/instansi, laporan penipuan yang terverifikasi), atau dilabeli manual oleh anggota tim dengan kriteria tertulis? Kalau manual, berapa orang yang melabeli setiap data, dan bagaimana jika label mereka berbeda? |
+| 22 | SRS 6.2, NFR-SEC-05 | Bagaimana menghapus **data pribadi** (nomor HP, nama orang, email pribadi) dari hasil *scraping* **sebelum disimpan**? Apakah dihapus langsung saat *scraping* (sehingga data mentah pun tidak memuatnya) atau saat *preprocessing*? Apakah diganti token seperti `<TELEPON>` / `<EMAIL_GRATIS>` supaya ciri penipuan tetap terbaca model (lihat [architecture.md §5.6](architecture.md#56-risiko-model-belajar-sumber-data-bukan-ciri-penipuan))? Siapa yang memastikan data mentah tidak tersebar? |

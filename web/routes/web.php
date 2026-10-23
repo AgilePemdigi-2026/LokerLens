@@ -77,6 +77,8 @@ Route::middleware('auth')->group(function () {
             ->name('tindak-lanjut.hasil');
 
         // Buat Surat — /buat-surat/ (Sprint 1) — FR-ST-02: hanya setelah Tindaklanjuti
+        // Tanpa nomor kasus: surat selalu dibuat dari laporan tertentu, jadi arahkan ke Daftar Laporan
+        Route::redirect('/buat-surat', '/tindak-lanjut')->name('buat-surat.daftar');
         Route::get('/buat-surat/{pengaduanId}', [BuatSuratController::class, 'index'])
             ->name('buat-surat.index');
         Route::post('/buat-surat/{pengaduanId}/draft', [BuatSuratController::class, 'simpanDraft'])

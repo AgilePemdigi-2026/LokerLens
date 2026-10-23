@@ -28,8 +28,7 @@ tzdata==2026.5
 uvicorn==0.54.0
 watchfiles==1.3.0
 websockets==17.2
-
-# Scraping TurnBackHoax (ml/scraping/scrape_turnbackhoax.py)
+# Scraping (TurnBackHoax dan Karirhub)
 requests==2.34.2
 beautifulsoup4==4.15.0
 easyocr==1.7.2

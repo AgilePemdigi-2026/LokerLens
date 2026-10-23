@@ -64,4 +64,18 @@ class User extends Authenticatable
     {
         return $this->role === 'Kepala Bidang';
     }
+
+    /**
+     * Halaman awal sesuai peran (setelah login, atau saat pengguna yang sudah
+     * login membuka halaman khusus tamu seperti /login).
+     * Masyarakat → Beranda; Analis → Tinjau Lowongan; Kepala Bidang → Tindak Lanjut.
+     */
+    public function halamanAwal(): string
+    {
+        return match ($this->role) {
+            'Analis'        => route('tinjau-lowongan.index'),
+            'Kepala Bidang' => route('tindak-lanjut.index'),
+            default         => route('beranda'), // Masyarakat
+        };
+    }
 }

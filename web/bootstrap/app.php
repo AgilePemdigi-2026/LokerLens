@@ -16,6 +16,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckRole::class,
         ]);
+
+        // Pengguna yang sudah login lalu membuka /login, /register, dst. diarahkan ke
+        // halaman awal perannya. Tanpa ini Laravel mengarahkan ke "/" yang kembali
+        // ke /login, sehingga pengalihan berputar tanpa henti.
+        $middleware->redirectUsersTo(fn (Request $request) => $request->user()->halamanAwal());
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

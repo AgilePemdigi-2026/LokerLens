@@ -26,6 +26,12 @@ Route::get('/', function () {
 // ─── Autentikasi (Laravel Breeze) ────────────────────────────────────────────
 require __DIR__ . '/auth.php';
 
+// ─── Mode Preview Pengembangan (/dev) ────────────────────────────────────────
+// Hanya terdaftar jika APP_ENV=local DAN DEV_PREVIEW=true.
+if (\App\Support\DevPreview::aktif()) {
+    require __DIR__ . '/dev.php';
+}
+
 // ─── Rute Terproteksi (wajib login) ──────────────────────────────────────────
 Route::middleware('auth')->group(function () {
 
@@ -71,6 +77,8 @@ Route::middleware('auth')->group(function () {
             ->name('tindak-lanjut.hasil');
 
         // Buat Surat — /buat-surat/ (Sprint 1) — FR-ST-02: hanya setelah Tindaklanjuti
+        // Tanpa nomor kasus: surat selalu dibuat dari laporan tertentu, jadi arahkan ke Daftar Laporan
+        Route::redirect('/buat-surat', '/tindak-lanjut')->name('buat-surat.daftar');
         Route::get('/buat-surat/{pengaduanId}', [BuatSuratController::class, 'index'])
             ->name('buat-surat.index');
         Route::post('/buat-surat/{pengaduanId}/draft', [BuatSuratController::class, 'simpanDraft'])

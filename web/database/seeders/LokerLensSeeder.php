@@ -10,6 +10,7 @@ use App\Models\LowonganKerja;
 use App\Models\Pengaduan;
 use App\Models\Perusahaan;
 use App\Models\RiwayatKasus;
+use App\Models\SuratTeguranLaporanPolisi;
 use App\Models\TindakLanjutKasus;
 use App\Models\TinjauanAnalis;
 use App\Models\User;
@@ -23,12 +24,19 @@ use Illuminate\Support\Facades\Hash;
  */
 class LokerLensSeeder extends Seeder
 {
+    /** Email akun demo per peran (dipakai juga oleh halaman /dev). */
+    public const AKUN_DEMO = [
+        'Masyarakat'    => 'adelulinn@gmail.com',
+        'Analis'        => 'budi.analis@lokerlens.go.id',
+        'Kepala Bidang' => 'rizky.kb@lokerlens.go.id',
+    ];
+
     public function run(): void
     {
         // ─── Pengguna ─────────────────────────────────────────────────────
         $masyarakat = User::create([
             'name'     => 'Adela Ulin Nadhroh',
-            'email'    => 'adelulinn@gmail.com',
+            'email'    => self::AKUN_DEMO['Masyarakat'],
             'password' => Hash::make('password123'), // Jangan gunakan password demo di produksi
             'role'     => 'Masyarakat',
             'no_telepon' => '081234567890',
@@ -36,7 +44,7 @@ class LokerLensSeeder extends Seeder
 
         $analis = User::create([
             'name'     => 'Budi Santoso',
-            'email'    => 'budi.analis@lokerlens.go.id',
+            'email'    => self::AKUN_DEMO['Analis'],
             'password' => Hash::make('password123'),
             'role'     => 'Analis',
             'no_telepon' => '081234567891',
@@ -44,7 +52,7 @@ class LokerLensSeeder extends Seeder
 
         $kepalaBidang = User::create([
             'name'     => 'Rizky Pratama',
-            'email'    => 'rizky.kb@lokerlens.go.id',
+            'email'    => self::AKUN_DEMO['Kepala Bidang'],
             'password' => Hash::make('password123'),
             'role'     => 'Kepala Bidang',
             'no_telepon' => '081234567892',
@@ -200,6 +208,148 @@ class LokerLensSeeder extends Seeder
             ['id_pengaduan' => $pengaduan5->id_pengaduan, 'status_kasus' => StatusKasus::PerluTinjauan->value, 'keterangan' => 'Tiket diterima', 'tanggal_update' => now()->subDays(5), 'created_at' => now(), 'updated_at' => now()],
             ['id_pengaduan' => $pengaduan5->id_pengaduan, 'status_kasus' => StatusKasus::SedangDitinjau->value, 'keterangan' => 'Laporan masuk ke Analis', 'tanggal_update' => now()->subDays(3), 'created_at' => now(), 'updated_at' => now()],
             ['id_pengaduan' => $pengaduan5->id_pengaduan, 'status_kasus' => StatusKasus::MenungguKeputusan->value, 'keterangan' => 'Tinjauan Analis selesai: Terkonfirmasi Mencurigakan. Diteruskan ke Kepala Bidang.', 'tanggal_update' => now()->subDay(), 'created_at' => now(), 'updated_at' => now()],
+        ]);
+
+        $this->kasusUntukStatusLain($masyarakat, $analis, $kepalaBidang);
+    }
+
+    /**
+     * Kasus tambahan supaya setiap status kasus punya minimal satu contoh
+     * (semua halaman bisa dibuka, termasuk Buat Surat dan hasil terbit).
+     */
+    private function kasusUntukStatusLain(User $masyarakat, User $analis, User $kepalaBidang): void
+    {
+        // Selesai - Risiko Rendah: skor di bawah ambang, tidak masuk antrean Analis
+        $this->buatKasus($masyarakat, 'PT Cahaya Prima Logistik', 'Staff Gudang', '#LKR-8740', 32.00,
+            'Dibutuhkan staff gudang untuk kantor cabang Surabaya. Kontrak kerja resmi, gaji sesuai UMR, seleksi di kantor perusahaan.',
+            [[StatusKasus::SelesaiRisikoRendah, 'Pengaduan diterima dan klasifikasi dilakukan. Skor di bawah ambang prioritas, kasus selesai.']]);
+
+        // Tidak Terbukti: ditutup Analis
+        $tidakTerbukti = $this->buatKasus($masyarakat, 'CV Berkah Mitra Niaga', 'Sales Lapangan', '#LKR-8752', 73.00,
+            'Lowongan sales lapangan dengan komisi besar. Pelamar diminta datang ke kantor untuk wawancara, tanpa biaya.',
+            [
+                [StatusKasus::PerluTinjauan, 'Tiket diterima sistem'],
+                [StatusKasus::SedangDitinjau, 'Analis mulai meninjau kasus.'],
+                [StatusKasus::TidakTerbukti, 'Tinjauan Analis selesai: Tidak Terbukti. Kasus ditutup oleh Analis.'],
+            ]);
+        $this->buatTinjauan($tidakTerbukti, $analis, HasilTinjauan::TidakTerbukti,
+            'Perusahaan terdaftar dan alamat kantor dapat diverifikasi. Tidak ditemukan permintaan biaya.');
+
+        // Tindak Lanjut Disetujui: siap dibuatkan surat (ada draf)
+        $disetujui = $this->buatKasus($masyarakat, 'PT Gemilang Karya Persada', 'Admin Data Entry', '#LKR-8770', 90.00,
+            'Kerja dari rumah sebagai admin data entry, gaji Rp9 juta tanpa pengalaman. Wajib transfer biaya pelatihan Rp250.000.',
+            [
+                [StatusKasus::PerluTinjauan, 'Tiket diterima sistem'],
+                [StatusKasus::SedangDitinjau, 'Analis mulai meninjau kasus.'],
+                [StatusKasus::MenungguKeputusan, 'Tinjauan Analis selesai: Terkonfirmasi Mencurigakan. Diteruskan ke Kepala Bidang.'],
+                [StatusKasus::TindakLanjutDisetujui, 'Keputusan Kepala Bidang: Tindaklanjuti. Kasus dilanjutkan ke tahap pembuatan surat.'],
+            ]);
+        $this->buatTinjauan($disetujui, $analis, HasilTinjauan::TerkonfirmasiMencurigakan,
+            'Ditemukan permintaan biaya pelatihan sebelum kerja dan rekening penampung pribadi.');
+        $tindakLanjut = $this->buatTindakLanjut($disetujui, $kepalaBidang, 'Tindaklanjuti');
+        SuratTeguranLaporanPolisi::create([
+            'id_tindaklanjut'    => $tindakLanjut->id_tindaklanjut,
+            'jenis_dokumen'      => 'Laporan Polisi',
+            'kronologi_kejadian' => 'Draf: pelapor diminta mentransfer biaya pelatihan Rp250.000 sebelum mulai bekerja.',
+            'tujuan_instansi'    => 'Satreskrim Polres Wilayah Setempat',
+            'status_penerbitan'  => 'Draft',
+        ]);
+
+        // Tidak Ditindaklanjuti: diarsipkan Kepala Bidang
+        $diarsipkan = $this->buatKasus($masyarakat, 'PT Sinar Harapan Jaya', 'Operator Produksi', '#LKR-8781', 76.00,
+            'Lowongan operator produksi, proses cepat. Pelamar diminta mengirim fotokopi KTP melalui WhatsApp.',
+            [
+                [StatusKasus::PerluTinjauan, 'Tiket diterima sistem'],
+                [StatusKasus::SedangDitinjau, 'Analis mulai meninjau kasus.'],
+                [StatusKasus::MenungguKeputusan, 'Tinjauan Analis selesai: Terkonfirmasi Mencurigakan. Diteruskan ke Kepala Bidang.'],
+                [StatusKasus::TidakDitindaklanjuti, 'Kasus ditandai tidak dilanjuti dan diarsipkan'],
+            ]);
+        $this->buatTinjauan($diarsipkan, $analis, HasilTinjauan::TerkonfirmasiMencurigakan,
+            'Permintaan data pribadi lewat WhatsApp, tetapi tidak ada permintaan biaya.');
+        $this->buatTindakLanjut($diarsipkan, $kepalaBidang, 'Tidak Ditindaklanjuti');
+
+        // Selesai: surat sudah terbit
+        $selesai = $this->buatKasus($masyarakat, 'PT Nusantara Cipta Mandiri', 'Customer Service', '#LKR-8798', 95.00,
+            'Customer service dengan gaji Rp10 juta tanpa pengalaman. Wajib membayar biaya seragam Rp300.000 dan interview di hotel.',
+            [
+                [StatusKasus::PerluTinjauan, 'Tiket diterima sistem'],
+                [StatusKasus::SedangDitinjau, 'Analis mulai meninjau kasus.'],
+                [StatusKasus::MenungguKeputusan, 'Tinjauan Analis selesai: Terkonfirmasi Mencurigakan. Diteruskan ke Kepala Bidang.'],
+                [StatusKasus::TindakLanjutDisetujui, 'Keputusan Kepala Bidang: Tindaklanjuti. Kasus dilanjutkan ke tahap pembuatan surat.'],
+                [StatusKasus::Selesai, 'Laporan Polisi berhasil diterbitkan. Kasus terdokumentasi otomatis.'],
+            ]);
+        $this->buatTinjauan($selesai, $analis, HasilTinjauan::TerkonfirmasiMencurigakan,
+            'Permintaan biaya seragam dan lokasi interview di hotel. Perusahaan tidak terdaftar.');
+        $tindakLanjutSelesai = $this->buatTindakLanjut($selesai, $kepalaBidang, 'Tindaklanjuti');
+        SuratTeguranLaporanPolisi::create([
+            'id_tindaklanjut'    => $tindakLanjutSelesai->id_tindaklanjut,
+            'nomor_surat'        => SuratTeguranLaporanPolisi::generateNomorSurat($selesai->nomor_tiket),
+            'jenis_dokumen'      => 'Laporan Polisi',
+            'kronologi_kejadian' => 'Pelapor diminta membayar biaya seragam Rp300.000 dan diundang interview di hotel.',
+            'tujuan_instansi'    => 'Subdit Siber Ditreskrimsus Polda Metro Jaya / Wilayah Terkait',
+            'status_penerbitan'  => 'Terbit',
+            'tanggal_terbit'     => now(),
+        ]);
+    }
+
+    /**
+     * @param  array<int, array{0: StatusKasus, 1: string}>  $alur  urutan status yang sudah dilalui
+     */
+    private function buatKasus(User $pelapor, string $namaPerusahaan, string $posisi, string $nomorTiket, float $skor, string $deskripsi, array $alur): Pengaduan
+    {
+        $lowongan = LowonganKerja::create([
+            'id_perusahaan'      => Perusahaan::create(['nama_perusahaan' => $namaPerusahaan, 'status_terdaftar' => 'Belum Diverifikasi'])->id_perusahaan,
+            'posisi_lowongan'    => $posisi,
+            'deskripsi_lowongan' => $deskripsi,
+        ]);
+
+        $pengaduan = Pengaduan::create([
+            'id_lowongan'       => $lowongan->id_lowongan,
+            'id_pengguna'       => $pelapor->id,
+            'nomor_tiket'       => $nomorTiket,
+            'deskripsi_singkat' => $posisi . ' ' . $namaPerusahaan,
+            'status_pengaduan'  => end($alur)[0],
+        ]);
+
+        HasilKlasifikasi::create([
+            'id_pengaduan'     => $pengaduan->id_pengaduan,
+            'confidence_score' => $skor,
+            'kategori_hasil'   => $skor >= 75 ? 'Lowongan berpotensi penipuan' : ($skor >= 50 ? 'Lowongan perlu diperiksa lebih lanjut' : 'Lowongan tampak normal'),
+            'status_prioritas' => StatusKasus::awalDariSkor($skor) === StatusKasus::PerluTinjauan,
+            'metode_analisis'  => 'Mock ML v1.0',
+        ]);
+
+        foreach (array_values($alur) as $i => [$status, $keterangan]) {
+            RiwayatKasus::create([
+                'id_pengaduan'   => $pengaduan->id_pengaduan,
+                'status_kasus'   => $status->value,
+                'keterangan'     => $keterangan,
+                'tanggal_update' => now()->subDays(count($alur) - $i),
+            ]);
+        }
+
+        return $pengaduan;
+    }
+
+    private function buatTinjauan(Pengaduan $pengaduan, User $analis, HasilTinjauan $hasil, string $catatan): void
+    {
+        TinjauanAnalis::create([
+            'id_klasifikasi'   => $pengaduan->hasilKlasifikasi->id_klasifikasi,
+            'id_pengguna'      => $analis->id,
+            'catatan_tinjauan' => $catatan,
+            'hasil_tinjauan'   => $hasil->value,
+            'tanggal_tinjauan' => now()->subDays(2),
+        ]);
+    }
+
+    private function buatTindakLanjut(Pengaduan $pengaduan, User $kepalaBidang, string $keputusan): TindakLanjutKasus
+    {
+        return TindakLanjutKasus::create([
+            'id_pengaduan'      => $pengaduan->id_pengaduan,
+            'id_pengguna'       => $kepalaBidang->id,
+            'keputusan'         => $keputusan,
+            'catatan_keputusan' => 'Data contoh seeder.',
+            'tanggal_keputusan' => now()->subDay(),
         ]);
     }
 }

@@ -35,6 +35,17 @@ Thumbs.db
 /ml/.venv/
 /ml/models/*.pkl
 /ml/data/raw/
+# Hasil olahan di-ignore, kecuali dataset final untuk pelatihan model.
+/ml/data/processed/*
+!/ml/data/processed/dataset_lokerlens.csv
+/ml/data/koreksi/
 
 # ─── Dokumen referensi (berisi data pribadi anggota) ──
 /docs/referensi/
+
+# Gambar hasil scraping (terlalu besar untuk GitHub)
+ml/data/raw/images/
+
+# File sementara Python
+__pycache__/
+*.pyc

@@ -38,3 +38,10 @@ Thumbs.db
 
 # ─── Dokumen referensi (berisi data pribadi anggota) ──
 /docs/referensi/
+
+# Gambar hasil scraping (terlalu besar untuk GitHub)
+ml/data/raw/images/
+
+# File sementara Python
+__pycache__/
+*.pyc

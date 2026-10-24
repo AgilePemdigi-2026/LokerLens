@@ -162,21 +162,18 @@
                 </div>
 
                 <!-- Berkas yang Terlampir -->
-                <div class="space-y-2 mb-4">
-                    <div class="p-3 bg-gray-50 rounded-control border border-gray-200 flex items-center justify-between text-xs">
-                        <div class="flex items-center space-x-2">
-                            <span class="px-2 py-0.5 bg-red-100 text-risk-high rounded font-mono font-bold text-[10px]">PDF</span>
-                            <span class="font-medium text-navy-900">Berkas_Bukti_Chat_WA_HRD.pdf (4.2 MB)</span>
+                                <div class="space-y-2 mb-4">
+                    @forelse($pengaduan->buktiPendukung as $bukti)
+                        <div class="p-3 bg-gray-50 rounded-control border border-gray-200 flex items-center justify-between text-xs">
+                            <div class="flex items-center space-x-2">
+                                <span class="px-2 py-0.5 bg-red-100 text-risk-high rounded font-mono font-bold text-[10px]">{{ strtoupper($bukti->tipe_file) }}</span>
+                                <span class="font-medium text-navy-900">{{ $bukti->nama_file }} ({{ number_format($bukti->ukuran_file / 1048576, 1) }} MB)</span>
+                            </div>
+                            <span class="text-[11px] font-semibold text-ok bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Terlampir</span>
                         </div>
-                        <span class="text-[11px] font-semibold text-ok bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Terlampir</span>
-                    </div>
-                    <div class="p-3 bg-gray-50 rounded-control border border-gray-200 flex items-center justify-between text-xs">
-                        <div class="flex items-center space-x-2">
-                            <span class="px-2 py-0.5 bg-red-100 text-risk-high rounded font-mono font-bold text-[10px]">PDF</span>
-                            <span class="font-medium text-navy-900">Salinan_Surat_Panggilan_Palsu.pdf (1.0 MB)</span>
-                        </div>
-                        <span class="text-[11px] font-semibold text-ok bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Terlampir</span>
-                    </div>
+                    @empty
+                        <p class="text-xs text-gray-500">Belum ada berkas bukti.</p>
+                    @endforelse
                 </div>
 
                 <!-- Input Tambah Berkas (NFR-SEC-07: pdf, jpg, png) -->

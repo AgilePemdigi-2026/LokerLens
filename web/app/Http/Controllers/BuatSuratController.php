@@ -80,29 +80,7 @@ class BuatSuratController extends Controller
             'tujuan_kepolisian.required' => 'Tujuan kepolisian wajib dipilih.',
         ]);
 
-        // Tangani upload bukti tambahan (NFR-SEC-07: hanya pdf/jpg/png)
-        if ($request->hasFile('bukti_tambahan')) {
-            $request->validate([
-                'bukti_tambahan.*' => ['mimes:pdf,jpg,jpeg,png', 'max:10240'],
-            ]);
-
-            foreach ($request->file('bukti_tambahan') as $file) {
-                // Enum tipe_file hanya pdf/jpg/png, jadi .jpeg disamakan menjadi jpg
-                $tipeFile = strtolower($file->getClientOriginalExtension());
-                if ($tipeFile === 'jpeg') {
-                    $tipeFile = 'jpg';
-                }
-
-                $path = $file->store('bukti', 'public');
-                BuktiPendukung::create([
-                    'id_pengaduan' => $pengaduan->id_pengaduan,
-                    'nama_file'    => $file->getClientOriginalName(),
-                    'tipe_file'    => $tipeFile,
-                    'ukuran_file'  => $file->getSize(),
-                    'path_file'    => $path,
-                ]);
-            }
-        }
+            $this->simpanBuktiTambahan($request, $pengaduan);
 
         SuratTeguranLaporanPolisi::updateOrCreate(
             ['id_tindaklanjut' => $tindakLanjut->id_tindaklanjut],
@@ -137,6 +115,8 @@ class BuatSuratController extends Controller
             'kronologi'         => ['required', 'string'],
             'tujuan_kepolisian' => ['required', 'string', 'max:255'],
         ]);
+
+        $this->simpanBuktiTambahan($request, $pengaduan);
 
         $surat = SuratTeguranLaporanPolisi::updateOrCreate(
             ['id_tindaklanjut' => $tindakLanjut->id_tindaklanjut],
@@ -196,6 +176,37 @@ class BuatSuratController extends Controller
 
         return view('buat-surat.terbit', compact('pengaduan', 'surat'));
     }
+    /**
+ * Simpan bukti tambahan yang diunggah Kepala Bidang (NFR-SEC-07: hanya pdf/jpg/png).
+ * Dipakai bersama oleh simpanDraft dan terbitkan.
+ */
+private function simpanBuktiTambahan(Request $request, Pengaduan $pengaduan): void
+{
+    if (! $request->hasFile('bukti_tambahan')) {
+        return;
+    }
+
+    $request->validate([
+        'bukti_tambahan.*' => ['mimes:pdf,jpg,jpeg,png', 'max:10240'],
+    ]);
+
+    foreach ($request->file('bukti_tambahan') as $file) {
+        // Enum tipe_file hanya pdf/jpg/png, jadi .jpeg disamakan menjadi jpg
+        $tipeFile = strtolower($file->getClientOriginalExtension());
+        if ($tipeFile === 'jpeg') {
+            $tipeFile = 'jpg';
+        }
+
+        $path = $file->store('bukti', 'public');
+        BuktiPendukung::create([
+            'id_pengaduan' => $pengaduan->id_pengaduan,
+            'nama_file'    => $file->getClientOriginalName(),
+            'tipe_file'    => $tipeFile,
+            'ukuran_file'  => $file->getSize(),
+            'path_file'    => $path,
+        ]);
+    }
+}
 
     /**
      * Surat yang sudah terbit (kasus Selesai) tidak bisa diubah atau diterbitkan ulang.

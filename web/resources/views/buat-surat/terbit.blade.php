@@ -73,15 +73,15 @@
                 <!-- Berkas Bukti Lampiran -->
                 <div class="pt-3 border-t border-gray-200">
                     <span class="text-xs font-semibold text-gray-600 block mb-2">Berkas Bukti Digital yang Terverifikasi:</span>
-                    <div class="space-y-1.5">
-                        <div class="flex items-center justify-between p-2 bg-white rounded border border-gray-200 text-xs">
-                            <span class="font-mono text-gray-700">Berkas_Bukti_Chat_WA_HRD.pdf</span>
-                            <span class="text-[11px] text-ok font-bold">Terverifikasi Digital ✓</span>
-                        </div>
-                        <div class="flex items-center justify-between p-2 bg-white rounded border border-gray-200 text-xs">
-                            <span class="font-mono text-gray-700">Salinan_Surat_Panggilan_Palsu.pdf</span>
-                            <span class="text-[11px] text-ok font-bold">Terverifikasi Digital ✓</span>
-                        </div>
+                                       <div class="space-y-1.5">
+                        @forelse($pengaduan->buktiPendukung as $bukti)
+                            <div class="flex items-center justify-between p-2 bg-white rounded border border-gray-200 text-xs">
+                                <span class="font-mono text-gray-700">{{ $bukti->nama_file }}</span>
+                                <span class="text-[11px] text-ok font-bold">Terverifikasi Digital ✓</span>
+                            </div>
+                        @empty
+                            <p class="text-xs text-gray-500">Belum ada berkas bukti.</p>
+                        @endforelse
                     </div>
                 </div>
 

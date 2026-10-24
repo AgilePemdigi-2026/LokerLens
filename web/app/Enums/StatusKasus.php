@@ -55,6 +55,21 @@ enum StatusKasus: string
     {
         return $this->statusBerikutnya() === [];
     }
+    /**
+ * Kelas warna badge untuk tampilan (Tailwind).
+ */
+public function warnaBadge(): string
+{
+    return match ($this) {
+        self::Selesai, self::SelesaiRisikoRendah => 'bg-green-100 text-green-800',
+        self::PerluTinjauan => 'bg-yellow-100 text-yellow-800',
+        self::SedangDitinjau => 'bg-blue-100 text-blue-800',
+        self::TidakTerbukti => 'bg-gray-100 text-gray-800',
+        self::MenungguKeputusan => 'bg-purple-100 text-purple-800',
+        self::TindakLanjutDisetujui => 'bg-green-100 text-green-800',
+        self::TidakDitindaklanjuti => 'bg-red-100 text-red-800',
+    };
+}
 
     /**
      * Status awal kasus baru berdasarkan probabilitas penipuan (0–100).

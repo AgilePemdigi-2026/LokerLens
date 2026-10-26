@@ -99,7 +99,11 @@
                         </div>
                     </div>
                 @endif
-
+                                @if (session('status'))
+                    <div class="mb-4 px-4 py-3 rounded-lg bg-teal-50 border border-teal-200 text-teal-800 text-sm font-medium">
+                        {{ session('status') }}
+                    </div>
+                @endif
                 <!-- Form Login -->
                 <form method="POST" action="{{ route('login') }}" class="space-y-4">
                     @csrf

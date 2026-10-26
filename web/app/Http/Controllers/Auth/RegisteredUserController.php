@@ -50,10 +50,10 @@ class RegisteredUserController extends Controller
             'role'     => 'Masyarakat', // Registrasi mandiri hanya untuk Masyarakat
         ]);
 
-        event(new Registered($user));
-        Auth::login($user);
+       event(new Registered($user));
 
-        // Masyarakat → redirect ke Beranda setelah login
-        return redirect()->route('beranda');
+// Setelah registrasi, pengguna masuk lewat halaman Login terlebih dahulu
+return redirect()->route('login')
+    ->with('status', 'Akun berhasil dibuat. Silakan masuk.');
     }
 }

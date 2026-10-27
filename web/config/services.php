@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    // API klasifikasi LokerLens (ml/api/app.py). Timeout 4 detik supaya total
+    // pemeriksaan tetap di bawah 5 detik (NFR-PERF-02).
+    'ml' => [
+        'url' => env('ML_API_URL', 'http://localhost:8001'),
+        'timeout' => (int) env('ML_API_TIMEOUT', 4),
+    ],
+
 ];

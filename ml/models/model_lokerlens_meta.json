@@ -9,7 +9,7 @@
     "palsu": 326,
     "kolom_teks": "deskripsi"
   },
-  "ambang_prioritas_tinggi": 0.8,
+  "ambang_prioritas_tinggi": 0.7,
   "metrik_test": {
     "precision_palsu": 0.984375,
     "recall_palsu": 0.9692307692307692,

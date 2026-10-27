@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class IndikatorMencurigakan extends Model
 {
+    /** Kategori untuk kata pemicu dari model ML (docs/architecture.md §5.3). */
+    public const KATEGORI_KATA_PEMICU = 'Kata Pemicu Model';
+
     protected $table = 'indikator_mencurigakan';
     protected $primaryKey = 'id_indikator';
 

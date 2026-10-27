@@ -57,7 +57,7 @@ LokerLens/
 | Tampilan | Tailwind CSS, Alpine.js, Vite |
 | Basis data | SQLite saat pengembangan (DBMS produksi masih didiskusikan) |
 | Machine learning | Python, scikit-learn (TF-IDF; Naive Bayes, Logistic Regression, SVM, Random Forest) |
-| API ML (rencana) | FastAPI + Uvicorn |
+| API ML | FastAPI + Uvicorn (`ml/api/app.py`, port 8001) |
 
 ---
 
@@ -109,7 +109,40 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-Kode training dan API belum dibuat. Rencananya ada di [docs/architecture.md §5](docs/architecture.md#5-rencana-integrasi-laravel--api-ml).
+Model dilatih di `ml/notebooks/LokerLens_Training_Model.ipynb`. Hasilnya `ml/models/model_lokerlens.joblib`. Jangan memasang `Sastrawi`, karena model dilatih tanpa Sastrawi dan API akan menolak menyala kalau Sastrawi terpasang.
+
+### Menjalankan API ML dan Laravel bersamaan
+
+Fitur **Periksa Lowongan Kerja** memanggil API ML. Buka **dua terminal**:
+
+```bash
+# Terminal 1: API ML (dari dalam ml/, venv aktif)
+cd ml
+.venv\Scripts\activate                  # macOS/Linux: source .venv/bin/activate
+uvicorn api.app:app --port 8001
+# tunggu sampai muncul "Uvicorn running on http://127.0.0.1:8001"
+
+# Terminal 2: Laravel (dari dalam web/)
+cd web
+php artisan serve
+```
+
+Pastikan `web/.env` berisi `ML_API_URL=http://localhost:8001` (sudah ada di `.env.example`). Format request/response API ada di [docs/architecture.md §5](docs/architecture.md#5-rencana-integrasi-laravel--api-ml).
+
+Cek API (dari dalam `ml/`):
+
+```bash
+curl http://localhost:8001/health       # {"status":"ok", ...}
+python api/uji_contoh.py                # uji 3 lowongan asli + 3 palsu
+```
+
+**Jika API ML mati atau timeout**, pengaduan tetap tersimpan dengan tampilan *Menunggu klasifikasi*. Setelah API menyala lagi, jalankan dari dalam `web/`:
+
+```bash
+php artisan lokerlens:klasifikasi-ulang
+```
+
+Ambang prioritas tinggi (default 70) diatur di `LOKERLENS_AMBANG_PRIORITAS` (`web/.env`). Kalau diubah, samakan juga `ambang_prioritas_tinggi` di `ml/models/model_lokerlens_meta.json`.
 
 ---
 

@@ -42,14 +42,17 @@ class TindakLanjutController extends Controller
             $query->whereIn('status_pengaduan', [StatusKasus::MenungguKeputusan, StatusKasus::TindakLanjutDisetujui]);
         }
 
-        // Filter berdasarkan prioritas (§6.5.1: via confidence_score)
+        // Filter berdasarkan prioritas (§6.5.1: via confidence_score).
+        // Batas tinggi = ambang prioritas (config/lokerlens.php, default 70), sama dengan
+        // tingkat risiko di halaman Hasil (HasilKlasifikasi::tingkat_risiko).
+        $ambang = config('lokerlens.ambang_prioritas');
         if ($request->filled('prioritas')) {
-            $query->whereHas('hasilKlasifikasi', function ($q) use ($request) {
+            $query->whereHas('hasilKlasifikasi', function ($q) use ($request, $ambang) {
                 if ($request->prioritas === 'tinggi') {
-                    $q->where('confidence_score', '>=', 75);
+                    $q->where('confidence_score', '>=', $ambang);
                 } elseif ($request->prioritas === 'sedang') {
                     $q->where('confidence_score', '>=', 50)
-                      ->where('confidence_score', '<', 75);
+                      ->where('confidence_score', '<', $ambang);
                 }
             });
         }
@@ -76,7 +79,7 @@ class TindakLanjutController extends Controller
 
         // Rincian prioritas (§6.5.1: "2 Prioritas tinggi · 1 Prioritas sedang")
         $jumlahPrioritasTinggi = Pengaduan::where('status_pengaduan', StatusKasus::MenungguKeputusan)
-            ->whereHas('hasilKlasifikasi', fn ($q) => $q->where('confidence_score', '>=', 75))
+            ->whereHas('hasilKlasifikasi', fn ($q) => $q->where('confidence_score', '>=', $ambang))
             ->count();
         $jumlahPrioritasSedang = $jumlahMenunggu - $jumlahPrioritasTinggi;
 

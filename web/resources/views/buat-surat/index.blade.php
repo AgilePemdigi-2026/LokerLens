@@ -13,9 +13,6 @@
                 <span>›</span>
                 <span class="text-white font-medium">Formulir Laporan Polisi</span>
             </div>
-            <span class="px-2.5 py-1 rounded bg-red-900/60 border border-risk-high text-red-300 font-bold text-xs uppercase">
-                KRITIS (Sindikat)
-            </span>
         </div>
 
         <!-- Header Halaman Resmi BDD & Hi-Fi (Teks Wajib: "Buat Laporan Polisi") -->
@@ -71,7 +68,7 @@
                     </div>
                     <div>
                         <span class="text-gray-500 block text-xs">Tanggal Validasi Disposisi:</span>
-                        <span class="font-medium text-gray-800">{{ $tindakLanjut ? $tindakLanjut->tanggal_keputusan->translatedFormat('d F Y') : now()->translatedFormat('d F Y') }}</span>
+                        <span class="font-medium text-gray-800">{{ $tindakLanjut?->tanggal_keputusan ? $tindakLanjut->tanggal_keputusan->translatedFormat('d F Y') : '-' }}</span>
                     </div>
                 </div>
             </div>
@@ -83,11 +80,12 @@
                         <span class="w-6 h-6 rounded bg-navy-900 text-teal-400 flex items-center justify-center text-xs font-mono">2</span>
                         <span>Nama Perusahaan (Terlapor)</span>
                     </h3>
-                    <span class="text-xs bg-red-100 text-risk-high px-2 py-0.5 rounded font-semibold">Non-AHU / Tak Terdaftar</span>
+                    {{-- Status dari tabel perusahaan (Terdaftar / Tidak Terdaftar / Belum Diverifikasi) --}}
+                    <span class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded font-semibold">{{ $perusahaan->status_terdaftar ?? '-' }}</span>
                 </div>
                 <div class="text-xs sm:text-sm space-y-1">
                     <strong class="text-base text-navy-900 block font-bold">
-                        {{ $perusahaan->nama_perusahaan ?? 'PT Mandiri Sukses Global' }} (Terindikasi Fiktif / Non-AHU)
+                        {{ $perusahaan->nama_perusahaan ?? '-' }}
                     </strong>
                     <p class="text-gray-500 text-xs">
                         Posisi Terkait: {{ $lowongan->posisi_lowongan }} • Kontak: {{ $lowongan->informasi_tambahan ?? '-' }}
@@ -126,28 +124,22 @@
                     </h3>
                     <span class="text-xs text-teal-700 bg-teal-50 px-2 py-0.5 rounded font-semibold">Berdasarkan Regulasi Hukum</span>
                 </div>
+                @php
+                    // Pasal yang dicentang: isian terakhir (jika validasi gagal) → pilihan di draf →
+                    // semua dicentang untuk surat baru (sama seperti tampilan sebelumnya).
+                    $daftarPasal = \App\Models\SuratTeguranLaporanPolisi::DAFTAR_PASAL;
+                    $pasalDicentang = old('pasal', $surat?->pasal_dilanggar ?? array_keys($daftarPasal));
+                @endphp
                 <div class="space-y-3 text-xs sm:text-sm">
-                    <label class="flex items-start space-x-3 cursor-pointer">
-                        <input type="checkbox" name="pasal[]" value="378_kuhp" checked class="w-4 h-4 mt-0.5 text-teal-600 rounded border-gray-300 focus:ring-teal-500">
-                        <div>
-                            <strong class="text-navy-900 font-semibold block">Dugaan Penipuan Rekrutmen Kerja (Pasal 378 KUHP)</strong>
-                            <span class="text-gray-500 text-xs">Tindakan menguntungkan diri sendiri secara melawan hukum dengan memakai nama palsu atau martabat palsu.</span>
-                        </div>
-                    </label>
-                    <label class="flex items-start space-x-3 cursor-pointer">
-                        <input type="checkbox" name="pasal[]" value="28_ite" checked class="w-4 h-4 mt-0.5 text-teal-600 rounded border-gray-300 focus:ring-teal-500">
-                        <div>
-                            <strong class="text-navy-900 font-semibold block">Penyebaran Informasi Bohong/Hoaks melalui Media Digital (Pasal 28 ayat 1 UU ITE)</strong>
-                            <span class="text-gray-500 text-xs">Menyebarkan informasi bohong yang mengakibatkan kerugian materiil konsumen/pelamar kerja dalam transaksi elektronik.</span>
-                        </div>
-                    </label>
-                    <label class="flex items-start space-x-3 cursor-pointer">
-                        <input type="checkbox" name="pasal[]" value="13_2003" checked class="w-4 h-4 mt-0.5 text-teal-600 rounded border-gray-300 focus:ring-teal-500">
-                        <div>
-                            <strong class="text-navy-900 font-semibold block">Pungutan Biaya Penempatan Ilegal bagi Calon Tenaga Kerja (UU No. 13/2003)</strong>
-                            <span class="text-gray-500 text-xs">Larangan pemungutan biaya dalam proses penempatan tenaga kerja di luar ketentuan perundang-undangan.</span>
-                        </div>
-                    </label>
+                    @foreach($daftarPasal as $kode => $pasal)
+                        <label class="flex items-start space-x-3 cursor-pointer">
+                            <input type="checkbox" name="pasal[]" value="{{ $kode }}" {{ in_array($kode, $pasalDicentang, true) ? 'checked' : '' }} class="w-4 h-4 mt-0.5 text-teal-600 rounded border-gray-300 focus:ring-teal-500">
+                            <div>
+                                <strong class="text-navy-900 font-semibold block">{{ $pasal['judul'] }}</strong>
+                                <span class="text-gray-500 text-xs">{{ $pasal['keterangan'] }}</span>
+                            </div>
+                        </label>
+                    @endforeach
                 </div>
             </div>
 
@@ -169,7 +161,7 @@
                                 <span class="px-2 py-0.5 bg-red-100 text-risk-high rounded font-mono font-bold text-[10px]">{{ strtoupper($bukti->tipe_file) }}</span>
                                 <span class="font-medium text-navy-900">{{ $bukti->nama_file }} ({{ number_format($bukti->ukuran_file / 1048576, 1) }} MB)</span>
                             </div>
-                            <span class="text-[11px] font-semibold text-ok bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Terlampir</span>
+                            <span class="text-[11px] font-semibold text-risk-low bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Terlampir</span>
                         </div>
                     @empty
                         <p class="text-xs text-gray-500">Belum ada berkas bukti.</p>
@@ -221,9 +213,9 @@
                     <strong class="text-base font-bold text-navy-900 block mt-0.5">{{ Auth::user()->name }}</strong>
                     <span class="text-xs text-gray-600">Kepala Bidang Pengawasan Ketenagakerjaan Digital</span>
                 </div>
-                <div class="px-4 py-2 bg-white rounded-lg border border-teal-500/50 text-teal-700 text-xs font-bold font-mono shadow-sm flex items-center gap-2">
-                    <svg class="w-4 h-4 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-                    <span>TERVERIFIKASI TANDA TANGAN ELEKTRONIK</span>
+                {{-- Kepala Bidang yang menetapkan keputusan "Tindaklanjuti" (tabel tindak_lanjut_kasus) --}}
+                <div class="px-4 py-2 bg-white rounded-lg border border-teal-500/50 text-teal-700 text-xs font-bold shadow-sm">
+                    Ditandatangani oleh {{ $tindakLanjut?->kepalaBidang?->name ?? '-' }}
                 </div>
             </div>
 

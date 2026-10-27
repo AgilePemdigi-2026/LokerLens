@@ -13,6 +13,8 @@
             $klasifikasi = $pengaduan->hasilKlasifikasi;
             $tinjauan = $klasifikasi ? $klasifikasi->tinjauanAnalis : null;
             $score = $klasifikasi ? $klasifikasi->confidence_score : 0;
+            // Tingkat risiko & warna dari model HasilKlasifikasi (sama dengan halaman Hasil dan detail Analis)
+            $warna = $klasifikasi?->warna_risiko ?? ['teks' => 'text-gray-700', 'kotak' => 'bg-gray-50 border-gray-200'];
             // Keputusan hanya bisa dibuat sekali, untuk kasus "Menunggu Keputusan"
             $bisaDiputuskan = $pengaduan->status_pengaduan === \App\Enums\StatusKasus::MenungguKeputusan;
         @endphp
@@ -41,7 +43,7 @@
                     Detail Laporan Lowongan Mencurigakan
                 </h1>
                 <p class="text-xs sm:text-sm text-gray-300 mt-1">
-                    Posisi: <strong class="text-white">{{ $lowongan->posisi_lowongan }}</strong> • {{ $perusahaan->nama_perusahaan ?? 'Perusahaan' }}
+                    Posisi: <strong class="text-white">{{ $lowongan->posisi_lowongan }}</strong> • {{ $perusahaan->nama_perusahaan ?? '-' }}
                 </p>
             </div>
             <div class="text-left md:text-right shrink-0">
@@ -68,7 +70,7 @@
                 </div>
                 <div>
                     <span class="text-gray-500 block text-xs">Identitas Pelapor:</span>
-                    <span class="font-medium text-gray-800">{{ $pengaduan->pengguna->name ?? 'Masyarakat' }} ({{ $pengaduan->pengguna->email ?? '-' }})</span>
+                    <span class="font-medium text-gray-800">{{ $pengaduan->pengguna->name ?? '-' }} ({{ $pengaduan->pengguna->email ?? '-' }})</span>
                 </div>
                 <div>
                     <span class="text-gray-500 block text-xs">Kanal Pengaduan:</span>
@@ -76,11 +78,13 @@
                 </div>
                 <div>
                     <span class="text-gray-500 block text-xs">Analis Pemeriksa:</span>
-                    <strong class="text-teal-700">{{ $tinjauan->analis->name ?? 'Budi Santoso (Analis Ketenagakerjaan)' }}</strong>
+                    {{-- Analis yang benar-benar meninjau (tabel tinjauan_analis) --}}
+                    <strong class="text-teal-700">{{ $tinjauan?->analis?->name ?? '-' }}</strong>
                 </div>
                 <div>
                     <span class="text-gray-500 block text-xs">Tingkat Prioritas:</span>
-                    <span class="text-risk-high font-bold">Prioritas Tinggi (Kritis)</span>
+                    {{-- Mengikuti confidence_score: <50 rendah, 50–69 sedang, ≥70 tinggi (config/lokerlens.php) --}}
+                    <span class="{{ $warna['teks'] }} font-bold">{{ $klasifikasi?->label_risiko ?? '-' }}</span>
                 </div>
             </div>
         </div>
@@ -95,7 +99,8 @@
                     <div>
                         <span class="text-gray-500 block text-xs">Nama Perusahaan Terlapor:</span>
                         <strong class="text-sm font-semibold text-navy-900">{{ $perusahaan->nama_perusahaan ?? '-' }}</strong>
-                        <span class="text-[11px] text-risk-high block mt-0.5">Status: Terindikasi Fiktif / Non-AHU</span>
+                        {{-- Status dari tabel perusahaan (Terdaftar / Tidak Terdaftar / Belum Diverifikasi) --}}
+                        <span class="text-[11px] text-gray-600 block mt-0.5">Status: {{ $perusahaan->status_terdaftar ?? '-' }}</span>
                     </div>
                     <div>
                         <span class="text-gray-500 block text-xs">Posisi Pekerjaan:</span>
@@ -103,14 +108,14 @@
                     </div>
                     <div>
                         <span class="text-gray-500 block text-xs">Kontak Perekrut / WhatsApp:</span>
-                        <span class="font-mono text-gray-900">{{ $lowongan->informasi_tambahan ?? '+62 812-9901-4432 (WhatsApp Pribadi)' }}</span>
+                        <span class="font-mono text-gray-900">{{ $lowongan->informasi_tambahan ?: '-' }}</span>
                     </div>
                     <div>
                         <span class="text-gray-500 block text-xs">Tautan Sumber Lowongan:</span>
                         @if($lowongan->link_lowongan)
                             <a href="{{ $lowongan->link_lowongan }}" target="_blank" class="text-teal-600 hover:underline break-all">{{ $lowongan->link_lowongan }}</a>
                         @else
-                            <span class="text-gray-400 italic">Tautan media sosial / broadcast WhatsApp</span>
+                            <span class="text-gray-900">-</span>
                         @endif
                     </div>
                 </div>
@@ -131,33 +136,36 @@
                     <h2 class="text-lg font-bold text-navy-900">
                         Pemeriksaan Sistem
                     </h2>
-                    <!-- Teks Wajib BDD: Terindikasi Anomali Tinggi -->
+                    <!-- Teks Wajib BDD: Terindikasi Anomali Tinggi (LokerLensCopy::JUDUL_ANOMALI_TINGGI) -->
                     <p class="text-sm font-bold text-risk-high mt-0.5">
-                        Kategori Hasil: Terindikasi Anomali Tinggi
+                        {{ \App\Constants\LokerLensCopy::JUDUL_ANOMALI_TINGGI }}
+                    </p>
+                    {{-- Kategori dan tingkat risiko asli dari tabel hasil_klasifikasi --}}
+                    <p class="text-xs text-gray-600 mt-0.5">
+                        Kategori Hasil: <strong class="{{ $warna['teks'] }}">{{ $klasifikasi?->kategori_hasil ?: '-' }}</strong>
+                        • {{ $klasifikasi?->label_risiko ?? '-' }}
                     </p>
                 </div>
-                <div class="bg-red-50 px-4 py-2 rounded-xl border border-red-200 text-right">
+                <div class="{{ $warna['kotak'] }} px-4 py-2 rounded-xl border text-right">
                     <span class="text-[11px] font-bold text-gray-600 block uppercase">Confidence Score</span>
-                    <span class="text-2xl font-black text-risk-high font-mono">{{ number_format($score, 0) }}%</span>
+                    <span class="text-2xl font-black {{ $warna['teks'] }} font-mono">{{ $klasifikasi ? number_format($score, 0) . '%' : '-' }}</span>
                 </div>
             </div>
 
             <div>
                 <span class="text-xs font-semibold text-gray-600 block mb-2">Kata Kunci Pemicu Anomali:</span>
-                <div class="flex flex-wrap gap-2">
-                    <span class="px-2.5 py-1 rounded bg-red-100 text-risk-high text-xs font-semibold border border-red-200">
-                        "Biaya akomodasi"
-                    </span>
-                    <span class="px-2.5 py-1 rounded bg-red-100 text-risk-high text-xs font-semibold border border-red-200">
-                        "Transfer sebelum wawancara"
-                    </span>
-                    <span class="px-2.5 py-1 rounded bg-red-100 text-risk-high text-xs font-semibold border border-red-200">
-                        "Proses cepat tanpa seleksi"
-                    </span>
-                    <span class="px-2.5 py-1 rounded bg-red-100 text-risk-high text-xs font-semibold border border-red-200">
-                        "Email gratisan (Gmail)"
-                    </span>
-                </div>
+                {{-- Dari tabel indikator_mencurigakan (kata pemicu model ML dan indikator lain) --}}
+                @if($klasifikasi && $klasifikasi->indikatorMencurigakan->isNotEmpty())
+                    <div class="flex flex-wrap gap-2">
+                        @foreach($klasifikasi->indikatorMencurigakan as $indikator)
+                            <span class="px-2.5 py-1 rounded bg-red-100 text-risk-high text-xs font-semibold border border-red-200">
+                                "{{ $indikator->nama_indikator }}"
+                            </span>
+                        @endforeach
+                    </div>
+                @else
+                    <p class="text-sm text-gray-900">-</p>
+                @endif
             </div>
         </div>
 
@@ -169,51 +177,91 @@
             <div class="bg-teal-50/60 p-4 rounded-xl border border-teal-200 space-y-3 text-xs sm:text-sm">
                 <div>
                     <span class="text-gray-500 block text-xs">Hasil Verifikasi Analis:</span>
-                    <strong class="text-teal-900 text-sm font-bold">{{ $tinjauan->hasil_tinjauan ?? 'Mencurigakan (Terindikasi Penipuan Siber)' }}</strong>
+                    {{-- Semua isi bagian ini dari tabel tinjauan_analis --}}
+                    <strong class="text-teal-900 text-sm font-bold">{{ $tinjauan?->hasil_tinjauan ?: '-' }}</strong>
                 </div>
                 <div>
                     <span class="text-gray-500 block text-xs">Catatan Pemeriksaan & Rekomendasi:</span>
-                    <p class="text-gray-800 leading-relaxed mt-0.5 font-medium">
-                        {{ $tinjauan->catatan_tinjauan ?? 'Perusahaan tidak terdaftar pada database Wajib Lapor Ketenagakerjaan Kemenaker maupun AHU Kemenkumham. Ditemukan nomor rekening pribadi untuk transfer biaya booking hotel. Direkomendasikan untuk diteruskan ke proses hukum kepolisian.' }}
-                    </p>
+                    <p class="text-gray-800 leading-relaxed mt-0.5 font-medium whitespace-pre-line">{{ $tinjauan?->catatan_tinjauan ?: '-' }}</p>
                 </div>
                 <div class="pt-2 border-t border-teal-200/60 text-[11px] text-teal-800 flex items-center justify-between">
-                    <span>Diperiksa oleh: <strong>{{ $tinjauan->analis->name ?? 'Analis Disnaker' }}</strong></span>
-                    <span>Waktu: {{ $tinjauan && $tinjauan->tanggal_tinjauan ? $tinjauan->tanggal_tinjauan->translatedFormat('d M Y, H:i') : now()->translatedFormat('d M Y') }}</span>
+                    <span>Diperiksa oleh: <strong>{{ $tinjauan?->analis?->name ?? '-' }}</strong></span>
+                    <span>Waktu: {{ $tinjauan?->tanggal_tinjauan ? $tinjauan->tanggal_tinjauan->translatedFormat('d M Y, H:i') . ' WIB' : '-' }}</span>
                 </div>
             </div>
         </div>
 
-        <!-- 6. Bukti Pendukung (Tombol "Lihat Bukti") -->
+        <!-- 6. Data Pengaduan (data asli yang dimasukkan Masyarakat + hasil model) -->
+        @php
+            // Hanya kata pemicu dari model ML (bukan indikator lain dari seeder)
+            $kataPemicu = $klasifikasi
+                ? $klasifikasi->indikatorMencurigakan->where('kategori_indikator', \App\Models\IndikatorMencurigakan::KATEGORI_KATA_PEMICU)
+                : collect();
+        @endphp
         <div class="bg-white rounded-card shadow-lg p-6 sm:p-8 text-navy-900 border border-gray-100">
             <h2 class="text-lg font-bold text-navy-900 border-b border-gray-100 pb-3 mb-4">
-                Bukti Pendukung
+                Data Pengaduan
             </h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-                <div class="p-3 bg-gray-50 rounded border border-gray-200 flex flex-col justify-between">
-                    <span class="text-xs font-semibold text-navy-900">1. Tangkapan Layar Chat</span>
-                    <button type="button" class="mt-3 text-xs font-bold text-teal-700 hover:underline text-left">
-                        Lihat Bukti
-                    </button>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm mb-4">
+                <div>
+                    <span class="text-gray-500 block text-xs">Nomor Tiket:</span>
+                    <strong class="text-navy-900 font-mono">{{ $pengaduan->nomor_tiket ?: '-' }}</strong>
                 </div>
-                <div class="p-3 bg-gray-50 rounded border border-gray-200 flex flex-col justify-between">
-                    <span class="text-xs font-semibold text-navy-900">2. Salinan Surat Panggilan</span>
-                    <button type="button" class="mt-3 text-xs font-bold text-teal-700 hover:underline text-left">
-                        Lihat Bukti
-                    </button>
+                <div>
+                    <span class="text-gray-500 block text-xs">Tanggal Pengaduan:</span>
+                    <span class="text-gray-900">{{ $pengaduan->tanggal_pengaduan ? $pengaduan->tanggal_pengaduan->translatedFormat('d F Y, H:i') . ' WIB' : '-' }}</span>
                 </div>
-                <div class="p-3 bg-gray-50 rounded border border-gray-200 flex flex-col justify-between">
-                    <span class="text-xs font-semibold text-navy-900">3. Rekening Transfer Bank</span>
-                    <button type="button" class="mt-3 text-xs font-bold text-teal-700 hover:underline text-left">
-                        Lihat Bukti
-                    </button>
+                <div>
+                    <span class="text-gray-500 block text-xs">Link Lowongan:</span>
+                    @if($lowongan->link_lowongan)
+                        <a href="{{ $lowongan->link_lowongan }}" target="_blank" rel="noopener noreferrer" class="text-teal-600 hover:underline break-all">{{ $lowongan->link_lowongan }}</a>
+                    @else
+                        <span class="text-gray-900">-</span>
+                    @endif
                 </div>
-                <div class="p-3 bg-gray-50 rounded border border-gray-200 flex flex-col justify-between">
-                    <span class="text-xs font-semibold text-navy-900">4. Ekstraksi OCR Teks</span>
-                    <button type="button" class="mt-3 text-xs font-bold text-teal-700 hover:underline text-left">
-                        Lihat Bukti
-                    </button>
+                <div>
+                    <span class="text-gray-500 block text-xs">Sumber Lowongan:</span>
+                    <span class="text-gray-900">{{ $lowongan->sumber_lowongan ?: '-' }}</span>
                 </div>
+            </div>
+
+            <div class="mb-4">
+                <span class="text-gray-500 block text-xs mb-1">Teks Lowongan Lengkap:</span>
+                <div class="bg-gray-50 p-4 rounded-control border border-gray-200 text-xs sm:text-sm text-gray-700 leading-relaxed whitespace-pre-line break-words">{{ $lowongan->deskripsi_lowongan ?: '-' }}</div>
+            </div>
+
+            <div class="mb-4">
+                <span class="text-gray-500 block text-xs mb-1">Informasi Tambahan:</span>
+                <div class="bg-gray-50 p-4 rounded-control border border-gray-200 text-xs sm:text-sm text-gray-700 leading-relaxed whitespace-pre-line break-words">{{ $lowongan->informasi_tambahan ?: '-' }}</div>
+            </div>
+
+            <div class="mb-4">
+                <span class="text-gray-500 block text-xs mb-1">Kata Pemicu dari Model (bobot):</span>
+                @if($kataPemicu->isNotEmpty())
+                    <div class="flex flex-wrap gap-2">
+                        @foreach($kataPemicu as $pemicu)
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-control border border-red-200 bg-red-50/50 text-xs">
+                                <strong class="text-navy-900">{{ $pemicu->nama_indikator }}</strong>
+                                <span class="font-mono text-risk-high">{{ $pemicu->bobot_indikator !== null ? number_format($pemicu->bobot_indikator, 2) : '-' }}</span>
+                            </span>
+                        @endforeach
+                    </div>
+                @else
+                    <span class="text-gray-900 text-sm">-</span>
+                @endif
+            </div>
+
+            <div>
+                <span class="text-gray-500 block text-xs mb-1">Berkas Bukti Pendukung:</span>
+                {{-- Dari tabel bukti_pendukung (diunggah saat Buat Laporan Polisi) --}}
+                @forelse($pengaduan->buktiPendukung as $bukti)
+                    <div class="p-2.5 mb-1.5 bg-gray-50 rounded-control border border-gray-200 flex items-center justify-between text-xs">
+                        <span class="font-medium text-navy-900 break-all">{{ $bukti->nama_file }}</span>
+                        <span class="font-mono text-gray-500 shrink-0 ml-3">{{ strtoupper($bukti->tipe_file) }} • {{ number_format($bukti->ukuran_file / 1048576, 1) }} MB</span>
+                    </div>
+                @empty
+                    <span class="text-gray-900 text-sm">-</span>
+                @endforelse
             </div>
         </div>
 

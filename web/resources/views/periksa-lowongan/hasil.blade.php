@@ -44,7 +44,7 @@
                 Hasil Pemeriksaan
             </h1>
             <p class="text-sm text-gray-600 mt-0.5 mb-4">
-                {{ $perusahaan->nama_perusahaan ?? 'Perusahaan' }} • {{ $lowongan->posisi_lowongan }}
+                {{ $perusahaan->nama_perusahaan ?? '-' }} • {{ $lowongan->posisi_lowongan }}
             </p>
             <div class="bg-amber-50 border-l-4 border-risk-mid p-4 rounded-r-lg text-sm text-amber-900 leading-relaxed" role="alert">
                 {{ \App\Constants\LokerLensCopy::KLASIFIKASI_TERTUNDA }}
@@ -84,7 +84,7 @@
                         <span>{{ $klasifikasi->kategori_hasil }}</span>
                     </h2>
                     <p class="text-sm text-gray-600 mt-0.5">
-                        {{ $perusahaan->nama_perusahaan ?? 'Perusahaan' }} • {{ $lowongan->posisi_lowongan }}
+                        {{ $perusahaan->nama_perusahaan ?? '-' }} • {{ $lowongan->posisi_lowongan }}
                     </p>
                 </div>
 

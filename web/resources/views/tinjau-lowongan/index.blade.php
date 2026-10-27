@@ -56,8 +56,10 @@
                     <label for="filter_skor" class="block text-xs font-semibold text-gray-700 mb-1">Filter Skor</label>
                     <select id="filter_skor" name="filter_skor" class="w-full px-3 py-2 rounded-control border border-gray-300 text-xs sm:text-sm text-navy-900 focus:ring-2 focus:ring-teal-600 focus:outline-none bg-white">
                         <option value="">Semua Skor</option>
-                        <option value="Skor Tinggi" {{ request('filter_skor') === 'Skor Tinggi' ? 'selected' : '' }}>Skor Tinggi (≥ 75%)</option>
-                        <option value="Skor Sedang" {{ request('filter_skor') === 'Skor Sedang' ? 'selected' : '' }}>Skor Sedang (50% - 74%)</option>
+                        {{-- Batas mengikuti ambang prioritas (config/lokerlens.php) --}}
+                        @php $ambang = (int) config('lokerlens.ambang_prioritas'); @endphp
+                        <option value="Skor Tinggi" {{ request('filter_skor') === 'Skor Tinggi' ? 'selected' : '' }}>Skor Tinggi (≥ {{ $ambang }}%)</option>
+                        <option value="Skor Sedang" {{ request('filter_skor') === 'Skor Sedang' ? 'selected' : '' }}>Skor Sedang (50% - {{ $ambang - 1 }}%)</option>
                     </select>
                 </div>
 

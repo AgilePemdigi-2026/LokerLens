@@ -1,0 +1,19 @@
+{
+    "name": "lokerlens/bdd",
+    "description": "Pengujian BDD LokerLens (Behat + Mink). Project terpisah supaya paket aplikasi Laravel tidak berubah.",
+    "type": "project",
+    "require-dev": {
+        "behat/behat": "^3.34",
+        "behat/mink-browserkit-driver": "^2.3",
+        "dmore/behat-chrome-extension": "^1.5",
+        "dmore/chrome-mink-driver": "^2.11",
+        "friends-of-behat/mink-extension": "^2.7",
+        "symfony/http-client": "^7.4"
+    },
+    "config": {
+        "platform": {
+            "php": "8.3.0"
+        },
+        "sort-packages": true
+    }
+}

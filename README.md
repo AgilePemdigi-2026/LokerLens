@@ -91,7 +91,7 @@ Buka `http://localhost:8000`. Akun contoh untuk ketiga peran ada di `web/databas
 
 **Mode preview (khusus laptop pengembang).** Untuk mengecek tampilan dengan cepat, tambahkan `DEV_PREVIEW=true` di `web/.env` (pastikan `APP_ENV=local`), jalankan `php artisan migrate:fresh --seed`, lalu buka `http://localhost:8000/dev`. Di sana ada tombol "Masuk sebagai Masyarakat/Analis/Kepala Bidang" (login dengan akun demo seeder) dan daftar tautan ke semua halaman per peran, memakai ID kasus dari seeder untuk setiap status. Aturan login dan hak akses tetap berlaku, jadi halaman peran lain tetap ditolak. Jika `DEV_PREVIEW` bukan `true` atau `APP_ENV` bukan `local`, route `/dev` sama sekali tidak terdaftar. Jangan aktifkan di server sungguhan.
 
-Menjalankan test:
+Menjalankan test PHPUnit (test BDD ada di bagian [Menjalankan Test BDD](#menjalankan-test-bdd-behat)):
 
 ```bash
 cd web
@@ -143,6 +143,55 @@ php artisan lokerlens:klasifikasi-ulang
 ```
 
 Ambang prioritas tinggi (default 70) diatur di `LOKERLENS_AMBANG_PRIORITAS` (`web/.env`). Kalau diubah, samakan juga `ambang_prioritas_tinggi` di `ml/models/model_lokerlens_meta.json`.
+
+### Menjalankan Test BDD (Behat)
+
+15 skenario dari SRS Appendix B ada di `web/bdd/features/` (satu file per Table B.2–B.5). Behat dipasang sebagai project Composer terpisah di `web/bdd/`, supaya paket aplikasi Laravel tidak berubah. Perbedaan kalimat skenario dengan SRS dijelaskan di [docs/laporan_kondisi_bdd.md bagian 6](docs/laporan_kondisi_bdd.md).
+
+**Persiapan (sekali saja):**
+
+1. Nyalakan MySQL (Laragon: Start All, XAMPP: Start MySQL), lalu buat database kosong **`lokerlens_testing`** dengan collation `utf8mb4_unicode_ci` (HeidiSQL/phpMyAdmin). Isinya **dihapus dan diisi seeder** sebelum setiap skenario, jadi jangan pakai database lain.
+2. Dari dalam `web/`:
+   ```bash
+   composer install --working-dir=bdd
+   copy .env.behat.example .env.behat          # macOS/Linux: cp
+   php artisan key:generate --env=behat
+   ```
+   Kalau user/password MySQL Anda bukan `root`/kosong, ubah di `web/.env.behat`.
+
+**Catatan untuk pengguna XAMPP (phpMyAdmin):**
+
+- *Membuat database:* buka XAMPP Control Panel, tekan **Start** pada Apache dan MySQL, lalu buka `http://localhost/phpmyadmin`. Klik **New** (Baru) di panel kiri, isi nama database `lokerlens_testing`, pilih collation **`utf8mb4_unicode_ci`**, lalu klik **Create** (Buat). Database cukup dibuat kosong. Tabel dan datanya diisi otomatis oleh test.
+- *MySQL memakai password:* isi di `web/.env.behat` (bukan `web/.env`), lalu simpan:
+  ```dotenv
+  DB_USERNAME=root
+  DB_PASSWORD=password_mysql_anda
+  ```
+  Kalau password mengandung spasi atau `#`, beri tanda kutip, misalnya `DB_PASSWORD="kata sandi#1"`. File `.env.behat` tidak ikut ter-commit, jadi password Anda tidak tersebar.
+
+**Setiap kali menjalankan (buka terminal terpisah):**
+
+```powershell
+# Terminal 1 (dari web/): server Laravel khusus test, memakai .env.behat
+$env:APP_ENV="behat"; php artisan serve --port=8010
+#   macOS/Linux: APP_ENV=behat php artisan serve --port=8010
+
+# Terminal 2 (dari ml/, venv aktif): hanya untuk skenario @ml
+uvicorn api.app:app --port 8001
+
+# Terminal 3: hanya untuk skenario @javascript (Chrome tanpa jendela)
+& "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" --headless=new --remote-debugging-port=9222 --user-data-dir="$env:TEMP\chrome-behat"
+#   Sesuaikan lokasi chrome.exe. macOS: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" ...
+
+# Terminal 4 (dari web/)
+bdd\vendor\bin\behat --config bdd\behat.yml --tags="~@javascript&&~@ml"   # 11 skenario: hanya butuh Terminal 1
+bdd\vendor\bin\behat --config bdd\behat.yml --tags="@javascript"          # 3 skenario: butuh Terminal 1 + 3
+bdd\vendor\bin\behat --config bdd\behat.yml --tags="@ml"                  # 1 skenario: butuh Terminal 1 + 2
+bdd\vendor\bin\behat --config bdd\behat.yml                               # semua 15 skenario
+bdd\vendor\bin\behat --config bdd\behat.yml bdd\features\buat_surat.feature   # satu fitur saja
+```
+
+**Pengaman.** Test berhenti sebelum menyentuh data jika `DB_DATABASE` di `.env.behat` tidak diakhiri `_testing`, atau jika server di port 8010 tidak memakai `.env.behat` (judul halaman harus "LokerLens BEHAT"). Skenario `@ml` berhenti dengan pesan jelas jika API ML belum menyala.
 
 ---
 

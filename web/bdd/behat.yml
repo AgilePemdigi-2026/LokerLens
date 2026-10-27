@@ -1,0 +1,30 @@
+# Konfigurasi Behat LokerLens. Cara menjalankan ada di README.md (bagian "Menjalankan Test BDD").
+default:
+  suites:
+    default:
+      paths:
+        - '%paths.base%/features'
+      contexts:
+        # FeatureContext mewarisi MinkContext, jadi langkah bawaan Mink
+        # ("I fill in", "I press", "I should see", ...) ikut tersedia.
+        - FeatureContext
+
+  extensions:
+    DMore\ChromeExtension\Behat\ServiceContainer\ChromeExtension: ~
+
+    Behat\MinkExtension:
+      # Server Laravel khusus test: $env:APP_ENV="behat"; php artisan serve --port=8010
+      base_url: 'http://127.0.0.1:8010'
+
+      # Skenario biasa: tanpa browser (permintaan HTTP langsung)
+      default_session: browserkit
+      # Skenario bertanda @javascript: Chrome lewat port remote debugging 9222
+      javascript_session: chrome
+
+      sessions:
+        browserkit:
+          browserkit_http: ~
+        chrome:
+          chrome:
+            api_url: 'http://127.0.0.1:9222'
+            socket_timeout: 15

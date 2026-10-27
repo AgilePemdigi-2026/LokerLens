@@ -17,7 +17,8 @@
                 <span class="text-white font-medium">Tiket {{ $pengaduan->nomor_tiket }}</span>
             </div>
             <span class="px-2.5 py-1 rounded bg-risk-high/20 border border-risk-high text-red-300 font-bold text-[11px] tracking-wider uppercase">
-                PRIORITAS: SEGERA (IMMEDIATE)
+                {{-- Dari hasil_klasifikasi.status_prioritas (halaman ini hanya untuk kasus prioritas tinggi) --}}
+                {{ $klasifikasi->status_prioritas ? 'Prioritas tinggi' : 'Bukan prioritas' }}
             </span>
         </div>
 
@@ -32,7 +33,7 @@
                     </span>
                 </h1>
                 <p class="text-xs text-gray-300 mt-1">
-                    {{ $perusahaan->nama_perusahaan ?? 'Perusahaan' }} • Dilaporkan pada {{ $pengaduan->tanggal_pengaduan->translatedFormat('d F Y, H:i') }} WIB
+                    {{ $perusahaan->nama_perusahaan ?? '-' }} • Dilaporkan pada {{ $pengaduan->tanggal_pengaduan->translatedFormat('d F Y, H:i') }} WIB
                 </p>
             </div>
             <div class="text-right sm:border-l sm:border-navy-800 sm:pl-4">
@@ -54,7 +55,7 @@
                         {{ $klasifikasi->kategori_hasil ?: '-' }}
                     </h2>
                     <p class="text-sm text-gray-600 mt-0.5">
-                        {{ $perusahaan->nama_perusahaan ?? 'Perusahaan' }} • {{ $lowongan->posisi_lowongan }}
+                        {{ $perusahaan->nama_perusahaan ?? '-' }} • {{ $lowongan->posisi_lowongan }}
                     </p>
                 </div>
 
@@ -290,13 +291,17 @@
                     @enderror
                 </div>
 
-                <!-- Checkbox Notifikasi Darurat -->
+                {{-- TODO: Checkbox Notifikasi Darurat disembunyikan karena belum berfungsi
+                     (isian "notifikasi_darurat" belum diproses di TinjauLowonganController@simpanTinjauan
+                     dan belum ada fitur "simpan lowongan" bagi pencari kerja). Aktifkan lagi setelah
+                     perilakunya diputuskan tim.
                 <div class="pt-1">
                     <label class="flex items-start space-x-2 text-xs text-gray-300 cursor-pointer">
                         <input type="checkbox" name="notifikasi_darurat" value="1" class="mt-0.5 rounded border-navy-700 text-teal-600 focus:ring-teal-500 bg-navy-800">
                         <span>Kirimkan notifikasi darurat peringatan merah ke seluruh pencari kerja yang menyimpan lowongan ini</span>
                     </label>
                 </div>
+                --}}
 
                 <!-- Tombol Aksi (BDD Hooks: Kembali ke Antrean, Tandai Blacklist, Lanjutkan) -->
                 <div class="flex flex-col-reverse sm:flex-row items-center justify-between pt-4 border-t border-navy-800 gap-3">

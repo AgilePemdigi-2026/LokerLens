@@ -95,24 +95,24 @@
                             <span class="text-xs text-gray-400">
                                 {{ $kasus->tanggal_pengaduan->translatedFormat('d M Y, H:i') }} WIB
                             </span>
-                            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold {{ $isMenunggu ? 'bg-amber-100 text-risk-mid border border-amber-200' : ($isApproved ? 'bg-emerald-100 text-ok border border-emerald-200' : 'bg-gray-100 text-gray-600 border border-gray-200') }}">
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold {{ $isMenunggu ? 'bg-amber-100 text-risk-mid border border-amber-200' : ($isApproved ? 'bg-emerald-100 text-risk-low border border-emerald-200' : 'bg-gray-100 text-gray-600 border border-gray-200') }}">
                                 {{ $kasus->status_pengaduan }}
                             </span>
                         </div>
 
                         <h3 class="text-lg font-bold text-navy-900 leading-snug">
-                            {{ $lowongan->posisi_lowongan ?? 'Posisi Pekerjaan' }}
+                            {{ $lowongan->posisi_lowongan ?? '-' }}
                         </h3>
 
                         <div class="text-xs text-gray-600 flex items-center gap-2">
-                            <strong class="text-navy-900">{{ $perusahaan->nama_perusahaan ?? 'Perusahaan' }}</strong>
+                            <strong class="text-navy-900">{{ $perusahaan->nama_perusahaan ?? '-' }}</strong>
                             <span>•</span>
-                            <span>Pelapor: {{ $kasus->pengguna->name ?? 'Masyarakat' }}</span>
+                            <span>Pelapor: {{ $kasus->pengguna->name ?? '-' }}</span>
                         </div>
 
                         <!-- Temuan Ringkas -->
                         <p class="text-xs text-gray-500 bg-gray-50 p-2.5 rounded border border-gray-200 line-clamp-2">
-                            <strong>Temuan Analis:</strong> {{ $klasifikasi->tinjauanAnalis->catatan_tinjauan ?? 'Terindikasi anomali pungutan biaya dan identitas fiktif. Perlu penetapan tindakan eskalasi hukum.' }}
+                            <strong>Temuan Analis:</strong> {{ $klasifikasi?->tinjauanAnalis?->catatan_tinjauan ?: '-' }}
                         </p>
                     </div>
 
@@ -120,7 +120,8 @@
                     <div class="flex sm:flex-col md:items-end justify-between items-center gap-3 shrink-0 pt-3 md:pt-0 border-t md:border-t-0 border-gray-100">
                         <div class="text-left md:text-right">
                             <span class="text-[10px] text-gray-400 uppercase font-bold tracking-wider block">Skor Kecurigaan</span>
-                            <div class="text-2xl font-black font-mono {{ $score >= 75 ? 'text-risk-high' : 'text-risk-mid' }}">
+                            {{-- Warna mengikuti tingkat risiko (<50 rendah, 50–69 sedang, ≥70 tinggi) --}}
+                            <div class="text-2xl font-black font-mono {{ $klasifikasi?->warna_risiko['teks'] ?? 'text-gray-700' }}">
                                 {{ number_format($score, 0) }}%
                             </div>
                         </div>

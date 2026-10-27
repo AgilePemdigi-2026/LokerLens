@@ -10,6 +10,7 @@ use App\Models\SuratTeguranLaporanPolisi;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
@@ -35,7 +36,7 @@ class BuatSuratController extends Controller
             'hasilKlasifikasi.indikatorMencurigakan',
             'hasilKlasifikasi.tinjauanAnalis',
             'buktiPendukung',
-            'tindakLanjutKasus',
+            'tindakLanjutKasus.kepalaBidang',
         ])->findOrFail($pengaduanId);
 
         // FR-ST-02, NFR-SAF-03: Pastikan keputusan sudah "Tindaklanjuti"
@@ -75,6 +76,8 @@ class BuatSuratController extends Controller
         $request->validate([
             'kronologi'         => ['required', 'string'],
             'tujuan_kepolisian' => ['required', 'string', 'max:255'],
+            'pasal'             => ['array'],
+            'pasal.*'           => [Rule::in(array_keys(SuratTeguranLaporanPolisi::DAFTAR_PASAL))],
         ], [
             'kronologi.required'         => 'Kronologi kejadian wajib diisi.',
             'tujuan_kepolisian.required' => 'Tujuan kepolisian wajib dipilih.',
@@ -88,6 +91,7 @@ class BuatSuratController extends Controller
                 'jenis_dokumen'       => 'Laporan Polisi',
                 'kronologi_kejadian'  => $request->kronologi,
                 'tujuan_instansi'     => $request->tujuan_kepolisian,
+                'pasal_dilanggar'     => $this->pasalTerpilih($request),
                 'status_penerbitan'   => 'Draft',
             ]
         );
@@ -114,6 +118,8 @@ class BuatSuratController extends Controller
         $request->validate([
             'kronologi'         => ['required', 'string'],
             'tujuan_kepolisian' => ['required', 'string', 'max:255'],
+            'pasal'             => ['array'],
+            'pasal.*'           => [Rule::in(array_keys(SuratTeguranLaporanPolisi::DAFTAR_PASAL))],
         ]);
 
         $this->simpanBuktiTambahan($request, $pengaduan);
@@ -124,6 +130,7 @@ class BuatSuratController extends Controller
                 'jenis_dokumen'      => 'Laporan Polisi',
                 'kronologi_kejadian' => $request->kronologi,
                 'tujuan_instansi'    => $request->tujuan_kepolisian,
+                'pasal_dilanggar'    => $this->pasalTerpilih($request),
                 'status_penerbitan'  => 'Draft',
             ]
         );
@@ -166,6 +173,7 @@ class BuatSuratController extends Controller
             'lowonganKerja.perusahaan',
             'buktiPendukung',
             'tindakLanjutKasus.suratTeguranLaporanPolisi',
+            'tindakLanjutKasus.kepalaBidang',
         ])->whereHas('tindakLanjutKasus')
           ->findOrFail($pengaduanId);
 
@@ -235,6 +243,17 @@ private function simpanBuktiTambahan(Request $request, Pengaduan $pengaduan): vo
         }
 
         return $pengaduan;
+    }
+
+    /**
+     * Kode pasal yang dicentang di panel "Detail Pelanggaran".
+     * Tidak ada yang dicentang = daftar kosong.
+     *
+     * @return array<int, string>
+     */
+    private function pasalTerpilih(Request $request): array
+    {
+        return array_values(array_unique($request->input('pasal', [])));
     }
 
     private function buatKronologiDefault(Pengaduan $pengaduan): string

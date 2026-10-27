@@ -9,7 +9,7 @@
         <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-10 text-navy-900 border border-gray-100 animate-fadeIn space-y-8">
             <!-- Icon Sukses Besar -->
             <div class="text-center">
-                <div class="w-16 h-16 rounded-full bg-emerald-100 text-ok flex items-center justify-center mx-auto mb-4 shadow">
+                <div class="w-16 h-16 rounded-full bg-emerald-100 text-risk-low flex items-center justify-center mx-auto mb-4 shadow">
                     <svg class="w-9 h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
                     </svg>
@@ -20,19 +20,16 @@
                     Laporan Polisi Berhasil Diterbitkan
                 </h1>
                 <p class="text-xs sm:text-sm text-gray-600 mt-2 max-w-xl mx-auto leading-relaxed">
-                    Dokumen laporan resmi dan seluruh berkas bukti digital telah berhasil disahkan serta diteruskan ke instansi kepolisian tujuan.
+                    Dokumen laporan resmi dan seluruh berkas bukti digital telah berhasil disahkan serta siap diteruskan ke instansi kepolisian tujuan.
                 </p>
 
                 <!-- Tiga Chip Resmi (BR-10 & FR-ST-08) -->
                 <div class="flex flex-wrap items-center justify-center gap-2 mt-4">
-                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-ok border border-emerald-200">
+                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-risk-low border border-emerald-200">
                         Kasus terdokumentasi otomatis
                     </span>
-                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-ok border border-emerald-200">
+                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-risk-low border border-emerald-200">
                         Kasus selesai
-                    </span>
-                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-teal-50 text-teal-800 border border-teal-200">
-                        Enkripsi SHA-256 Valid
                     </span>
                 </div>
             </div>
@@ -54,11 +51,11 @@
                     </div>
                     <div>
                         <span class="text-gray-500 block text-xs">Tanggal & Waktu Terbit:</span>
-                        <span class="font-medium text-gray-800">{{ $surat->tanggal_terbit ? $surat->tanggal_terbit->translatedFormat('d F Y, H:i') : now()->translatedFormat('d F Y, H:i') }} WIB</span>
+                        <span class="font-medium text-gray-800">{{ $surat->tanggal_terbit ? $surat->tanggal_terbit->translatedFormat('d F Y, H:i') . ' WIB' : '-' }}</span>
                     </div>
                     <div>
                         <span class="text-gray-500 block text-xs">Nama Perusahaan Terlapor:</span>
-                        <strong class="text-navy-900">{{ $perusahaan->nama_perusahaan ?? '-' }} (Fiktif)</strong>
+                        <strong class="text-navy-900">{{ $perusahaan->nama_perusahaan ?? '-' }}</strong>
                     </div>
                     <div>
                         <span class="text-gray-500 block text-xs">Instansi Kepolisian Tujuan:</span>
@@ -66,8 +63,24 @@
                     </div>
                     <div>
                         <span class="text-gray-500 block text-xs">Pejabat Penanda Tangan:</span>
-                        <strong class="text-navy-900">{{ Auth::user()->name }} (Kepala Bidang)</strong>
+                        {{-- Kepala Bidang yang menetapkan keputusan Tindaklanjuti (tabel tindak_lanjut_kasus) --}}
+                        <strong class="text-navy-900">{{ $tindakLanjut?->kepalaBidang?->name ? $tindakLanjut->kepalaBidang->name . ' (Kepala Bidang)' : '-' }}</strong>
                     </div>
+                </div>
+
+                <!-- Detail Pelanggaran: pasal yang dipilih saat membuat laporan (kolom pasal_dilanggar) -->
+                <div class="pt-3 border-t border-gray-200">
+                    <span class="text-xs font-semibold text-gray-600 block mb-2">Detail Pelanggaran:</span>
+                    @php $daftarPasal = \App\Models\SuratTeguranLaporanPolisi::DAFTAR_PASAL; @endphp
+                    @if(! empty($surat->pasal_dilanggar))
+                        <ul class="list-disc list-inside space-y-1 text-xs sm:text-sm text-gray-800">
+                            @foreach($surat->pasal_dilanggar as $kode)
+                                <li>{{ $daftarPasal[$kode]['judul'] ?? $kode }}</li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <p class="text-xs text-gray-500">-</p>
+                    @endif
                 </div>
 
                 <!-- Berkas Bukti Lampiran -->
@@ -77,7 +90,8 @@
                         @forelse($pengaduan->buktiPendukung as $bukti)
                             <div class="flex items-center justify-between p-2 bg-white rounded border border-gray-200 text-xs">
                                 <span class="font-mono text-gray-700">{{ $bukti->nama_file }}</span>
-                                <span class="text-[11px] text-ok font-bold">Terverifikasi Digital ✓</span>
+                                {{-- Jenis & ukuran berkas dari tabel bukti_pendukung --}}
+                                <span class="text-[11px] text-gray-500 font-mono">{{ strtoupper($bukti->tipe_file) }} • {{ number_format($bukti->ukuran_file / 1048576, 1) }} MB</span>
                             </div>
                         @empty
                             <p class="text-xs text-gray-500">Belum ada berkas bukti.</p>

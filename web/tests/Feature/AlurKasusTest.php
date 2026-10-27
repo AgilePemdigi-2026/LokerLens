@@ -28,9 +28,11 @@ class AlurKasusTest extends TestCase
         $this->kepalaBidang = User::factory()->create(['role' => 'Kepala Bidang']);
     }
 
-    /** Skor simulasi: 20 + biaya (25) + gmail (20) + gaji (15) + hotel (15) = 95. */
-    private function periksa(string $deskripsi): Pengaduan
+    /** Periksa lowongan dengan jawaban API ML palsu (probabilitas penipuan 0–1). */
+    private function periksa(string $deskripsi, float $probabilitas): Pengaduan
     {
+        $this->palsukanApiMl($probabilitas);
+
         $this->actingAs($this->masyarakat)->post('/periksa-lowongan', [
             'nama_perusahaan'    => 'PT Contoh Abadi',
             'posisi_lowongan'    => 'Staff Administrasi',
@@ -42,7 +44,7 @@ class AlurKasusTest extends TestCase
 
     private function periksaRisikoTinggi(): Pengaduan
     {
-        return $this->periksa('Gaji tinggi tanpa pengalaman, wajib bayar biaya seragam, kirim CV ke hrd@gmail.com, interview di hotel.');
+        return $this->periksa('Gaji tinggi tanpa pengalaman, wajib bayar biaya seragam, kirim CV ke hrd@gmail.com, interview di hotel.', 0.95);
     }
 
     private function tinjau(Pengaduan $pengaduan, HasilTinjauan $hasil)
@@ -76,7 +78,7 @@ class AlurKasusTest extends TestCase
 
     public function test_skor_di_bawah_ambang_langsung_selesai_risiko_rendah(): void
     {
-        $pengaduan = $this->periksa('Dibutuhkan staff administrasi untuk kantor pusat dengan jam kerja normal dan kontrak resmi.');
+        $pengaduan = $this->periksa('Dibutuhkan staff administrasi untuk kantor pusat dengan jam kerja normal dan kontrak resmi.', 0.2);
 
         $this->assertSame(StatusKasus::SelesaiRisikoRendah, $pengaduan->status_pengaduan);
         $this->assertFalse($pengaduan->hasilKlasifikasi->status_prioritas);

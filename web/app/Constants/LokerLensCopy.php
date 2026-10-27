@@ -26,6 +26,11 @@ final class LokerLensCopy
     public const KASUS_TERDOKUMENTASI      = 'Kasus terdokumentasi otomatis';
     public const KASUS_SELESAI             = 'Kasus selesai';
 
+    // Belum ada di daftar teks resmi SRS (keputusan tim: API ML mati/timeout,
+    // pengaduan tetap disimpan dan diklasifikasi ulang nanti).
+    public const MENUNGGU_KLASIFIKASI      = 'Menunggu klasifikasi';
+    public const KLASIFIKASI_TERTUNDA      = 'Layanan pemeriksaan otomatis sedang tidak tersedia. Data lowongan Anda sudah tersimpan dan akan diperiksa setelah layanan kembali normal. Silakan buka halaman ini lagi nanti.';
+
     // ──────────────────────────────────────────────
     //  Judul / Label yang Diuji BDD
     // ──────────────────────────────────────────────

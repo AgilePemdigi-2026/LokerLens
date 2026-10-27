@@ -5,6 +5,8 @@
             $lowongan = $pengaduan->lowonganKerja;
             $perusahaan = $lowongan->perusahaan ?? null;
             $tinjauan = $klasifikasi->tinjauanAnalis;
+            // Tingkat risiko & warna dari model HasilKlasifikasi (sama dengan halaman Hasil Pemeriksaan)
+            $warna = $klasifikasi->warna_risiko;
         @endphp
 
         <!-- Navigasi Atas & Tombol Kembali -->
@@ -46,10 +48,10 @@
             <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-gray-100 gap-4 mb-6">
                 <div>
                     <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">
-                        Model Verifikasi AI Multivalue • LokerLens Sentinel
+                        {{ $klasifikasi->metode_analisis ?: '-' }}
                     </span>
-                    <h2 class="text-2xl font-bold text-risk-high mt-2">
-                        Lowongan berpotensi penipuan
+                    <h2 class="text-2xl font-bold {{ $warna['teks'] }} mt-2">
+                        {{ $klasifikasi->kategori_hasil ?: '-' }}
                     </h2>
                     <p class="text-sm text-gray-600 mt-0.5">
                         {{ $perusahaan->nama_perusahaan ?? 'Perusahaan' }} • {{ $lowongan->posisi_lowongan }}
@@ -57,15 +59,15 @@
                 </div>
 
                 <!-- Blok BDD: Confidence Score -->
-                <div class="bg-red-50 p-4 rounded-xl border border-red-200 text-center sm:text-right shrink-0">
+                <div class="{{ $warna['kotak'] }} p-4 rounded-xl border text-center sm:text-right shrink-0">
                     <span class="text-xs font-bold uppercase tracking-wider text-gray-700 block">
                         Confidence Score
                     </span>
-                    <div class="text-4xl font-black text-risk-high font-mono tracking-tight">
+                    <div class="text-4xl font-black {{ $warna['teks'] }} font-mono tracking-tight">
                         {{ number_format($klasifikasi->confidence_score, 0) }}%
                     </div>
-                    <span class="text-[11px] font-bold text-risk-high uppercase tracking-wider">
-                        KRITIS (Tingkat Bahaya)
+                    <span class="text-[11px] font-bold {{ $warna['teks'] }} uppercase tracking-wider">
+                        {{ $klasifikasi->label_risiko }}
                     </span>
                 </div>
             </div>
@@ -83,8 +85,9 @@
                     <div>
                         <span class="text-gray-500 block text-xs">Nama Perusahaan:</span>
                         <strong class="text-navy-900 font-semibold">{{ $perusahaan->nama_perusahaan ?? '-' }}</strong>
-                        <span class="inline-block ml-2 text-[10px] bg-red-100 text-risk-high px-1.5 py-0.5 rounded font-semibold">
-                            Badan Hukum Belum Terverifikasi
+                        {{-- Status dari tabel perusahaan (Terdaftar / Tidak Terdaftar / Belum Diverifikasi) --}}
+                        <span class="inline-block ml-2 text-[10px] px-1.5 py-0.5 rounded font-semibold {{ ($perusahaan->status_terdaftar ?? null) === 'Terdaftar' ? 'bg-emerald-100 text-risk-low' : 'bg-gray-100 text-gray-700' }}">
+                            {{ $perusahaan->status_terdaftar ?? '-' }}
                         </span>
                     </div>
                     <div>
@@ -93,7 +96,7 @@
                     </div>
                     <div>
                         <span class="text-gray-500 block text-xs">Kontak Recruiter / WhatsApp:</span>
-                        <span class="text-gray-900 font-mono">{{ $lowongan->informasi_tambahan ?? 'WhatsApp / Email tidak resmi terdeteksi' }}</span>
+                        <span class="text-gray-900 font-mono">{{ $lowongan->informasi_tambahan ?: '-' }}</span>
                     </div>
                     <div>
                         <span class="text-gray-500 block text-xs">Link Rujukan:</span>
@@ -114,22 +117,27 @@
                 <!-- Kolom Kanan: Ringkasan Analisis Sistem -->
                 <div class="space-y-3 text-xs sm:text-sm">
                     <h3 class="font-bold text-navy-900 text-sm border-b pb-2">Ringkasan Analisis Sistem</h3>
+                    {{-- Semua nilai dari tabel hasil_klasifikasi --}}
                     <div class="space-y-2">
-                        <div class="p-2.5 bg-gray-50 rounded border border-gray-200 flex justify-between items-center">
-                            <span class="text-gray-700">NLP Pattern Matching:</span>
-                            <span class="font-bold text-risk-high">Skor 95/100 (Anomali)</span>
+                        <div class="p-2.5 bg-gray-50 rounded border border-gray-200 flex justify-between items-center gap-3">
+                            <span class="text-gray-700">Probabilitas Penipuan:</span>
+                            <span class="font-bold {{ $warna['teks'] }}">{{ number_format($klasifikasi->confidence_score, 2) }} / 100</span>
                         </div>
-                        <div class="p-2.5 bg-gray-50 rounded border border-gray-200 flex justify-between items-center">
-                            <span class="text-gray-700">Pemeriksaan Domain Email:</span>
-                            <span class="font-bold text-risk-mid">Free Webmail (Gmail/Yahoo)</span>
+                        <div class="p-2.5 bg-gray-50 rounded border border-gray-200 flex justify-between items-center gap-3">
+                            <span class="text-gray-700">Tingkat Risiko:</span>
+                            <span class="font-bold {{ $warna['teks'] }}">{{ $klasifikasi->label_risiko }}</span>
                         </div>
-                        <div class="p-2.5 bg-gray-50 rounded border border-gray-200 flex justify-between items-center">
-                            <span class="text-gray-700">Basis Data Nomor Telepon:</span>
-                            <span class="font-bold text-risk-high">Ditandai Laporan Penipuan</span>
+                        <div class="p-2.5 bg-gray-50 rounded border border-gray-200 flex justify-between items-center gap-3">
+                            <span class="text-gray-700">Kategori Hasil:</span>
+                            <span class="font-bold text-navy-900 text-right">{{ $klasifikasi->kategori_hasil ?: '-' }}</span>
                         </div>
-                        <div class="p-2.5 bg-gray-50 rounded border border-gray-200 flex justify-between items-center">
-                            <span class="text-gray-700">Legalitas AHU & Kemenaker:</span>
-                            <span class="font-bold text-risk-high">Not Registered / Tak Terdaftar</span>
+                        <div class="p-2.5 bg-gray-50 rounded border border-gray-200 flex justify-between items-center gap-3">
+                            <span class="text-gray-700">Metode / Versi Model:</span>
+                            <span class="font-bold text-navy-900 text-right">{{ $klasifikasi->metode_analisis ?: '-' }}</span>
+                        </div>
+                        <div class="p-2.5 bg-gray-50 rounded border border-gray-200 flex justify-between items-center gap-3">
+                            <span class="text-gray-700">Tanggal Klasifikasi:</span>
+                            <span class="font-bold text-navy-900 text-right">{{ $klasifikasi->tanggal_klasifikasi ? $klasifikasi->tanggal_klasifikasi->translatedFormat('d F Y, H:i') . ' WIB' : '-' }}</span>
                         </div>
                     </div>
                 </div>
@@ -149,65 +157,73 @@
                                 {{ $ind->kategori_indikator }}
                             </span>
                             <h4 class="text-sm font-bold text-navy-900 mt-2">{{ $ind->nama_indikator }}</h4>
-                            <p class="text-xs text-gray-600 mt-1">Bobot kecurigaan: <strong>{{ $ind->bobot_indikator }}%</strong></p>
+                            {{-- Bobot kata pemicu model = kontribusi x 100, bukan persen --}}
+                            <p class="text-xs text-gray-600 mt-1">Bobot: <strong>{{ $ind->bobot_indikator !== null ? number_format($ind->bobot_indikator, 2) : '-' }}</strong></p>
                         </div>
                     @endforeach
                 @else
-                    <div class="border border-red-200 bg-red-50/50 rounded-control p-4">
-                        <span class="text-[10px] uppercase font-bold text-risk-high bg-white px-2 py-0.5 rounded border border-red-200">Biaya Fiktif</span>
-                        <h4 class="text-sm font-bold text-navy-900 mt-2">Permintaan Biaya Administrasi Fiktif</h4>
-                        <p class="text-xs text-gray-600 mt-1">Perekrut meminta transfer biaya tes / seragam sebelum kontrak.</p>
-                    </div>
-                    <div class="border border-red-200 bg-red-50/50 rounded-control p-4">
-                        <span class="text-[10px] uppercase font-bold text-risk-high bg-white px-2 py-0.5 rounded border border-red-200">Email Tidak Resmi</span>
-                        <h4 class="text-sm font-bold text-navy-900 mt-2">Domain Email Tidak Resmi</h4>
-                        <p class="text-xs text-gray-600 mt-1">Perusahaan mengatasnamakan korporat namun menggunakan webmail publik gratis.</p>
-                    </div>
-                    <div class="border border-red-200 bg-red-50/50 rounded-control p-4">
-                        <span class="text-[10px] uppercase font-bold text-risk-high bg-white px-2 py-0.5 rounded border border-red-200">Gaji Janggal</span>
-                        <h4 class="text-sm font-bold text-navy-900 mt-2">Gaji Tidak Masuk Akal</h4>
-                        <p class="text-xs text-gray-600 mt-1">Tawaran upah tinggi tanpa persyaratan kualifikasi atau pengalaman kerja.</p>
-                    </div>
+                    <p class="text-sm text-gray-900">-</p>
                 @endif
             </div>
         </div>
 
-        <!-- 3. Bukti Pendukung & Lampiran Dokumen (Bagian 6.4.2) -->
+        <!-- 3. Data Pengaduan (data asli yang dimasukkan Masyarakat + hasil model) -->
+        @php
+            // Hanya kata pemicu dari model ML (bukan indikator lain dari seeder)
+            $kataPemicu = $klasifikasi->indikatorMencurigakan
+                ->where('kategori_indikator', \App\Models\IndikatorMencurigakan::KATEGORI_KATA_PEMICU);
+        @endphp
         <div class="bg-white rounded-card shadow-lg p-6 sm:p-8 text-navy-900 border border-gray-100">
             <h3 class="text-lg font-bold text-navy-900 border-b border-gray-100 pb-3 mb-4">
-                Bukti Pendukung & Lampiran Dokumen
+                Data Pengaduan
             </h3>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div class="p-4 rounded-control border border-gray-200 bg-gray-50 flex flex-col justify-between">
-                    <div>
-                        <div class="text-xs font-bold text-navy-900 flex items-center gap-1.5">
-                            <svg class="w-4 h-4 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            Tangkapan Layar Chat WA
-                        </div>
-                        <p class="text-[11px] text-gray-500 mt-1">Percakapan instruksi transfer dana tiket rekrutmen.</p>
-                    </div>
-                    <span class="mt-3 text-[11px] font-semibold text-teal-700 hover:underline cursor-pointer">Lihat Bukti (Lampiran)</span>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm mb-4">
+                <div>
+                    <span class="text-gray-500 block text-xs">Nomor Tiket:</span>
+                    <strong class="text-navy-900 font-mono">{{ $pengaduan->nomor_tiket ?: '-' }}</strong>
                 </div>
-                <div class="p-4 rounded-control border border-gray-200 bg-gray-50 flex flex-col justify-between">
-                    <div>
-                        <div class="text-xs font-bold text-navy-900 flex items-center gap-1.5">
-                            <svg class="w-4 h-4 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                            Salinan Surat Panggilan (PDF)
-                        </div>
-                        <p class="text-[11px] text-gray-500 mt-1">Dokumen panggilan interview dengan logo instansi palsu.</p>
-                    </div>
-                    <span class="mt-3 text-[11px] font-semibold text-teal-700 hover:underline cursor-pointer">Unduh Dokumen (PDF)</span>
+                <div>
+                    <span class="text-gray-500 block text-xs">Tanggal Pengaduan:</span>
+                    <span class="text-gray-900">{{ $pengaduan->tanggal_pengaduan ? $pengaduan->tanggal_pengaduan->translatedFormat('d F Y, H:i') . ' WIB' : '-' }}</span>
                 </div>
-                <div class="p-4 rounded-control border border-gray-200 bg-gray-50 flex flex-col justify-between">
-                    <div>
-                        <div class="text-xs font-bold text-navy-900 flex items-center gap-1.5">
-                            <svg class="w-4 h-4 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
-                            Log Ekstraksi Teks (OCR)
-                        </div>
-                        <p class="text-[11px] text-gray-500 mt-1">Pencocokan keyword anomali pada gambar lampiran.</p>
-                    </div>
-                    <span class="mt-3 text-[11px] font-semibold text-teal-700 hover:underline cursor-pointer">Lihat Full Log</span>
+                <div>
+                    <span class="text-gray-500 block text-xs">Link Lowongan:</span>
+                    @if($lowongan->link_lowongan)
+                        <a href="{{ $lowongan->link_lowongan }}" target="_blank" rel="noopener noreferrer" class="text-teal-600 hover:underline break-all">{{ $lowongan->link_lowongan }}</a>
+                    @else
+                        <span class="text-gray-900">-</span>
+                    @endif
                 </div>
+                <div>
+                    <span class="text-gray-500 block text-xs">Sumber Lowongan:</span>
+                    <span class="text-gray-900">{{ $lowongan->sumber_lowongan ?: '-' }}</span>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <span class="text-gray-500 block text-xs mb-1">Teks Lowongan Lengkap:</span>
+                <div class="bg-gray-50 p-4 rounded-control border border-gray-200 text-xs sm:text-sm text-gray-700 leading-relaxed whitespace-pre-line break-words">{{ $lowongan->deskripsi_lowongan ?: '-' }}</div>
+            </div>
+
+            <div class="mb-4">
+                <span class="text-gray-500 block text-xs mb-1">Informasi Tambahan:</span>
+                <div class="bg-gray-50 p-4 rounded-control border border-gray-200 text-xs sm:text-sm text-gray-700 leading-relaxed whitespace-pre-line break-words">{{ $lowongan->informasi_tambahan ?: '-' }}</div>
+            </div>
+
+            <div>
+                <span class="text-gray-500 block text-xs mb-1">Kata Pemicu dari Model (bobot):</span>
+                @if($kataPemicu->isNotEmpty())
+                    <div class="flex flex-wrap gap-2">
+                        @foreach($kataPemicu as $pemicu)
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-control border border-red-200 bg-red-50/50 text-xs">
+                                <strong class="text-navy-900">{{ $pemicu->nama_indikator }}</strong>
+                                <span class="font-mono text-risk-high">{{ $pemicu->bobot_indikator !== null ? number_format($pemicu->bobot_indikator, 2) : '-' }}</span>
+                            </span>
+                        @endforeach
+                    </div>
+                @else
+                    <span class="text-gray-900 text-sm">-</span>
+                @endif
             </div>
         </div>
 

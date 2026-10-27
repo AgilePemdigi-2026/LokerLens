@@ -4,11 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Constants\LokerLensCopy;
 use App\Enums\StatusKasus;
-use App\Models\HasilKlasifikasi;
-use App\Models\IndikatorMencurigakan;
 use App\Models\LowonganKerja;
 use App\Models\Pengaduan;
 use App\Models\Perusahaan;
+use App\Services\KlasifikasiService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,7 +19,7 @@ use Illuminate\View\View;
  * Rute: /periksa-lowongan/
  * Peran: Masyarakat
  *
- * Alur: idle → validasi → loading (simulasi ML) → hasil
+ * Alur: idle → validasi → klasifikasi via API ML (KlasifikasiService) → hasil
  * NFR-SAF-01: Hasil adalah prediksi, bukan penetapan penipuan.
  */
 class PeriksaLowonganController extends Controller
@@ -30,7 +29,7 @@ class PeriksaLowonganController extends Controller
         return view('periksa-lowongan.index');
     }
 
-    public function store(Request $request): RedirectResponse|View
+    public function store(Request $request, KlasifikasiService $klasifikasiService): RedirectResponse
     {
         // FR-PL-02, FR-PL-10, NFR-SAF-05: Validasi wajib
         $request->validate([
@@ -46,14 +45,13 @@ class PeriksaLowonganController extends Controller
             'link_lowongan.url'            => 'Format URL tidak valid.',
         ]);
 
-        // Simulasi klasifikasi ML (mock — integrasi backend/ML Sprint berikutnya)
-        $hasilMock = $this->simulasiKlasifikasi($request);
-
-        // Status awal: di bawah ambang prioritas langsung "Selesai - Risiko Rendah" (BR-05)
-        $statusAwal = StatusKasus::awalDariSkor($hasilMock['score']);
+        // Klasifikasi oleh model ML. Hanya deskripsi yang dikirim (docs/architecture.md §5.2).
+        // Dipanggil SEBELUM transaksi supaya database tidak terkunci selama menunggu API.
+        // Hasilnya null jika API mati atau timeout.
+        $hasilMl = $klasifikasiService->klasifikasi($request->deskripsi_lowongan);
 
         // NFR-SAF-04: semua data tersimpan utuh atau tidak sama sekali
-        $pengaduan = DB::transaction(function () use ($request, $hasilMock, $statusAwal) {
+        $pengaduan = DB::transaction(function () use ($request, $hasilMl) {
             // Simpan atau cari perusahaan
             $perusahaan = Perusahaan::firstOrCreate(
                 ['nama_perusahaan' => $request->nama_perusahaan],
@@ -72,37 +70,24 @@ class PeriksaLowonganController extends Controller
                 'informasi_tambahan'  => $request->informasi_tambahan,
             ]);
 
-            // Buat pengaduan
+            // Buat pengaduan. Status sementara "Perlu Tinjauan"; jika klasifikasi
+            // berhasil, statusnya langsung disesuaikan dengan skor (BR-05).
             $pengaduan = Pengaduan::create([
                 'id_lowongan'     => $lowongan->id_lowongan,
                 'id_pengguna'     => Auth::id(),
                 'nomor_tiket'     => Pengaduan::generateNomorTiket(),
                 'deskripsi_singkat' => 'Periksa lowongan: ' . $request->posisi_lowongan . ' di ' . $request->nama_perusahaan,
-                'status_pengaduan' => $statusAwal,
+                'status_pengaduan' => StatusKasus::PerluTinjauan,
             ]);
 
-            $klasifikasi = HasilKlasifikasi::create([
-                'id_pengaduan'      => $pengaduan->id_pengaduan,
-                'confidence_score'  => $hasilMock['score'],
-                'kategori_hasil'    => $hasilMock['kategori'],
-                'status_prioritas'  => $statusAwal === StatusKasus::PerluTinjauan,
-                'metode_analisis'   => 'Mock ML v1.0 (TF-IDF + Rule-based) — TODO: integrasi model real',
-            ]);
-
-            // Simpan indikator/kata pemicu dari checklist & analisis mock
-            foreach ($hasilMock['indikator'] as $ind) {
-                IndikatorMencurigakan::create([
-                    'id_klasifikasi'    => $klasifikasi->id_klasifikasi,
-                    'nama_indikator'    => $ind['nama'],
-                    'kategori_indikator' => $ind['kategori'],
-                    'bobot_indikator'   => $ind['bobot'],
-                ]);
+            // Riwayat kasus dicatat di kedua cabang (NFR-SAF-06, BR-11)
+            if ($hasilMl !== null) {
+                $pengaduan->simpanHasilKlasifikasi($hasilMl);
+            } else {
+                // API gagal: pengaduan tersimpan tanpa Hasil_Klasifikasi ("Menunggu
+                // klasifikasi"), lalu diulang dengan php artisan lokerlens:klasifikasi-ulang
+                $pengaduan->catatRiwayat('Pengaduan diterima. Menunggu klasifikasi karena layanan ML tidak tersedia.');
             }
-
-            // Catat riwayat kasus (NFR-SAF-06, BR-11)
-            $pengaduan->catatRiwayat($statusAwal === StatusKasus::PerluTinjauan
-                ? 'Pengaduan diterima dan klasifikasi dilakukan. Masuk antrean tinjauan Analis.'
-                : 'Pengaduan diterima dan klasifikasi dilakukan. Skor di bawah ambang prioritas, kasus selesai.');
 
             return $pengaduan;
         });
@@ -120,78 +105,6 @@ class PeriksaLowonganController extends Controller
           ->firstOrFail();
 
         return view('periksa-lowongan.hasil', compact('pengaduan'));
-    }
-
-    /**
-     * Simulasi klasifikasi ML dengan aturan sederhana berbasis kata kunci.
-     * TODO: Ganti dengan integrasi API ML nyata saat backend/ML siap.
-     * NFR-SAF-01: Hasil adalah prediksi, bukan penetapan penipuan.
-     */
-    private function simulasiKlasifikasi(Request $request): array
-    {
-        $deskripsi = strtolower($request->deskripsi_lowongan . ' ' . ($request->informasi_tambahan ?? ''));
-        $score     = 20.0;
-        $indikator = [];
-
-        $checklist = $request->input('checklist', []);
-
-        // Aturan berbasis kata kunci dan checklist
-        $rules = [
-            ['kata' => ['biaya', 'bayar', 'transfer', 'dp', 'administrasi', 'seragam'],
-             'nama' => 'Permintaan biaya/pembayaran sebelum kerja',
-             'kategori' => 'Biaya Fiktif', 'bobot' => 25],
-            ['kata' => ['gmail', 'yahoo', 'hotmail', 'ymail'],
-             'nama' => 'Penggunaan email gratisan',
-             'kategori' => 'Email Tidak Resmi', 'bobot' => 20],
-            ['kata' => ['gaji', 'penghasilan', 'income'],
-             'nama' => 'Penawaran gaji tidak masuk akal tanpa kualifikasi',
-             'kategori' => 'Gaji Janggal', 'bobot' => 15],
-            ['kata' => ['hotel', 'penginapan', 'apartemen', 'kost'],
-             'nama' => 'Lokasi interview mencurigakan',
-             'kategori' => 'Lokasi Mencurigakan', 'bobot' => 15],
-        ];
-
-        foreach ($rules as $rule) {
-            foreach ($rule['kata'] as $kata) {
-                if (str_contains($deskripsi, $kata)) {
-                    $score += $rule['bobot'];
-                    $indikator[] = [
-                        'nama'     => $rule['nama'],
-                        'kategori' => $rule['kategori'],
-                        'bobot'    => $rule['bobot'],
-                    ];
-                    break;
-                }
-            }
-        }
-
-        // Tambah skor dari checklist (NFR-SAF-01: tetap prediksi)
-        if (in_array('biaya', $checklist)) {
-            $score += 15;
-            $indikator[] = ['nama' => 'Ada permintaan biaya pendaftaran/tes/seragam (checklist)', 'kategori' => 'Biaya Fiktif', 'bobot' => 15];
-        }
-        if (in_array('email_gratis', $checklist)) {
-            $score += 10;
-            $indikator[] = ['nama' => 'Menggunakan alamat email gratisan (checklist)', 'kategori' => 'Email Tidak Resmi', 'bobot' => 10];
-        }
-        if (in_array('lokasi', $checklist)) {
-            $score += 10;
-            $indikator[] = ['nama' => 'Lokasi interview mencurigakan (checklist)', 'kategori' => 'Lokasi Mencurigakan', 'bobot' => 10];
-        }
-        if (in_array('gaji', $checklist)) {
-            $score += 10;
-            $indikator[] = ['nama' => 'Gaji tidak masuk akal tanpa kualifikasi (checklist)', 'kategori' => 'Gaji Janggal', 'bobot' => 10];
-        }
-
-        $score = min(99, $score);
-
-        $kategori = match (true) {
-            $score >= 75 => 'Lowongan berpotensi penipuan',
-            $score >= 50 => 'Lowongan perlu diperiksa lebih lanjut',
-            default      => 'Lowongan tampak normal',
-        };
-
-        return compact('score', 'kategori', 'indikator');
     }
 
     private function extractDomain(string $text): ?string

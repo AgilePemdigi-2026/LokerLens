@@ -88,6 +88,55 @@ class Pengaduan extends Model
     }
 
     /**
+     * Pengaduan yang belum punya hasil klasifikasi, karena API ML mati atau
+     * timeout saat pemeriksaan. Ditampilkan sebagai "Menunggu klasifikasi".
+     */
+    public function scopeMenungguKlasifikasi($query)
+    {
+        return $query->doesntHave('hasilKlasifikasi');
+    }
+
+    /**
+     * Simpan hasil dari API klasifikasi (KlasifikasiService) untuk pengaduan ini:
+     * Hasil_Klasifikasi, satu Indikator_Mencurigakan per kata pemicu, lalu status
+     * awal kasus sesuai ambang prioritas (BR-05) dan catatan Riwayat Kasus.
+     * Dipanggil di dalam DB::transaction oleh pemanggilnya.
+     */
+    public function simpanHasilKlasifikasi(array $hasil): HasilKlasifikasi
+    {
+        // API memberi 0–1, database menyimpan 0–100 (docs/architecture.md §5.3)
+        $skor   = round($hasil['probabilitas_penipuan'] * 100, 2);
+        $status = StatusKasus::awalDariSkor($skor);
+
+        $klasifikasi = HasilKlasifikasi::create([
+            'id_pengaduan'     => $this->id_pengaduan,
+            'confidence_score' => $skor,
+            'kategori_hasil'   => $hasil['label'] === 'palsu'
+                ? 'Lowongan berpotensi penipuan'
+                : 'Lowongan kemungkinan asli',
+            'status_prioritas' => $status === StatusKasus::PerluTinjauan,
+            'metode_analisis'  => $hasil['versi_model'] ?? null,
+        ]);
+
+        foreach ($hasil['kata_pemicu'] as $pemicu) {
+            IndikatorMencurigakan::create([
+                'id_klasifikasi'     => $klasifikasi->id_klasifikasi,
+                'nama_indikator'     => $pemicu['kata'],
+                'kategori_indikator' => IndikatorMencurigakan::KATEGORI_KATA_PEMICU,
+                'bobot_indikator'    => round($pemicu['bobot'] * 100, 2),
+            ]);
+        }
+
+        // Status diisi langsung (bukan ubahStatus) karena ini status AWAL kasus
+        $this->update(['status_pengaduan' => $status]);
+        $this->catatRiwayat($status === StatusKasus::PerluTinjauan
+            ? 'Pengaduan diterima dan klasifikasi dilakukan. Masuk antrean tinjauan Analis.'
+            : 'Pengaduan diterima dan klasifikasi dilakukan. Skor di bawah ambang prioritas, kasus selesai.');
+
+        return $klasifikasi;
+    }
+
+    /**
      * Generate nomor tiket unik, mis: #LKR-8821
      * Dimulai dari 8821 + id terakhir, lalu dinaikkan sampai belum dipakai
      * (nomor tiket pada data seeder bisa saja sudah menempati angka tersebut).

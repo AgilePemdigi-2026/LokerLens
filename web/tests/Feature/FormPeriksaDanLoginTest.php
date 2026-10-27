@@ -36,6 +36,8 @@ class FormPeriksaDanLoginTest extends TestCase
 
     public function test_form_periksa_lengkap_berhasil_diperiksa(): void
     {
+        $this->palsukanApiMl(0.9);
+
         $this->actingAs(User::factory()->create(['role' => 'Masyarakat']))
             ->post('/periksa-lowongan', [
                 'nama_perusahaan'    => 'PT Maju Bersama Sejahtera',

@@ -1,0 +1,20 @@
+{
+  "model_final": "Logistic Regression",
+  "tanggal_latih": "2026-10-26",
+  "sklearn_version": "1.8.0",
+  "dataset": {
+    "file": "dataset_lokerlens_bersih.csv",
+    "jumlah_dipakai": 824,
+    "asli": 498,
+    "palsu": 326,
+    "kolom_teks": "deskripsi"
+  },
+  "ambang_prioritas_tinggi": 0.8,
+  "metrik_test": {
+    "precision_palsu": 0.984375,
+    "recall_palsu": 0.9692307692307692,
+    "f1_palsu": 0.9767441860465116,
+    "roc_auc": 0.9986153846153846
+  },
+  "catatan": "Asli dari KarirHub, palsu dari TurnBackHoax: perlu validasi dengan data dari sumber lain."
+}

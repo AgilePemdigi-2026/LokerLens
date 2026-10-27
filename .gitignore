@@ -14,6 +14,8 @@ Thumbs.db
 /web/.env
 /web/.env.backup
 /web/.env.production
+/web/.env.behat
+/web/bdd/vendor/
 /web/auth.json
 /web/.phpactor.json
 /web/.phpunit.cache

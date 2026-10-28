@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Behat Tests</title>
+
+    <!-- Bootstrap -->
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="assets/Twig/css/style.css">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.min.js"></script>
+</head>
+<body role="document" style="margin-top: 70px;">
+
+<!-- Fixed navbar -->
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                    aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">Automated test report - 28/10/2026 15:39:54</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                            </ul>
+        </div>
+        <!--/.nav-collapse -->
+    </div>
+</nav>
+
+<div class="container theme-showcase" role="main">
+    <div class="row charts">
+        <div class="col-sm-4">
+            <div class="canvas-holder">
+                <canvas id="chart-features" width="300" height="300"/>
+            </div>
+            <div class="chart-summary title">
+                4 Features:
+            </div>
+            <div class="chart-summary failed">0 failed</div>
+        </div>
+        <div class="col-sm-4">
+            <div class="canvas-holder">
+                <canvas id="chart-scenarios" width="300" height="300"/>
+            </div>
+            <div class="chart-summary title">
+                15
+                Scenarios:
+            </div>
+            <div class="chart-summary failed">0 failed</div>
+            <div class="chart-summary undefined">0 undefined</div>
+            <div class="chart-summary skipped">0 skipped</div>
+        </div>
+        <div class="col-sm-4">
+            <div class="canvas-holder">
+                <canvas id="chart-steps" width="300" height="300"/>
+            </div>
+            <div class="chart-summary title">
+                91
+                Steps:
+            </div>
+            <div class="chart-summary failed">0 failed</div>
+            <div class="chart-summary undefined">0 undefined</div>
+            <div class="chart-summary skipped">0 skipped</div>
+        </div>
+    </div>
+    <hr>
+    <div class="filters">
+        <a class="btn btn-default" id="feature-all-filter" role="button">All</a>
+        <a class="btn btn-success" id="feature-passed-filter" role="button">Passed</a>
+        <a class="btn btn-danger" id="feature-failed-filter" role="button">Failed</a>
+    </div>
+    <hr>
+    <div id="feature-overview">
+                    <div class="row">
+                <div class="col-sm-12">
+                    <h2>Suite: default</h2>
+
+                    <div class="row">
+                                                    <div class="col-sm-4 feature" data-id="feature-1">
+                                <div class="card passed">
+                                    <div class="header">
+                                        <h2>Feature: Buat surat teguran/laporan polisi</h2>
+                                    </div>
+                                    <div class="info">
+                                        <p></p>
+                                    </div>
+                                    <div class="footer">
+                                        <div class="tags">
+                                                                                    </div>
+                                                                                    <div class="progress">
+                                                <div class="progress-bar progress-bar-green" role="progressbar"
+                                                     style="width: 100%">
+                                                    <span class="sr-only">40% Complete (success)</span>
+                                                </div>
+                                                <div class="progress-bar progress-bar-warning" role="progressbar"
+                                                     style="width: 0%">
+                                                    <span class="sr-only">40% Complete (success)</span>
+                                                </div>
+                                                <div class="progress-bar progress-bar-red" role="progressbar"
+                                                     style="width: 0%">
+                                                    <span class="sr-only">40% Complete (success)</span>
+                                                </div>
+                                            </div>
+                                                                            </div>
+                                </div>
+                            </div>
+                                                    <div class="col-sm-4 feature" data-id="feature-2">
+                                <div class="card passed">
+                                    <div class="header">
+                                        <h2>Feature: Menindaklanjuti laporan lowongan kerja yang mencurigakan</h2>
+                                    </div>
+                                    <div class="info">
+                                        <p></p>
+                                    </div>
+                                    <div class="footer">
+                                        <div class="tags">
+                                                                                    </div>
+                                                                                    <div class="progress">
+                                                <div class="progress-bar progress-bar-green" role="progressbar"
+                                                     style="width: 100%">
+                                                    <span class="sr-only">40% Complete (success)</span>
+                                                </div>
+                                                <div class="progress-bar progress-bar-warning" role="progressbar"
+                                                     style="width: 0%">
+                                                    <span class="sr-only">40% Complete (success)</span>
+                                                </div>
+                                                <div class="progress-bar progress-bar-red" role="progressbar"
+                                                     style="width: 0%">
+                                                    <span class="sr-only">40% Complete (success)</span>
+                                                </div>
+                                            </div>
+                                                                            </div>
+                                </div>
+                            </div>
+                                                    <div class="col-sm-4 feature" data-id="feature-3">
+                                <div class="card passed">
+                                    <div class="header">
+                                        <h2>Feature: Meninjau lowongan kerja dengan prioritas tinggi</h2>
+                                    </div>
+                                    <div class="info">
+                                        <p></p>
+                                    </div>
+                                    <div class="footer">
+                                        <div class="tags">
+                                                                                    </div>
+                                                                                    <div class="progress">
+                                                <div class="progress-bar progress-bar-green" role="progressbar"
+                                                     style="width: 100%">
+                                                    <span class="sr-only">40% Complete (success)</span>
+                                                </div>
+                                                <div class="progress-bar progress-bar-warning" role="progressbar"
+                                                     style="width: 0%">
+                                                    <span class="sr-only">40% Complete (success)</span>
+                                                </div>
+                                                <div class="progress-bar progress-bar-red" role="progressbar"
+                                                     style="width: 0%">
+                                                    <span class="sr-only">40% Complete (success)</span>
+                                                </div>
+                                            </div>
+                                                                            </div>
+                                </div>
+                            </div>
+                                                    <div class="col-sm-4 feature" data-id="feature-4">
+                                <div class="card passed">
+                                    <div class="header">
+                                        <h2>Feature: Periksa lowongan kerja</h2>
+                                    </div>
+                                    <div class="info">
+                                        <p></p>
+                                    </div>
+                                    <div class="footer">
+                                        <div class="tags">
+                                                                                    </div>
+                                                                                    <div class="progress">
+                                                <div class="progress-bar progress-bar-green" role="progressbar"
+                                                     style="width: 100%">
+                                                    <span class="sr-only">40% Complete (success)</span>
+                                                </div>
+                                                <div class="progress-bar progress-bar-warning" role="progressbar"
+                                                     style="width: 0%">
+                                                    <span class="sr-only">40% Complete (success)</span>
+                                                </div>
+                                                <div class="progress-bar progress-bar-red" role="progressbar"
+                                                     style="width: 0%">
+                                                    <span class="sr-only">40% Complete (success)</span>
+                                                </div>
+                                            </div>
+                                                                            </div>
+                                </div>
+                            </div>
+                                            </div>
+                </div>
+            </div>
+            <hr>
+            </div>
+    <div id="scenario-overview" class="row">
+                                    <div class="feature" data-id="feature-1">
+                    <div class="col-sm-4">
+                        <div class="card passed">
+                            <div class="header">
+                                <h2>Feature: Buat surat teguran/laporan polisi</h2>
+                            </div>
+                            <div class="info">
+                                <p></p>
+                            </div>
+                            <div class="footer">
+                                <div class="tags">
+                                                                    </div>
+                                                                    <div class="progress">
+                                        <div class="progress-bar progress-bar-green" role="progressbar"
+                                             style="width: 100%">
+                                            <span class="sr-only">40% Complete (success)</span>
+                                        </div>
+                                        <div class="progress-bar progress-bar-warning" role="progressbar"
+                                             style="width: 0%">
+                                            <span class="sr-only">40% Complete (success)</span>
+                                        </div>
+                                        <div class="progress-bar progress-bar-red" role="progressbar"
+                                             style="width: 0%">
+                                            <span class="sr-only">40% Complete (success)</span>
+                                        </div>
+                                    </div>
+                                                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-8 details panel-group" role="tablist" aria-multiselectable="true">
+                                                    <div class="panel panel-default passed">
+                                <div class="panel-heading" role="tab">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" data-parent="#accordion"
+                                           href="#scenario-1-1"
+                                           aria-expanded="true"
+                                           aria-controls="scenario-1-1">
+                                            Scenario: Menerbitkan laporan polisi
+                                        </a>
+
+                                        <div class="tags pull-right">
+                                                                                                                                </div>
+                                    </h4>
+                                </div>
+                                <div id="scenario-1-1" class="panel-collapse collapse in"
+                                     role="tabpanel"
+                                     aria-labelledby="headingOne">
+                                    <ul class="list-group">
+                                                                                    <li class="list-group-item alert alert-success">
+                                                <b>Given</b> I am logged in as &quot;Kepala Bidang&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>Given</b> I am on the letter page for ticket &quot;#LKR-8770&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>When</b> I fill in &quot;kronologi&quot; with &quot;Pelapor menerima surat panggilan interview fiktif atas nama PT Maju Petro Energy&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>And</b> I select &quot;Subdit Siber Ditreskrimsus Polda Metro Jaya / Wilayah Terkait&quot; from &quot;tujuan_kepolisian&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>And</b> I press &quot;Terbitkan Laporan&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>Then</b> I should see &quot;Kasus terdokumentasi otomatis&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>And</b> I should see &quot;Kasus selesai&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                </ul>
+                                </div>
+                            </div>
+                                                    <div class="panel panel-default passed">
+                                <div class="panel-heading" role="tab">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" data-parent="#accordion"
+                                           href="#scenario-1-2"
+                                           aria-expanded="true"
+                                           aria-controls="scenario-1-2">
+                                            Scenario: Menyimpan surat sebagai draf
+                                        </a>
+
+                                        <div class="tags pull-right">
+                                                                                                                                </div>
+                                    </h4>
+                                </div>
+                                <div id="scenario-1-2" class="panel-collapse collapse in"
+                                     role="tabpanel"
+                                     aria-labelledby="headingOne">
+                                    <ul class="list-group">
+                                                                                    <li class="list-group-item alert alert-success">
+                                                <b>Given</b> I am logged in as &quot;Kepala Bidang&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>Given</b> I am on the letter page for ticket &quot;#LKR-8770&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>When</b> I fill in &quot;kronologi&quot; with &quot;Draf kronologi sementara&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>And</b> I press &quot;Simpan Draft&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>Then</b> I should see &quot;Draf berhasil disimpan&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                </ul>
+                                </div>
+                            </div>
+                                                    <div class="panel panel-default passed">
+                                <div class="panel-heading" role="tab">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" data-parent="#accordion"
+                                           href="#scenario-1-3"
+                                           aria-expanded="true"
+                                           aria-controls="scenario-1-3">
+                                            Scenario: Gagal menerbitkan dokumen
+                                        </a>
+
+                                        <div class="tags pull-right">
+                                                                                                                                </div>
+                                    </h4>
+                                </div>
+                                <div id="scenario-1-3" class="panel-collapse collapse in"
+                                     role="tabpanel"
+                                     aria-labelledby="headingOne">
+                                    <ul class="list-group">
+                                                                                    <li class="list-group-item alert alert-success">
+                                                <b>Given</b> I am logged in as &quot;Kepala Bidang&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>Given</b> I am on the letter page for ticket &quot;#LKR-8770&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>And</b> penerbitan dokumen akan gagal diproses sistem
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>When</b> I press &quot;Terbitkan Laporan&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>Then</b> I should see &quot;Gagal menerbitkan dokumen, draf telah disimpan&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>And</b> I should see &quot;Buat Laporan Polisi&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                </ul>
+                                </div>
+                            </div>
+                                            </div>
+                </div>
+                            <div class="feature" data-id="feature-2">
+                    <div class="col-sm-4">
+                        <div class="card passed">
+                            <div class="header">
+                                <h2>Feature: Menindaklanjuti laporan lowongan kerja yang mencurigakan</h2>
+                            </div>
+                            <div class="info">
+                                <p></p>
+                            </div>
+                            <div class="footer">
+                                <div class="tags">
+                                                                    </div>
+                                                                    <div class="progress">
+                                        <div class="progress-bar progress-bar-green" role="progressbar"
+                                             style="width: 100%">
+                                            <span class="sr-only">40% Complete (success)</span>
+                                        </div>
+                                        <div class="progress-bar progress-bar-warning" role="progressbar"
+                                             style="width: 0%">
+                                            <span class="sr-only">40% Complete (success)</span>
+                                        </div>
+                                        <div class="progress-bar progress-bar-red" role="progressbar"
+                                             style="width: 0%">
+                                            <span class="sr-only">40% Complete (success)</span>
+                                        </div>
+                                    </div>
+                                                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-8 details panel-group" role="tablist" aria-multiselectable="true">
+                                                    <div class="panel panel-default passed">
+                                <div class="panel-heading" role="tab">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" data-parent="#accordion"
+                                           href="#scenario-2-1"
+                                           aria-expanded="true"
+                                           aria-controls="scenario-2-1">
+                                            Scenario: Meninjau detail laporan mencurigakan
+                                        </a>
+
+                                        <div class="tags pull-right">
+                                                                                                                                </div>
+                                    </h4>
+                                </div>
+                                <div id="scenario-2-1" class="panel-collapse collapse in"
+                                     role="tabpanel"
+                                     aria-labelledby="headingOne">
+                                    <ul class="list-group">
+                                                                                    <li class="list-group-item alert alert-success">
+                                                <b>Given</b> I am logged in as &quot;Kepala Bidang&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>Given</b> I am on the &quot;/tindak-lanjut/&quot; page
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>When</b> I follow &quot;Lihat Detail&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>Then</b> I should see &quot;Detail Laporan Lowongan Mencurigakan&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>And</b> I should see &quot;Informasi Lowongan&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>And</b> I should see &quot;Ringkasan Laporan&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>And</b> I should see &quot;Terindikasi Anomali Tinggi&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                </ul>
+                                </div>
+                            </div>
+                                                    <div class="panel panel-default passed">
+                                <div class="panel-heading" role="tab">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" data-parent="#accordion"
+                                           href="#scenario-2-2"
+                                           aria-expanded="true"
+                                           aria-controls="scenario-2-2">
+                                            Scenario: Menandai laporan tidak ditindaklanjuti
+                                        </a>
+
+                                        <div class="tags pull-right">
+                                                                                            <span class="badge">javascript</span>
+                                                                                                                                </div>
+                                    </h4>
+                                </div>
+                                <div id="scenario-2-2" class="panel-collapse collapse in"
+                                     role="tabpanel"
+                                     aria-labelledby="headingOne">
+                                    <ul class="list-group">
+                                                                                    <li class="list-group-item alert alert-success">
+                                                <b>Given</b> I am logged in as &quot;Kepala Bidang&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>Given</b> I am on the report detail page for ticket &quot;#LKR-2025-0842&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>When</b> I select &quot;Tidak Ditindaklanjuti&quot; from &quot;keputusan&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>And</b> I press &quot;Konfirmasi Keputusan&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>And</b> I press &quot;Ya, Konfirmasi&quot; in the pop-up
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>Then</b> I should see &quot;Kasus ditandai tidak dilanjuti dan diarsipkan&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                </ul>
+                                </div>
+                            </div>
+                                                    <div class="panel panel-default passed">
+                                <div class="panel-heading" role="tab">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" data-parent="#accordion"
+                                           href="#scenario-2-3"
+                                           aria-expanded="true"
+                                           aria-controls="scenario-2-3">
+                                            Scenario: Menindaklanjuti laporan ke pembuatan surat
+                                        </a>
+
+                                        <div class="tags pull-right">
+                                                                                            <span class="badge">javascript</span>
+                                                                                                                                </div>
+                                    </h4>
+                                </div>
+                                <div id="scenario-2-3" class="panel-collapse collapse in"
+                                     role="tabpanel"
+                                     aria-labelledby="headingOne">
+                                    <ul class="list-group">
+                                                                                    <li class="list-group-item alert alert-success">
+                                                <b>Given</b> I am logged in as &quot;Kepala Bidang&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>Given</b> I am on the report detail page for ticket &quot;#LKR-2025-0842&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>When</b> I select &quot;Tindaklanjuti&quot; from &quot;keputusan&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>And</b> I press &quot;Konfirmasi Keputusan&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>And</b> I press &quot;Ya, Konfirmasi&quot; in the pop-up
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>Then</b> I should see &quot;Keputusan Berhasil Disimpan&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>When</b> I follow &quot;Lanjut ke Pembuatan Surat&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>Then</b> the url should match &quot;/buat-surat/\d+$&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>And</b> I should see &quot;Buat Laporan Polisi&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                </ul>
+                                </div>
+                            </div>
+                                            </div>
+                </div>
+                            <div class="feature" data-id="feature-3">
+                    <div class="col-sm-4">
+                        <div class="card passed">
+                            <div class="header">
+                                <h2>Feature: Meninjau lowongan kerja dengan prioritas tinggi</h2>
+                            </div>
+                            <div class="info">
+                                <p></p>
+                            </div>
+                            <div class="footer">
+                                <div class="tags">
+                                                                    </div>
+                                                                    <div class="progress">
+                                        <div class="progress-bar progress-bar-green" role="progressbar"
+                                             style="width: 100%">
+                                            <span class="sr-only">40% Complete (success)</span>
+                                        </div>
+                                        <div class="progress-bar progress-bar-warning" role="progressbar"
+                                             style="width: 0%">
+                                            <span class="sr-only">40% Complete (success)</span>
+                                        </div>
+                                        <div class="progress-bar progress-bar-red" role="progressbar"
+                                             style="width: 0%">
+                                            <span class="sr-only">40% Complete (success)</span>
+                                        </div>
+                                    </div>
+                                                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-8 details panel-group" role="tablist" aria-multiselectable="true">
+                                                    <div class="panel panel-default passed">
+                                <div class="panel-heading" role="tab">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" data-parent="#accordion"
+                                           href="#scenario-3-1"
+                                           aria-expanded="true"
+                                           aria-controls="scenario-3-1">
+                                            Scenario: Menampilkan daftar lowongan prioritas tinggi
+                                        </a>
+
+                                        <div class="tags pull-right">
+                                                                                                                                </div>
+                                    </h4>
+                                </div>
+                                <div id="scenario-3-1" class="panel-collapse collapse in"
+                                     role="tabpanel"
+                                     aria-labelledby="headingOne">
+                                    <ul class="list-group">
+                                                                                    <li class="list-group-item alert alert-success">
+                                                <b>Given</b> I am logged in as &quot;Analis&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>When</b> I follow &quot;Pemantauan&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>Then</b> I should see &quot;Daftar Lowongan Prioritas Tinggi&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                </ul>
+                                </div>
+                            </div>
+                                                    <div class="panel panel-default passed">
+                                <div class="panel-heading" role="tab">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" data-parent="#accordion"
+                                           href="#scenario-3-2"
+                                           aria-expanded="true"
+                                           aria-controls="scenario-3-2">
+                                            Scenario: Memfilter daftar berdasarkan skor
+                                        </a>
+
+                                        <div class="tags pull-right">
+                                                                                                                                </div>
+                                    </h4>
+                                </div>
+                                <div id="scenario-3-2" class="panel-collapse collapse in"
+                                     role="tabpanel"
+                                     aria-labelledby="headingOne">
+                                    <ul class="list-group">
+                                                                                    <li class="list-group-item alert alert-success">
+                                                <b>Given</b> I am logged in as &quot;Analis&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>Given</b> I am on the &quot;/tinjau-lowongan/&quot; page
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>When</b> I select &quot;Skor Tinggi&quot; from &quot;filter_skor&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>And</b> I select &quot;Skor Tertinggi&quot; from &quot;urutan&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>And</b> I press &quot;Cari&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>Then</b> I should see &quot;Daftar Sesuai Kriteria Filter&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                </ul>
+                                </div>
+                            </div>
+                                                    <div class="panel panel-default passed">
+                                <div class="panel-heading" role="tab">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" data-parent="#accordion"
+                                           href="#scenario-3-3"
+                                           aria-expanded="true"
+                                           aria-controls="scenario-3-3">
+                                            Scenario: Mencari lowongan berdasarkan nomor tiket dan data ditemukan
+                                        </a>
+
+                                        <div class="tags pull-right">
+                                                                                                                                </div>
+                                    </h4>
+                                </div>
+                                <div id="scenario-3-3" class="panel-collapse collapse in"
+                                     role="tabpanel"
+                                     aria-labelledby="headingOne">
+                                    <ul class="list-group">
+                                                                                    <li class="list-group-item alert alert-success">
+                                                <b>Given</b> I am logged in as &quot;Analis&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>Given</b> I am on the &quot;/tinjau-lowongan/&quot; page
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>When</b> I fill in &quot;nomor_tiket&quot; with &quot;#LKR-8819&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>And</b> I press &quot;Cari&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>Then</b> I should see &quot;Hasil Pencarian&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                </ul>
+                                </div>
+                            </div>
+                                                    <div class="panel panel-default passed">
+                                <div class="panel-heading" role="tab">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" data-parent="#accordion"
+                                           href="#scenario-3-4"
+                                           aria-expanded="true"
+                                           aria-controls="scenario-3-4">
+                                            Scenario: Data lowongan tidak ditemukan
+                                        </a>
+
+                                        <div class="tags pull-right">
+                                                                                                                                </div>
+                                    </h4>
+                                </div>
+                                <div id="scenario-3-4" class="panel-collapse collapse in"
+                                     role="tabpanel"
+                                     aria-labelledby="headingOne">
+                                    <ul class="list-group">
+                                                                                    <li class="list-group-item alert alert-success">
+                                                <b>Given</b> I am logged in as &quot;Analis&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>Given</b> I am on the &quot;/tinjau-lowongan/&quot; page
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>When</b> I fill in &quot;nomor_tiket&quot; with &quot;#LKR-0000&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>And</b> I press &quot;Cari&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>Then</b> I should see &quot;Data Lowongan Tidak Ditemukan&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                </ul>
+                                </div>
+                            </div>
+                                                    <div class="panel panel-default passed">
+                                <div class="panel-heading" role="tab">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" data-parent="#accordion"
+                                           href="#scenario-3-5"
+                                           aria-expanded="true"
+                                           aria-controls="scenario-3-5">
+                                            Scenario: Meninjau detail lowongan
+                                        </a>
+
+                                        <div class="tags pull-right">
+                                                                                                                                </div>
+                                    </h4>
+                                </div>
+                                <div id="scenario-3-5" class="panel-collapse collapse in"
+                                     role="tabpanel"
+                                     aria-labelledby="headingOne">
+                                    <ul class="list-group">
+                                                                                    <li class="list-group-item alert alert-success">
+                                                <b>Given</b> I am logged in as &quot;Analis&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>Given</b> I am on the &quot;/tinjau-lowongan/&quot; page
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>When</b> I follow &quot;Lihat Detail&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>Then</b> I should see &quot;Detail Lowongan Terpilih&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>And</b> I should see &quot;Confidence Score&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>And</b> I should see &quot;Indikator Mencurigakan&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                </ul>
+                                </div>
+                            </div>
+                                                    <div class="panel panel-default passed">
+                                <div class="panel-heading" role="tab">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" data-parent="#accordion"
+                                           href="#scenario-3-6"
+                                           aria-expanded="true"
+                                           aria-controls="scenario-3-6">
+                                            Scenario: Mengisi catatan tinjauan dan melanjutkan
+                                        </a>
+
+                                        <div class="tags pull-right">
+                                                                                                                                </div>
+                                    </h4>
+                                </div>
+                                <div id="scenario-3-6" class="panel-collapse collapse in"
+                                     role="tabpanel"
+                                     aria-labelledby="headingOne">
+                                    <ul class="list-group">
+                                                                                    <li class="list-group-item alert alert-success">
+                                                <b>Given</b> I am logged in as &quot;Analis&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>Given</b> I am on the review detail page for ticket &quot;#LKR-8819&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>When</b> I fill in &quot;catatan_tinjauan&quot; with &quot;catatan tinjauan&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>And</b> I select &quot;Terkonfirmasi Mencurigakan&quot; from &quot;hasil_tinjauan&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>And</b> I press &quot;Lanjutkan&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>Then</b> I should see &quot;Hasil Tinjauan Berhasil Disimpan&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>And</b> I should see &quot;Daftar Lowongan Prioritas Tinggi&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                </ul>
+                                </div>
+                            </div>
+                                            </div>
+                </div>
+                            <div class="feature" data-id="feature-4">
+                    <div class="col-sm-4">
+                        <div class="card passed">
+                            <div class="header">
+                                <h2>Feature: Periksa lowongan kerja</h2>
+                            </div>
+                            <div class="info">
+                                <p></p>
+                            </div>
+                            <div class="footer">
+                                <div class="tags">
+                                                                    </div>
+                                                                    <div class="progress">
+                                        <div class="progress-bar progress-bar-green" role="progressbar"
+                                             style="width: 100%">
+                                            <span class="sr-only">40% Complete (success)</span>
+                                        </div>
+                                        <div class="progress-bar progress-bar-warning" role="progressbar"
+                                             style="width: 0%">
+                                            <span class="sr-only">40% Complete (success)</span>
+                                        </div>
+                                        <div class="progress-bar progress-bar-red" role="progressbar"
+                                             style="width: 0%">
+                                            <span class="sr-only">40% Complete (success)</span>
+                                        </div>
+                                    </div>
+                                                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-8 details panel-group" role="tablist" aria-multiselectable="true">
+                                                    <div class="panel panel-default passed">
+                                <div class="panel-heading" role="tab">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" data-parent="#accordion"
+                                           href="#scenario-4-1"
+                                           aria-expanded="true"
+                                           aria-controls="scenario-4-1">
+                                            Scenario: Pemeriksaan lowongan berhasil dijalankan
+                                        </a>
+
+                                        <div class="tags pull-right">
+                                                                                            <span class="badge">ml</span>
+                                                                                                                                </div>
+                                    </h4>
+                                </div>
+                                <div id="scenario-4-1" class="panel-collapse collapse in"
+                                     role="tabpanel"
+                                     aria-labelledby="headingOne">
+                                    <ul class="list-group">
+                                                                                    <li class="list-group-item alert alert-success">
+                                                <b>Given</b> I am logged in as &quot;Masyarakat&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>Given</b> I am on the &quot;/periksa-lowongan/&quot; page
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>When</b> I fill in &quot;nama_perusahaan&quot; with &quot;PT Maju Bersama Sejahtera&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>And</b> I fill in &quot;posisi_lowongan&quot; with &quot;Staff Administrasi&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>And</b> I fill in &quot;deskripsi_lowongan&quot; with &quot;Dibutuhkan staff administrasi, wajib transfer biaya pendaftaran&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>And</b> I press &quot;Periksa Sekarang&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>Then</b> I should see &quot;Hasil Pemeriksaan&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>And</b> I should see &quot;biaya&quot; in the &quot;#kata-pemicu&quot; element
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>And</b> I should see an &quot;#kata-pemicu&quot; element
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                </ul>
+                                </div>
+                            </div>
+                                                    <div class="panel panel-default passed">
+                                <div class="panel-heading" role="tab">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" data-parent="#accordion"
+                                           href="#scenario-4-2"
+                                           aria-expanded="true"
+                                           aria-controls="scenario-4-2">
+                                            Scenario: Gagal memeriksa karena field yang wajib diisi kosong
+                                        </a>
+
+                                        <div class="tags pull-right">
+                                                                                                                                </div>
+                                    </h4>
+                                </div>
+                                <div id="scenario-4-2" class="panel-collapse collapse in"
+                                     role="tabpanel"
+                                     aria-labelledby="headingOne">
+                                    <ul class="list-group">
+                                                                                    <li class="list-group-item alert alert-success">
+                                                <b>Given</b> I am logged in as &quot;Masyarakat&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>Given</b> I am on the &quot;/periksa-lowongan/&quot; page
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>When</b> I press &quot;Periksa Sekarang&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>Then</b> I should see &quot;Data belum lengkap, mohon lengkapi terlebih dahulu&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>And</b> I should not see &quot;Hasil Pemeriksaan&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                </ul>
+                                </div>
+                            </div>
+                                                    <div class="panel panel-default passed">
+                                <div class="panel-heading" role="tab">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" data-parent="#accordion"
+                                           href="#scenario-4-3"
+                                           aria-expanded="true"
+                                           aria-controls="scenario-4-3">
+                                            Scenario: Mereset formulir pemeriksaan
+                                        </a>
+
+                                        <div class="tags pull-right">
+                                                                                            <span class="badge">javascript</span>
+                                                                                                                                </div>
+                                    </h4>
+                                </div>
+                                <div id="scenario-4-3" class="panel-collapse collapse in"
+                                     role="tabpanel"
+                                     aria-labelledby="headingOne">
+                                    <ul class="list-group">
+                                                                                    <li class="list-group-item alert alert-success">
+                                                <b>Given</b> I am logged in as &quot;Masyarakat&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>Given</b> I am on the &quot;/periksa-lowongan/&quot; page
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>When</b> I fill in &quot;nama_perusahaan&quot; with &quot;PT Coba Reset&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>And</b> I press &quot;Reset Form&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                        <li class="list-group-item alert alert-success">
+                                                <b>Then</b> the &quot;nama_perusahaan&quot; field should not contain &quot;PT Coba Reset&quot;
+                                                                                                                                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                </ul>
+                                </div>
+                            </div>
+                                            </div>
+                </div>
+                        </div>
+</div>
+<!-- /container -->
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+
+<script type="text/javascript">
+    window.onload = function () {
+        var featureChart = document.getElementById("chart-features").getContext("2d");
+        var scenarioChart = document.getElementById("chart-scenarios").getContext("2d");
+        var stepChart = document.getElementById("chart-steps").getContext("2d");
+        new Chart(featureChart, {type: 'doughnut', options: {legend: {display: false}}, data: {
+                labels: ['Failed', 'Passed'],
+                datasets: [{
+                    data: [0, 4],
+                    backgroundColor: ["#F7464A", "#00a65a"],
+                }],
+            }});
+        new Chart(scenarioChart, {type: 'doughnut', options: {legend: {display: false}}, data: {
+                labels: ['Failed', 'Pending', 'Passed'],
+                datasets: [{
+                    data: [0, 0, 15],
+                    backgroundColor: ['#F7464A', 'e38d13', '#00a65a'],
+                }],
+            }});
+        new Chart(stepChart, {type: 'doughnut', options: {legend: {display: false}}, data: {
+                labels: ['Failed','Passed'],
+                datasets: [{
+                    data: [0, 91],
+                    backgroundColor: ["#F7464A", "#00a65a"],
+                }],
+            }});
+    };
+</script>
+<script type="text/javascript">
+    function showOverview() {
+        $("#feature-overview").show();
+        $("#scenario-overview").hide();
+    }
+    function showDetails() {
+        $("#feature-overview").hide();
+        $("#scenario-overview").show();
+    }
+    function showFeatureDetail(featureId) {
+        $("#scenario-overview .feature").hide();
+        $("#scenario-overview .feature[data-id='" + featureId + "']").show();
+    }
+    $(function () {
+        $('.collapse').collapse();
+
+        $('.filters').click()
+        {
+            showOverview();
+        }
+
+        $('.filters #feature-failed-filter').click(function () {
+            showOverview();
+            $('.feature').hide();
+            $('.card.failed').parent().show();
+        });
+        $('.filters #feature-pending-filter').click(function () {
+            showOverview();
+            $('.feature').hide();
+            $('.card.pending').parent().show();
+        });
+        $('.filters #feature-passed-filter').click(function () {
+            showOverview();
+            $('.feature').hide();
+            $('.card.passed').parent().show();
+        });
+        $('.filters #feature-all-filter').click(function () {
+            showOverview();
+            $('.feature').show();
+        });
+    });
+
+    $(function () {
+        $(".feature").click(function () {
+            var featureId = $(this).data("id");
+            showDetails();
+            showFeatureDetail(featureId);
+        });
+    });
+</script>
+</body>
+</html>

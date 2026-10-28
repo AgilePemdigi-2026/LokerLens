@@ -191,6 +191,21 @@ bdd\vendor\bin\behat --config bdd\behat.yml                               # semu
 bdd\vendor\bin\behat --config bdd\behat.yml bdd\features\buat_surat.feature   # satu fitur saja
 ```
 
+**Laporan HTML.** Selain hasil di terminal, setiap run Behat juga membuat laporan HTML (paket `emuse/behat-html-formatter`, sudah ikut terpasang lewat `composer install --working-dir=bdd`). Supaya nama filenya mudah dipahami, jalankan test lewat perintah ini (layanan di Terminal 1–3 tetap harus menyala):
+
+```powershell
+# Terminal 4 (dari web/bdd/)
+composer test-bdd                           # semua 15 skenario + laporan HTML
+composer test-bdd -- --tags="@javascript"   # argumen setelah "--" diteruskan ke Behat
+```
+
+- Lokasi: `web/bdd/laporan/hasil-test-bdd_<tanggal>_<jam>.html`, misalnya `hasil-test-bdd_2026-10-28_15-38.html`. Setiap run membuat file baru. Kalau ada dua run di menit yang sama, detiknya ikut ditambahkan ke nama file.
+- Isi: ringkasan jumlah Feature, skenario, dan langkah yang lulus/gagal (dengan grafik), lalu daftar per Feature dan per skenario beserta langkah-langkahnya.
+- Buka file tersebut di browser (klik dua kali di File Explorer). Tampilan laporan memuat Bootstrap dan Chart.js dari internet, jadi butuh koneksi supaya rapi.
+- `composer test-bdd` menjalankan `web/bdd/ganti_nama_laporan.php`, yang menjalankan Behat lalu mengganti nama laporan terbaru. Laporan tetap diganti nama walaupun ada skenario yang gagal. Kalau Behat dijalankan langsung (`bdd\vendor\bin\behat ...`), laporannya bernama `Twig_<tanggaljam>.html`. Ganti namanya dengan `php ganti_nama_laporan.php` dari `web/bdd/`.
+- Folder `web/bdd/laporan/` tidak ikut di-commit (lihat `.gitignore`), kecuali `assets/` dan laporan final sprint `hasil-test-bdd_2026-10-28_15-38.html`.
+- Pengaturannya ada di bagian `formatters` dan `extensions` di `web/bdd/behat.yml`.
+
 **Pengaman.** Test berhenti sebelum menyentuh data jika `DB_DATABASE` di `.env.behat` tidak diakhiri `_testing`, atau jika server di port 8010 tidak memakai `.env.behat` (judul halaman harus "LokerLens BEHAT"). Skenario `@ml` berhenti dengan pesan jelas jika API ML belum menyala.
 
 ---

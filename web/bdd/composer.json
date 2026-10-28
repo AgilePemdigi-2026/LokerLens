@@ -7,13 +7,21 @@
         "behat/mink-browserkit-driver": "^2.3",
         "dmore/behat-chrome-extension": "^1.5",
         "dmore/chrome-mink-driver": "^2.11",
+        "emuse/behat-html-formatter": "^2.0",
         "friends-of-behat/mink-extension": "^2.7",
         "symfony/http-client": "^7.4"
+    },
+    "scripts": {
+        "test-bdd": "@php ganti_nama_laporan.php --jalankan-behat"
+    },
+    "scripts-descriptions": {
+        "test-bdd": "Jalankan semua skenario Behat, lalu simpan laporan HTML sebagai laporan/hasil-test-bdd_<tanggal>_<jam>.html"
     },
     "config": {
         "platform": {
             "php": "8.3.0"
         },
+        "process-timeout": 0,
         "sort-packages": true
     }
 }

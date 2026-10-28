@@ -9,7 +9,25 @@ default:
         # ("I fill in", "I press", "I should see", ...) ikut tersedia.
         - FeatureContext
 
+  # Setiap kali test dijalankan, hasil tampil di terminal (pretty)
+  # sekaligus disimpan sebagai laporan HTML di folder laporan/.
+  formatters:
+    pretty: true
+    html:
+      output_path: '%paths.base%/laporan'
+
   extensions:
+    # Laporan HTML per Feature dan per skenario, lengkap dengan ringkasan
+    # jumlah lulus/gagal. Nama file dari Behat: Twig_<tanggaljam>.html, lalu diganti jadi
+    # hasil-test-bdd_<tanggal>_<jam>.html oleh ganti_nama_laporan.php (composer test-bdd).
+    emuse\BehatHTMLFormatter\BehatHTMLFormatterExtension:
+      name: html
+      renderer: Twig
+      file_name: generated
+      print_args: true
+      print_outp: true
+      loop_break: true
+
     DMore\ChromeExtension\Behat\ServiceContainer\ChromeExtension: ~
 
     Behat\MinkExtension:

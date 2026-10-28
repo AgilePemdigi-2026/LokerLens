@@ -51,3 +51,11 @@ ml/data/raw/images/
 # File sementara Python
 __pycache__/
 *.pyc
+
+# ─── Laporan HTML test BDD (web/bdd/) ─────────────────
+# Dibuat ulang setiap kali Behat dijalankan, jadi tidak ikut di-commit.
+# Folder assets/ (CSS laporan) tetap disimpan supaya laporan final tampil rapi.
+/web/bdd/laporan/*
+!/web/bdd/laporan/assets/
+# Laporan final (bukti sprint) yang ikut di-commit:
+!/web/bdd/laporan/hasil-test-bdd_2026-10-28_15-38.html

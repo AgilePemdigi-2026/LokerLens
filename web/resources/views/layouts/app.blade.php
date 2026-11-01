@@ -37,16 +37,88 @@
         {{ $slot }}
     </main>
 
-    <!-- Footer Tipis Resmi (Bagian 4.1 Panduan) -->
-    <footer class="bg-navy-900 border-t border-navy-800 py-4 px-6 text-xs text-gray-400 mt-auto">
-        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
-            <div>
-                © 2026 LokerLens
+    <!-- Footer (Gambar 2.4 §3.2): Layanan & Bantuan untuk Masyarakat; minimalis untuk peran lain -->
+    @if(Auth::user()->isMasyarakat())
+        <footer class="bg-navy-900 border-t border-navy-800 text-white mt-auto">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-8">
+                    <!-- Brand -->
+                    <div>
+                        <div class="flex items-center space-x-2 mb-3">
+                            <div class="w-8 h-8 rounded-lg bg-teal-600 flex items-center justify-center text-white shadow-inner">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m-3-3h6"></path>
+                                </svg>
+                            </div>
+                            <span class="text-base font-bold tracking-tight text-white">Loker<span class="text-teal-400 font-extrabold">Lens</span></span>
+                        </div>
+                        <p class="text-xs text-gray-400 leading-relaxed">
+                            Sistem deteksi lowongan kerja mencurigakan untuk perlindungan pencari kerja Indonesia.
+                        </p>
+                        <p class="text-xs text-gray-500 mt-4">© 2026 LokerLens</p>
+                    </div>
+
+                    <!-- Layanan -->
+                    <div>
+                        <h4 class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Layanan</h4>
+                        <ul class="space-y-2.5">
+                            <li>
+                                <a href="{{ route('periksa-lowongan.index') }}" class="text-sm text-gray-300 hover:text-teal-400 transition">
+                                    Ajukan Pengaduan
+                                </a>
+                            </li>
+                            <li>
+                                <span class="text-sm text-gray-500 cursor-not-allowed" title="Fitur Sprint 2">
+                                    Status Pengaduan
+                                </span>
+                            </li>
+                            <li>
+                                <span class="text-sm text-gray-500 cursor-not-allowed" title="Fitur Sprint 2">
+                                    Riwayat Pengaduan
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Bantuan -->
+                    <div>
+                        <h4 class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Bantuan</h4>
+                        <ul class="space-y-2.5">
+                            <li>
+                                <span class="text-sm text-gray-500 cursor-not-allowed" title="Fitur Sprint 2">
+                                    Panduan Pengaduan
+                                </span>
+                            </li>
+                            <li>
+                                <span class="text-sm text-gray-500 cursor-not-allowed" title="Fitur Sprint 2">
+                                    Cara Kerja
+                                </span>
+                            </li>
+                            <li>
+                                <span class="text-sm text-gray-500 cursor-not-allowed" title="Fitur Sprint 2">
+                                    Pusat Bantuan
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="border-t border-navy-800 mt-8 pt-4 text-xs text-gray-500 text-center">
+                    Keamanan Digital • Sistem Deteksi Penipuan Lowongan Kerja
+                </div>
             </div>
-            <div class="text-gray-400 font-medium">
-                Keamanan Digital • Sistem Deteksi Penipuan Lowongan Kerja
+        </footer>
+    @else
+        <footer class="bg-navy-900 border-t border-navy-800 py-4 px-6 text-xs text-gray-400 mt-auto">
+            <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
+                <div>
+                    © 2026 LokerLens
+                </div>
+                <div class="text-gray-400 font-medium">
+                    Keamanan Digital • Sistem Deteksi Penipuan Lowongan Kerja
+                </div>
             </div>
-        </div>
-    </footer>
+        </footer>
+    @endif
 </body>
 </html>

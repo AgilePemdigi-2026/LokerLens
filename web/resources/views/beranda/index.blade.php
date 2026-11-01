@@ -20,10 +20,12 @@
                         <span>Ajukan Pengaduan</span>
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                     </a>
-                    <a href="#pengaduan-terbaru"
-                       class="px-6 py-3 rounded-control bg-navy-800 hover:bg-navy-700 text-gray-200 font-semibold text-xs transition border border-navy-700">
+                    {{-- Cek Status Pengaduan: mengarah ke halaman Status Pengaduan (belum tersedia, Sprint 2) --}}
+                    <span title="Fitur ini akan tersedia di Sprint 2"
+                       class="px-6 py-3 rounded-control bg-navy-800 text-gray-400 font-semibold text-xs cursor-not-allowed border border-navy-700 flex items-center gap-2">
                         Cek Status Pengaduan
-                    </a>
+                        <span class="text-[10px] bg-navy-700 border border-gray-600 text-gray-400 px-1.5 py-0.5 rounded">Sprint 2</span>
+                    </span>
                 </div>
             </div>
 
@@ -66,35 +68,35 @@
                     </a>
                 </div>
 
-                <!-- Kartu 02: Status Pengaduan -->
-                <div class="bg-white rounded-card shadow-lg p-6 border border-gray-100 flex flex-col justify-between hover:shadow-xl transition">
-                    <div>
-                        <span class="text-xs font-mono font-bold text-teal-600 bg-teal-50 px-2.5 py-1 rounded">02</span>
-                        <h3 class="text-lg font-bold text-navy-900 mt-3">Status Pengaduan</h3>
-                        <p class="text-xs text-gray-600 mt-1.5 leading-relaxed">
-                            Memantau perkembangan laporan dan tindakan yang sedang diambil oleh analis dan dinas terkait.
-                        </p>
+                    {{-- Kartu 02: Status Pengaduan (belum tersedia, Sprint 2) --}}
+                    <div class="bg-white rounded-card shadow-lg p-6 border border-gray-100 flex flex-col justify-between">
+                        <div>
+                            <span class="text-xs font-mono font-bold text-teal-600 bg-teal-50 px-2.5 py-1 rounded">02</span>
+                            <h3 class="text-lg font-bold text-navy-900 mt-3">Status Pengaduan</h3>
+                            <p class="text-xs text-gray-600 mt-1.5 leading-relaxed">
+                                Memantau perkembangan laporan dan tindakan yang sedang diambil oleh analis dan dinas terkait.
+                            </p>
+                        </div>
+                        <span title="Fitur ini akan tersedia di Sprint 2" class="mt-6 inline-flex items-center text-xs font-bold text-gray-400 cursor-not-allowed gap-1">
+                            <span>Lihat Status</span>
+                            <span class="text-[10px] bg-gray-100 border border-gray-200 text-gray-400 px-1.5 py-0.5 rounded">Sprint 2</span>
+                        </span>
                     </div>
-                    <a href="#pengaduan-terbaru" class="mt-6 inline-flex items-center text-xs font-bold text-teal-700 hover:text-teal-800">
-                        <span>Lihat Status</span>
-                        <span class="ml-1">→</span>
-                    </a>
-                </div>
 
-                <!-- Kartu 03: Riwayat Pengaduan -->
-                <div class="bg-white rounded-card shadow-lg p-6 border border-gray-100 flex flex-col justify-between hover:shadow-xl transition">
-                    <div>
-                        <span class="text-xs font-mono font-bold text-teal-600 bg-teal-50 px-2.5 py-1 rounded">03</span>
-                        <h3 class="text-lg font-bold text-navy-900 mt-3">Riwayat Pengaduan</h3>
-                        <p class="text-xs text-gray-600 mt-1.5 leading-relaxed">
-                            Melihat kembali rekam jejak laporan yang pernah Anda ajukan dan hasil verifikasi dokumen resminya.
-                        </p>
+                    {{-- Kartu 03: Riwayat Pengaduan (belum tersedia, Sprint 2) --}}
+                    <div class="bg-white rounded-card shadow-lg p-6 border border-gray-100 flex flex-col justify-between">
+                        <div>
+                            <span class="text-xs font-mono font-bold text-teal-600 bg-teal-50 px-2.5 py-1 rounded">03</span>
+                            <h3 class="text-lg font-bold text-navy-900 mt-3">Riwayat Pengaduan</h3>
+                            <p class="text-xs text-gray-600 mt-1.5 leading-relaxed">
+                                Melihat kembali rekam jejak laporan yang pernah Anda ajukan dan hasil verifikasi dokumen resminya.
+                            </p>
+                        </div>
+                        <span title="Fitur ini akan tersedia di Sprint 2" class="mt-6 inline-flex items-center text-xs font-bold text-gray-400 cursor-not-allowed gap-1">
+                            <span>Buka Riwayat</span>
+                            <span class="text-[10px] bg-gray-100 border border-gray-200 text-gray-400 px-1.5 py-0.5 rounded">Sprint 2</span>
+                        </span>
                     </div>
-                    <a href="#pengaduan-terbaru" class="mt-6 inline-flex items-center text-xs font-bold text-teal-700 hover:text-teal-800">
-                        <span>Buka Riwayat</span>
-                        <span class="ml-1">→</span>
-                    </a>
-                </div>
             </div>
         </div>
 

@@ -87,6 +87,9 @@ final class LokerLensCopy
     public const LABEL_INVESTIGASI_AWAL    = 'INVESTIGASI AWAL';
     public const LABEL_AKTIF               = 'AKTIF';
 
+        public const JUDUL_DASHBOARD_KEPALA_BIDANG = 'Dashboard Kepala Bidang';
+    public const DESKRIPSI_DASHBOARD_KEPALA_BIDANG = 'Ringkasan jumlah laporan berdasarkan status penanganan.';
+
     // ──────────────────────────────────────────────
     //  Catatan hasil analisis (NFR-SAF-01, BR-04)
     //  Dipakai di halaman Hasil Pemeriksaan dan Status Pengaduan.

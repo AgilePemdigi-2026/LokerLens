@@ -113,40 +113,7 @@
                 </p>
             @endforelse
         </div>
-        
-        {{-- Akses Cepat --}}
-        <div class="bg-white rounded-card border border-gray-100 shadow-sm p-6 sm:p-8">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
-                    <p class="text-xs uppercase tracking-widest font-bold text-teal-600 mb-2">
-                        AKSES CEPAT
-                    </p>
 
-                    <h2 class="text-lg font-bold text-navy-900">
-                        Laporan yang perlu ditangani
-                    </h2>
-
-                    <p class="text-sm text-gray-500 mt-1">
-                        Periksa laporan yang masih menunggu keputusan Kepala Bidang.
-                    </p>
-                </div>
-
-                <a href="{{ route('tindak-lanjut.index', ['status' => 'Menunggu Keputusan']) }}"
-                   class="inline-flex items-center justify-center gap-2 px-5 py-3 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-lg transition-colors">
-                    Lihat laporan menunggu keputusan
-
-                    <svg xmlns="http://www.w3.org/2000/svg"
-                         class="w-4 h-4"
-                         fill="none"
-                         viewBox="0 0 24 24"
-                         stroke="currentColor"
-                         stroke-width="2">
-                        <path stroke-linecap="round"
-                              stroke-linejoin="round"
-                              d="M9 5l7 7-7 7" />
-                    </svg>
-                </a>
-            </div>
         </div>
     </div>
 </x-app-layout>

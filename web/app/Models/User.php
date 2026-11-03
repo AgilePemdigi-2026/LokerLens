@@ -71,11 +71,11 @@ class User extends Authenticatable
      * Masyarakat → Beranda; Analis → Tinjau Lowongan; Kepala Bidang → Tindak Lanjut.
      */
     public function halamanAwal(): string
-    {
-        return match ($this->role) {
-            'Analis'        => route('tinjau-lowongan.index'),
-            'Kepala Bidang' => route('tindak-lanjut.index'),
-            default         => route('beranda'), // Masyarakat
-        };
-    }
+{
+    return match ($this->role) {
+        'Analis'        => route('tinjau-lowongan.index'),
+        'Kepala Bidang' => route('dashboard-kepala-bidang.index'),
+        default         => route('beranda'), // Masyarakat
+    };
+}
 }

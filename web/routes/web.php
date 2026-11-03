@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BerandaController;
 use App\Http\Controllers\BuatSuratController;
+use App\Http\Controllers\DashboardKepalaBidangController;
 use App\Http\Controllers\PeriksaLowonganController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TindakLanjutController;
@@ -66,6 +67,10 @@ Route::middleware('auth')->group(function () {
     // ── Kepala Bidang ────────────────────────────────────────────────────────
     Route::middleware('role:Kepala Bidang')->group(function () {
 
+            // Dashboard Kepala Bidang — /dashboard-kepala-bidang (Sprint 2, issue #14)
+        Route::get('/dashboard-kepala-bidang', [DashboardKepalaBidangController::class, 'index'])
+            ->name('dashboard-kepala-bidang.index');
+            
         // Tindak Lanjut — /tindak-lanjut/ (Sprint 1)
         Route::get('/tindak-lanjut', [TindakLanjutController::class, 'index'])
             ->name('tindak-lanjut.index');

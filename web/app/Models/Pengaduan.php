@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\StatusKasus;
 use App\Exceptions\PerubahanStatusTidakValid;
+use App\Support\ProgresPengaduan;
 use Illuminate\Database\Eloquent\Model;
    use Illuminate\Database\Eloquent\Casts\Attribute;
 
@@ -94,6 +95,25 @@ class Pengaduan extends Model
     public function scopeMenungguKlasifikasi($query)
     {
         return $query->doesntHave('hasilKlasifikasi');
+    }
+
+    /**
+     * Pengaduan yang statusnya belum akhir (termasuk yang masih menunggu klasifikasi).
+     * Dipakai di Status Pengaduan (#11).
+     */
+    public function scopeAktif($query)
+    {
+        $statusAkhir = array_filter(StatusKasus::cases(), fn (StatusKasus $status) => $status->isAkhir());
+
+        return $query->whereNotIn('status_pengaduan', array_map(fn (StatusKasus $status) => $status->value, $statusAkhir));
+    }
+
+    /**
+     * Progres 5 tahap penanganan untuk ditampilkan ke Masyarakat (lihat App\Support\ProgresPengaduan).
+     */
+    public function progres(): ProgresPengaduan
+    {
+        return ProgresPengaduan::dari($this);
     }
 
     /**

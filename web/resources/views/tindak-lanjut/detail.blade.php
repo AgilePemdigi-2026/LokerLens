@@ -155,11 +155,12 @@
             <div>
                 <span class="text-xs font-semibold text-gray-600 block mb-2">Kata Kunci Pemicu Anomali:</span>
                 {{-- Dari tabel indikator_mencurigakan (kata pemicu model ML dan indikator lain) --}}
-                @if($klasifikasi && $klasifikasi->indikatorMencurigakan->isNotEmpty())
+                {{-- indikator_unik: kata pemicu model dirapikan dan tanpa duplikat --}}
+                @if($klasifikasi && $klasifikasi->indikator_unik->isNotEmpty())
                     <div class="flex flex-wrap gap-2">
-                        @foreach($klasifikasi->indikatorMencurigakan as $indikator)
+                        @foreach($klasifikasi->indikator_unik as $indikator)
                             <span class="px-2.5 py-1 rounded bg-red-100 text-risk-high text-xs font-semibold border border-red-200">
-                                "{{ $indikator->nama_indikator }}"
+                                "{{ $indikator->nama_tampil }}"
                             </span>
                         @endforeach
                     </div>
@@ -195,7 +196,7 @@
         @php
             // Hanya kata pemicu dari model ML (bukan indikator lain dari seeder)
             $kataPemicu = $klasifikasi
-                ? $klasifikasi->indikatorMencurigakan->where('kategori_indikator', \App\Models\IndikatorMencurigakan::KATEGORI_KATA_PEMICU)
+                ? $klasifikasi->indikator_unik->where('kategori_indikator', \App\Models\IndikatorMencurigakan::KATEGORI_KATA_PEMICU)
                 : collect();
         @endphp
         <div class="bg-white rounded-card shadow-lg p-6 sm:p-8 text-navy-900 border border-gray-100">
@@ -241,7 +242,7 @@
                     <div class="flex flex-wrap gap-2">
                         @foreach($kataPemicu as $pemicu)
                             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-control border border-red-200 bg-red-50/50 text-xs">
-                                <strong class="text-navy-900">{{ $pemicu->nama_indikator }}</strong>
+                                <strong class="text-navy-900">{{ $pemicu->nama_tampil }}</strong>
                                 <span class="font-mono text-risk-high">{{ $pemicu->bobot_indikator !== null ? number_format($pemicu->bobot_indikator, 2) : '-' }}</span>
                             </span>
                         @endforeach

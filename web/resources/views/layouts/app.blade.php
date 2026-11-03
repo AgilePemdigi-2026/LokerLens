@@ -68,9 +68,9 @@
                                 </a>
                             </li>
                             <li>
-                                <span class="text-sm text-gray-500 cursor-not-allowed" title="Fitur Sprint 2">
+                                <a href="{{ route('status-pengaduan.index') }}" class="text-sm text-gray-300 hover:text-teal-400 transition">
                                     Status Pengaduan
-                                </span>
+                                </a>
                             </li>
                             <li>
                                 <span class="text-sm text-gray-500 cursor-not-allowed" title="Fitur Sprint 2">

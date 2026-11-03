@@ -20,12 +20,11 @@
                         <span>Ajukan Pengaduan</span>
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                     </a>
-                    {{-- Cek Status Pengaduan: mengarah ke halaman Status Pengaduan (belum tersedia, Sprint 2) --}}
-                    <span title="Fitur ini akan tersedia di Sprint 2"
-                       class="px-6 py-3 rounded-control bg-navy-800 text-gray-400 font-semibold text-xs cursor-not-allowed border border-navy-700 flex items-center gap-2">
+                    {{-- Cek Status Pengaduan: mengarah ke halaman Status Pengaduan (#11) --}}
+                    <a href="{{ route('status-pengaduan.index') }}"
+                       class="px-6 py-3 rounded-control bg-navy-800 hover:bg-navy-700 text-white font-semibold text-xs border border-navy-700 transition">
                         Cek Status Pengaduan
-                        <span class="text-[10px] bg-navy-700 border border-gray-600 text-gray-400 px-1.5 py-0.5 rounded">Sprint 2</span>
-                    </span>
+                    </a>
                 </div>
             </div>
 
@@ -68,8 +67,8 @@
                     </a>
                 </div>
 
-                    {{-- Kartu 02: Status Pengaduan (belum tersedia, Sprint 2) --}}
-                    <div class="bg-white rounded-card shadow-lg p-6 border border-gray-100 flex flex-col justify-between">
+                    {{-- Kartu 02: Status Pengaduan (#11) --}}
+                    <div class="bg-white rounded-card shadow-lg p-6 border border-gray-100 flex flex-col justify-between hover:shadow-xl transition">
                         <div>
                             <span class="text-xs font-mono font-bold text-teal-600 bg-teal-50 px-2.5 py-1 rounded">02</span>
                             <h3 class="text-lg font-bold text-navy-900 mt-3">Status Pengaduan</h3>
@@ -77,10 +76,10 @@
                                 Memantau perkembangan laporan dan tindakan yang sedang diambil oleh analis dan dinas terkait.
                             </p>
                         </div>
-                        <span title="Fitur ini akan tersedia di Sprint 2" class="mt-6 inline-flex items-center text-xs font-bold text-gray-400 cursor-not-allowed gap-1">
+                        <a href="{{ route('status-pengaduan.index') }}" class="mt-6 inline-flex items-center text-xs font-bold text-teal-700 hover:text-teal-800">
                             <span>Lihat Status</span>
-                            <span class="text-[10px] bg-gray-100 border border-gray-200 text-gray-400 px-1.5 py-0.5 rounded">Sprint 2</span>
-                        </span>
+                            <span class="ml-1">→</span>
+                        </a>
                     </div>
 
                     {{-- Kartu 03: Riwayat Pengaduan (belum tersedia, Sprint 2) --}}
@@ -141,7 +140,9 @@
                             $per = $low->perusahaan ?? null;
                             $klas = $item->hasilKlasifikasi;
                         @endphp
-                        <div class="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-gray-50/60 px-3 rounded-lg transition">
+                        {{-- Seluruh item mengarah ke Status Pengaduan (link judul dibentangkan dengan after:inset-0);
+                             "Hasil Analisis" tetap bisa diklik karena berada di atasnya (relative z-10). --}}
+                        <div class="relative py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-gray-50/60 px-3 rounded-lg transition">
                             <div class="space-y-1">
                                 <div class="flex items-center gap-2">
                                     <span class="font-mono text-xs font-bold text-teal-800 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
@@ -152,7 +153,9 @@
                                     </span>
                                 </div>
                                 <h4 class="text-sm font-bold text-navy-900">
-                                    {{ $low->posisi_lowongan ?? '-' }} • <span class="font-normal text-gray-600">{{ $per->nama_perusahaan ?? '-' }}</span>
+                                    <a href="{{ route('status-pengaduan.detail', $item->id_pengaduan) }}" class="after:absolute after:inset-0">
+                                        {{ $low->posisi_lowongan ?? '-' }} • <span class="font-normal text-gray-600">{{ $per->nama_perusahaan ?? '-' }}</span>
+                                    </a>
                                 </h4>
                             </div>
 
@@ -160,7 +163,7 @@
                                 <span class="px-2.5 py-0.5 rounded text-xs font-semibold {{ $item->warna_badge ?? 'bg-yellow-100 text-yellow-800' }}">
                                     {{ $item->status_pengaduan }}
                                 </span>
-                                <a href="{{ route('periksa-lowongan.hasil', $item->id_pengaduan) }}" class="text-xs font-bold text-teal-700 hover:underline">
+                                <a href="{{ route('periksa-lowongan.hasil', $item->id_pengaduan) }}" class="relative z-10 text-xs font-bold text-teal-700 hover:underline">
                                     Hasil Analisis →
                                 </a>
                             </div>

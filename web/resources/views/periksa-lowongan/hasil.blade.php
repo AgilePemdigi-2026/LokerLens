@@ -123,7 +123,7 @@
                     <div>
                         <strong class="font-bold">PERINGATAN SISTEM:</strong> Jangan melakukan pembayaran, transfer dana, atau mengirim data pribadi sensitif (KTP/KK) sebelum identitas perekrut dan keaslian lowongan terverifikasi secara resmi.
                         <p class="text-xs text-red-700 mt-1 italic">
-                            * Catatan: Hasil analisis sistem LokerLens merupakan rekomendasi pendukung keputusan berbasis kecerdasan buatan, bukan penetapan penipuan secara hukum.
+                            * Catatan: {{ \App\Constants\LokerLensCopy::CATATAN_PENDUKUNG_KEPUTUSAN }}
                         </p>
                     </div>
                 </div>
@@ -138,7 +138,7 @@
                     <div>
                         Lowongan ini tidak menunjukkan ciri penipuan yang kuat. Tetap pastikan lowongan berasal dari situs atau akun resmi perusahaan dan jangan pernah membayar biaya apa pun untuk melamar.
                         <p class="text-xs text-gray-500 mt-1 italic">
-                            * Catatan: Hasil analisis sistem LokerLens merupakan rekomendasi pendukung keputusan berbasis kecerdasan buatan, bukan penetapan penipuan secara hukum.
+                            * Catatan: {{ \App\Constants\LokerLensCopy::CATATAN_PENDUKUNG_KEPUTUSAN }}
                         </p>
                     </div>
                 </div>
@@ -193,28 +193,29 @@
                     Indikasi Bahaya yang Terdeteksi
                 </h3>
                 <span class="text-xs bg-red-100 text-risk-high px-2 py-0.5 rounded font-bold">
-                    {{ $klasifikasi && $klasifikasi->indikatorMencurigakan ? $klasifikasi->indikatorMencurigakan->count() : 0 }} Indikator
+                    {{ $klasifikasi->indikator_unik->count() }} Indikator
                 </span>
             </div>
 
             <!-- Kontainer Resmi BDD hook kata-pemicu -->
             <div id="kata-pemicu" class="kata-pemicu space-y-3" data-testid="kata-pemicu">
-                @if($klasifikasi && $klasifikasi->indikatorMencurigakan && $klasifikasi->indikatorMencurigakan->count() > 0)
-                    @foreach($klasifikasi->indikatorMencurigakan as $ind)
+                {{-- indikator_unik: kata pemicu model sudah dirapikan dan tanpa duplikat --}}
+                @if($klasifikasi->indikator_unik->isNotEmpty())
+                    @foreach($klasifikasi->indikator_unik as $ind)
                         <div class="bg-red-50/70 border border-red-200 rounded-control p-3.5 flex items-start space-x-3">
                             <span class="w-6 h-6 rounded-full bg-risk-high text-white flex items-center justify-center text-xs shrink-0 mt-0.5 font-bold">!</span>
                             <div class="flex-1">
                                 <div class="flex items-center justify-between">
                                     <h4 class="text-xs sm:text-sm font-bold text-red-950">
-                                        {{ $ind->nama_indikator }}
+                                        {{ $ind->nama_tampil }}
                                     </h4>
                                     <span class="text-[11px] font-semibold text-risk-high bg-white px-2 py-0.5 rounded border border-red-200">
                                         {{ $ind->kategori_indikator }}
                                     </span>
                                 </div>
                                 <p class="text-xs text-red-800 mt-1 font-mono">
-                                    {{-- Kata pemicu dari model = nama indikatornya sendiri; data lama/seeder memakai kata pertama --}}
-                                    Kata / frasa pemicu terdeteksi: <strong>"{{ $ind->kategori_indikator === \App\Models\IndikatorMencurigakan::KATEGORI_KATA_PEMICU ? $ind->nama_indikator : strtolower(explode(' ', $ind->nama_indikator)[0]) }}"</strong>
+                                    {{-- Aturan kata pemicu ada di accessor IndikatorMencurigakan::kata_pemicu --}}
+                                    Kata / frasa pemicu terdeteksi: <strong>"{{ $ind->kata_pemicu }}"</strong>
                                 </p>
                             </div>
                         </div>
@@ -239,9 +240,15 @@
             </ul>
 
             <div class="mt-6 pt-4 border-t border-navy-800 flex flex-wrap items-center justify-between gap-3">
-                <a href="{{ route('beranda') }}" class="px-5 py-2 rounded-control bg-navy-800 hover:bg-navy-700 text-gray-200 text-xs font-semibold transition">
-                    Lihat Riwayat
-                </a>
+                <div class="flex flex-wrap items-center gap-3">
+                    <a href="{{ route('beranda') }}" class="px-5 py-2 rounded-control bg-navy-800 hover:bg-navy-700 text-gray-200 text-xs font-semibold transition">
+                        Lihat Riwayat
+                    </a>
+                    {{-- Pantau perkembangan pengaduan ini di halaman Status Pengaduan (#11) --}}
+                    <a href="{{ route('status-pengaduan.detail', $pengaduan->id_pengaduan) }}" class="px-5 py-2 rounded-control border border-teal-600 text-teal-300 hover:bg-teal-600 hover:text-white text-xs font-semibold transition">
+                        {{ \App\Constants\LokerLensCopy::BTN_PANTAU_STATUS }}
+                    </a>
+                </div>
                 <a href="{{ route('periksa-lowongan.index') }}" class="px-6 py-2 rounded-control bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold shadow transition flex items-center space-x-1.5">
                     <span>Periksa Lowongan Lain</span>
                     <span>→</span>

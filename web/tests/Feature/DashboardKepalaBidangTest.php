@@ -108,4 +108,63 @@ class DashboardKepalaBidangTest extends TestCase
     $this->assertArrayNotHasKey('Tidak Terbukti', $ringkasan->all());
     $this->assertArrayNotHasKey('Selesai - Risiko Rendah', $ringkasan->all());
 }
+
+    public function test_daftar_menunggu_keputusan_hanya_berisi_status_itu_maksimal_lima(): void
+    {
+        $user = User::factory()->create(['role' => 'Kepala Bidang']);
+
+        $perusahaan = \App\Models\Perusahaan::create([
+            'nama_perusahaan' => 'PT Test Daftar',
+        ]);
+
+        $lowongan = \App\Models\LowonganKerja::create([
+            'id_perusahaan' => $perusahaan->id_perusahaan,
+            'posisi_lowongan' => 'Staff Daftar',
+            'deskripsi_lowongan' => 'Lowongan untuk pengujian daftar dashboard.',
+        ]);
+
+        // 7 laporan menunggu keputusan, daftar harus dibatasi 5
+        for ($i = 1; $i <= 7; $i++) {
+            \App\Models\Pengaduan::create([
+                'id_lowongan' => $lowongan->id_lowongan,
+                'id_pengguna' => $user->id,
+                'nomor_tiket' => '#DAFTAR-' . $i,
+                'deskripsi_singkat' => 'Menunggu keputusan.',
+                'status_pengaduan' => 'Menunggu Keputusan',
+                'tanggal_pengaduan' => now()->subDays($i),
+            ]);
+        }
+
+        // Status lain tidak boleh ikut masuk daftar
+        \App\Models\Pengaduan::create([
+            'id_lowongan' => $lowongan->id_lowongan,
+            'id_pengguna' => $user->id,
+            'nomor_tiket' => '#DAFTAR-SELESAI',
+            'deskripsi_singkat' => 'Sudah selesai.',
+            'status_pengaduan' => 'Selesai',
+            'tanggal_pengaduan' => now(),
+        ]);
+
+        $response = $this->actingAs($user)->get('/dashboard-kepala-bidang');
+
+        $response->assertOk();
+
+        $daftar = $response->viewData('menungguKeputusan');
+
+        $this->assertCount(5, $daftar);
+        $this->assertTrue(
+            $daftar->every(fn ($p) => $p->status_pengaduan->value === 'Menunggu Keputusan')
+        );
+        $response->assertDontSee('#DAFTAR-SELESAI');
+    }
+
+    public function test_daftar_menunggu_keputusan_kosong_menampilkan_pesan(): void
+    {
+        $user = User::factory()->create(['role' => 'Kepala Bidang']);
+
+        $this->actingAs($user)
+            ->get('/dashboard-kepala-bidang')
+            ->assertOk()
+            ->assertSee('Tidak ada laporan yang menunggu keputusan.');
+    }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\StatusKasus;
+use App\Models\Pengaduan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
@@ -23,6 +24,12 @@ class DashboardKepalaBidangController extends Controller
             'jumlah' => (int) ($jumlah[$status->value] ?? 0),
         ]);
 
-        return view('dashboard-kepala-bidang.index', compact('ringkasan'));
+        $menungguKeputusan = Pengaduan::with('lowonganKerja.perusahaan')
+            ->where('status_pengaduan', 'Menunggu Keputusan')
+            ->orderByDesc('tanggal_pengaduan')
+            ->limit(5)
+            ->get();
+
+        return view('dashboard-kepala-bidang.index', compact('ringkasan', 'menungguKeputusan'));
     }
 }

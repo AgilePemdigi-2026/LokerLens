@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 
 class HasilKlasifikasi extends Model
 {
@@ -37,6 +38,31 @@ class HasilKlasifikasi extends Model
     public function tinjauanAnalis()
     {
         return $this->hasOne(TinjauanAnalis::class, 'id_klasifikasi', 'id_klasifikasi');
+    }
+
+    /**
+     * Indikator tanpa duplikat: jika setelah dirapikan namanya sama, cukup tampil sekali
+     * (yang pertama disimpan). Dipakai di Hasil Pemeriksaan, Tinjau Lowongan, dan Tindak Lanjut.
+     */
+    public function getIndikatorUnikAttribute(): Collection
+    {
+        return $this->indikatorMencurigakan
+            ->unique(fn (IndikatorMencurigakan $indikator) => mb_strtolower($indikator->nama_tampil))
+            ->values();
+    }
+
+    /**
+     * Daftar kata pemicu unik untuk chip, mis. ['biaya pendaftaran', 'nominal Rp'].
+     *
+     * @return array<int, string>
+     */
+    public function getKataPemicuUnikAttribute(): array
+    {
+        return $this->indikatorMencurigakan
+            ->map(fn (IndikatorMencurigakan $indikator) => $indikator->kata_pemicu)
+            ->unique(fn (string $kata) => mb_strtolower($kata))
+            ->values()
+            ->all();
     }
 
     /**

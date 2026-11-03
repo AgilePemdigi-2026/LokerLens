@@ -57,5 +57,7 @@ __pycache__/
 # Folder assets/ (CSS laporan) tetap disimpan supaya laporan final tampil rapi.
 /web/bdd/laporan/*
 !/web/bdd/laporan/assets/
+# File sumber .less dari paket laporan tidak dipakai (cukup .css)
+/web/bdd/laporan/assets/**/*.less
 # Laporan final (bukti sprint) yang ikut di-commit:
 !/web/bdd/laporan/hasil-test-bdd_2026-10-28_15-38.html

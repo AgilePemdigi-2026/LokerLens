@@ -5,6 +5,7 @@ use App\Http\Controllers\BuatSuratController;
 use App\Http\Controllers\DashboardKepalaBidangController;
 use App\Http\Controllers\PeriksaLowonganController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\StatusPengaduanController;
 use App\Http\Controllers\TindakLanjutController;
 use App\Http\Controllers\TinjauLowonganController;
 use Illuminate\Support\Facades\Route;
@@ -50,6 +51,13 @@ Route::middleware('auth')->group(function () {
             ->name('periksa-lowongan.store');
         Route::get('/periksa-lowongan/hasil/{id}', [PeriksaLowonganController::class, 'hasil'])
             ->name('periksa-lowongan.hasil');
+
+        // Status Pengaduan — /status-pengaduan/ (Sprint 2, issue #11)
+        Route::get('/status-pengaduan', [StatusPengaduanController::class, 'index'])
+            ->name('status-pengaduan.index');
+        Route::get('/status-pengaduan/{id}', [StatusPengaduanController::class, 'detail'])
+            ->whereNumber('id')
+            ->name('status-pengaduan.detail');
     });
 
     // ── Analis ──────────────────────────────────────────────────────────────

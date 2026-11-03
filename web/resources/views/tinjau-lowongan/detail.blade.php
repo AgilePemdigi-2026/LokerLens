@@ -151,13 +151,14 @@
                 Indikator Mencurigakan
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                @if($klasifikasi->indikatorMencurigakan && $klasifikasi->indikatorMencurigakan->count() > 0)
-                    @foreach($klasifikasi->indikatorMencurigakan as $ind)
+                {{-- indikator_unik: kata pemicu model dirapikan dan tanpa duplikat --}}
+                @if($klasifikasi->indikator_unik->isNotEmpty())
+                    @foreach($klasifikasi->indikator_unik as $ind)
                         <div class="border border-red-200 bg-red-50/50 rounded-control p-4">
                             <span class="text-[10px] uppercase font-bold text-risk-high bg-white px-2 py-0.5 rounded border border-red-200">
                                 {{ $ind->kategori_indikator }}
                             </span>
-                            <h4 class="text-sm font-bold text-navy-900 mt-2">{{ $ind->nama_indikator }}</h4>
+                            <h4 class="text-sm font-bold text-navy-900 mt-2">{{ $ind->nama_tampil }}</h4>
                             {{-- Bobot kata pemicu model = kontribusi x 100, bukan persen --}}
                             <p class="text-xs text-gray-600 mt-1">Bobot: <strong>{{ $ind->bobot_indikator !== null ? number_format($ind->bobot_indikator, 2) : '-' }}</strong></p>
                         </div>
@@ -171,7 +172,7 @@
         <!-- 3. Data Pengaduan (data asli yang dimasukkan Masyarakat + hasil model) -->
         @php
             // Hanya kata pemicu dari model ML (bukan indikator lain dari seeder)
-            $kataPemicu = $klasifikasi->indikatorMencurigakan
+            $kataPemicu = $klasifikasi->indikator_unik
                 ->where('kategori_indikator', \App\Models\IndikatorMencurigakan::KATEGORI_KATA_PEMICU);
         @endphp
         <div class="bg-white rounded-card shadow-lg p-6 sm:p-8 text-navy-900 border border-gray-100">
@@ -217,7 +218,7 @@
                     <div class="flex flex-wrap gap-2">
                         @foreach($kataPemicu as $pemicu)
                             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-control border border-red-200 bg-red-50/50 text-xs">
-                                <strong class="text-navy-900">{{ $pemicu->nama_indikator }}</strong>
+                                <strong class="text-navy-900">{{ $pemicu->nama_tampil }}</strong>
                                 <span class="font-mono text-risk-high">{{ $pemicu->bobot_indikator !== null ? number_format($pemicu->bobot_indikator, 2) : '-' }}</span>
                             </span>
                         @endforeach

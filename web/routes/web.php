@@ -10,6 +10,7 @@ use App\Http\Controllers\TindakLanjutController;
 use App\Http\Controllers\TinjauLowonganController;
 use App\Http\Controllers\RiwayatPengaduanController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DashboardAnalisController;
 
 /*
 |--------------------------------------------------------------------------
@@ -67,6 +68,10 @@ Route::middleware('auth')->group(function () {
 
     // ── Analis ──────────────────────────────────────────────────────────────
     Route::middleware('role:Analis')->group(function () {
+
+        // Dashboard Analis — /dashboard-analis (Sprint 2)
+        Route::get('/dashboard-analis', [DashboardAnalisController::class, 'index'])
+            ->name('dashboard-analis.index');
 
         // Tinjau Lowongan — /tinjau-lowongan/ (Sprint 1)
         Route::get('/tinjau-lowongan', [TinjauLowonganController::class, 'index'])

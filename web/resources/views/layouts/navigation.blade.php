@@ -25,10 +25,10 @@
                         <a href="{{ route('status-pengaduan.index') }}" class="px-3 py-2 rounded-md text-sm font-medium transition {{ request()->routeIs('status-pengaduan.*') ? 'text-teal-700 bg-teal-50 font-semibold' : 'text-gray-600 hover:text-navy-900 hover:bg-gray-100' }}">
                             Status Pengaduan
                         </a>
-                        <span class="px-3 py-2 text-sm text-gray-400 cursor-not-allowed flex items-center gap-1.5" title="Fitur Sprint 2">
-                            Riwayat Pengaduan
-                            <span class="text-[10px] bg-gray-100 border border-gray-200 text-gray-400 px-1.5 py-0.5 rounded">Sprint 2</span>
-                        </span>
+                        <a href="{{ route('riwayat-pengaduan.index') }}"
+                          class="px-3 py-2 text-sm flex items-center gap-1.5 {{ request()->routeIs('riwayat-pengaduan.*') ? 'text-navy-900 font-semibold' : 'text-gray-600 hover:text-navy-900' }}">
+                                 Riwayat Pengaduan
+                        </a>
                     @elseif(Auth::user()->isAnalis())
                         {{-- Analis Navbar (§5.2): Dashboard · Laporan · Pemantauan (aktif) · Arsip Kasus --}}
                         <span class="px-3 py-2 text-sm text-gray-400 cursor-not-allowed flex items-center gap-1.5" title="Fitur Sprint 2">

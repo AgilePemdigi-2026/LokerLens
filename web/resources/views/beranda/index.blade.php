@@ -82,7 +82,7 @@
                         </a>
                     </div>
 
-                    {{-- Kartu 03: Riwayat Pengaduan (belum tersedia, Sprint 2) --}}
+                    {{-- Kartu 03: Riwayat Pengaduan --}}
                     <div class="bg-white rounded-card shadow-lg p-6 border border-gray-100 flex flex-col justify-between">
                         <div>
                             <span class="text-xs font-mono font-bold text-teal-600 bg-teal-50 px-2.5 py-1 rounded">03</span>
@@ -91,13 +91,11 @@
                                 Melihat kembali rekam jejak laporan yang pernah Anda ajukan dan hasil verifikasi dokumen resminya.
                             </p>
                         </div>
-                        <span title="Fitur ini akan tersedia di Sprint 2" class="mt-6 inline-flex items-center text-xs font-bold text-gray-400 cursor-not-allowed gap-1">
+                        <a href="{{ route('riwayat-pengaduan.index') }}" class="mt-6 inline-flex items-center text-xs font-bold text-teal-600 hover:text-teal-700 gap-1">
                             <span>Buka Riwayat</span>
-                            <span class="text-[10px] bg-gray-100 border border-gray-200 text-gray-400 px-1.5 py-0.5 rounded">Sprint 2</span>
-                        </span>
+                            <span aria-hidden="true">&rarr;</span>
+                        </a>
                     </div>
-            </div>
-        </div>
 
         <!-- 3. Pengaduan Terbaru Anda (Teks Wajib jika kosong: "Belum ada pengaduan yang diajukan") -->
         <div id="pengaduan-terbaru" class="bg-white rounded-card shadow-lg p-6 sm:p-8 text-navy-900 border border-gray-100">

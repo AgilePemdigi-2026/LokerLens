@@ -50,12 +50,14 @@ class TinjauLowonganController extends Controller
             });
         }
 
-        // Filter skor
+        // Filter skor. Batas "Skor Tinggi" = ambang prioritas (config/lokerlens.php, default 70),
+        // sama dengan tingkat risiko di halaman Hasil (HasilKlasifikasi::tingkat_risiko).
         if ($request->filled('filter_skor')) {
-            $query->when($request->filter_skor === 'Skor Tinggi', function ($q) {
-                $q->where('confidence_score', '>=', 75);
-            })->when($request->filter_skor === 'Skor Sedang', function ($q) {
-                $q->whereBetween('confidence_score', [50, 74.99]);
+            $ambang = config('lokerlens.ambang_prioritas');
+            $query->when($request->filter_skor === 'Skor Tinggi', function ($q) use ($ambang) {
+                $q->where('confidence_score', '>=', $ambang);
+            })->when($request->filter_skor === 'Skor Sedang', function ($q) use ($ambang) {
+                $q->where('confidence_score', '>=', 50)->where('confidence_score', '<', $ambang);
             });
         }
 

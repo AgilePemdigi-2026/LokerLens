@@ -4,7 +4,9 @@ namespace App\Models;
 
 use App\Enums\StatusKasus;
 use App\Exceptions\PerubahanStatusTidakValid;
+use App\Support\ProgresPengaduan;
 use Illuminate\Database\Eloquent\Model;
+   use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Pengaduan extends Model
 {
@@ -54,7 +56,10 @@ class Pengaduan extends Model
     {
         return $this->hasMany(RiwayatKasus::class, 'id_pengaduan', 'id_pengaduan')->orderBy('tanggal_update', 'desc');
     }
-
+       protected function warnaBadge(): Attribute
+   {
+       return Attribute::get(fn () => $this->status_pengaduan->warnaBadge());
+   }
     /**
      * Ubah status kasus satu langkah maju dan catat ke Riwayat Kasus (BR-11, NFR-SAF-06).
      * Perubahan yang melompat, mundur, atau dari status akhir ditolak.
@@ -81,6 +86,74 @@ class Pengaduan extends Model
             'status_kasus' => $this->status_pengaduan->value,
             'keterangan'   => $keterangan,
         ]);
+    }
+
+    /**
+     * Pengaduan yang belum punya hasil klasifikasi, karena API ML mati atau
+     * timeout saat pemeriksaan. Ditampilkan sebagai "Menunggu klasifikasi".
+     */
+    public function scopeMenungguKlasifikasi($query)
+    {
+        return $query->doesntHave('hasilKlasifikasi');
+    }
+
+    /**
+     * Pengaduan yang statusnya belum akhir (termasuk yang masih menunggu klasifikasi).
+     * Dipakai di Status Pengaduan (#11).
+     */
+    public function scopeAktif($query)
+    {
+        $statusAkhir = array_filter(StatusKasus::cases(), fn (StatusKasus $status) => $status->isAkhir());
+
+        return $query->whereNotIn('status_pengaduan', array_map(fn (StatusKasus $status) => $status->value, $statusAkhir));
+    }
+
+    /**
+     * Progres 5 tahap penanganan untuk ditampilkan ke Masyarakat (lihat App\Support\ProgresPengaduan).
+     */
+    public function progres(): ProgresPengaduan
+    {
+        return ProgresPengaduan::dari($this);
+    }
+
+    /**
+     * Simpan hasil dari API klasifikasi (KlasifikasiService) untuk pengaduan ini:
+     * Hasil_Klasifikasi, satu Indikator_Mencurigakan per kata pemicu, lalu status
+     * awal kasus sesuai ambang prioritas (BR-05) dan catatan Riwayat Kasus.
+     * Dipanggil di dalam DB::transaction oleh pemanggilnya.
+     */
+    public function simpanHasilKlasifikasi(array $hasil): HasilKlasifikasi
+    {
+        // API memberi 0–1, database menyimpan 0–100 (docs/architecture.md §5.3)
+        $skor   = round($hasil['probabilitas_penipuan'] * 100, 2);
+        $status = StatusKasus::awalDariSkor($skor);
+
+        $klasifikasi = HasilKlasifikasi::create([
+            'id_pengaduan'     => $this->id_pengaduan,
+            'confidence_score' => $skor,
+            'kategori_hasil'   => $hasil['label'] === 'palsu'
+                ? 'Lowongan berpotensi penipuan'
+                : 'Lowongan kemungkinan asli',
+            'status_prioritas' => $status === StatusKasus::PerluTinjauan,
+            'metode_analisis'  => $hasil['versi_model'] ?? null,
+        ]);
+
+        foreach ($hasil['kata_pemicu'] as $pemicu) {
+            IndikatorMencurigakan::create([
+                'id_klasifikasi'     => $klasifikasi->id_klasifikasi,
+                'nama_indikator'     => $pemicu['kata'],
+                'kategori_indikator' => IndikatorMencurigakan::KATEGORI_KATA_PEMICU,
+                'bobot_indikator'    => round($pemicu['bobot'] * 100, 2),
+            ]);
+        }
+
+        // Status diisi langsung (bukan ubahStatus) karena ini status AWAL kasus
+        $this->update(['status_pengaduan' => $status]);
+        $this->catatRiwayat($status === StatusKasus::PerluTinjauan
+            ? 'Pengaduan diterima dan klasifikasi dilakukan. Masuk antrean tinjauan Analis.'
+            : 'Pengaduan diterima dan klasifikasi dilakukan. Skor di bawah ambang prioritas, kasus selesai.');
+
+        return $klasifikasi;
     }
 
     /**

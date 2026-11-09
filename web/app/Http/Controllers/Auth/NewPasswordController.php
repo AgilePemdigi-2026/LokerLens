@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Constants\LokerLensCopy;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Auth\Events\PasswordReset;
@@ -11,13 +12,12 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
-use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class NewPasswordController extends Controller
 {
     /**
-     * Display the password reset view.
+     * Layar 3: form atur kata sandi baru (dibuka dari tautan di email).
      */
     public function create(Request $request): View
     {
@@ -25,26 +25,34 @@ class NewPasswordController extends Controller
     }
 
     /**
-     * Handle an incoming new password request.
-     *
-     * @throws ValidationException
+     * Simpan kata sandi baru.
      */
     public function store(Request $request): RedirectResponse
     {
-        $request->validate([
-            'token' => ['required'],
-            'email' => ['required', 'email'],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
+        // Aturan sandi sama dengan halaman Register (minimal 8 karakter).
+        $request->validate(
+            [
+                'token'    => ['required'],
+                'email'    => ['required', 'email'],
+                'password' => ['required', 'confirmed', Rules\Password::min(8)],
+            ],
+            [
+                'email.required'     => LokerLensCopy::LUPA_EMAIL_WAJIB,
+                'email.email'        => LokerLensCopy::LUPA_EMAIL_TIDAK_VALID,
+                'password.required'  => LokerLensCopy::SANDI_BARU_WAJIB,
+                'password.min'       => LokerLensCopy::SANDI_BARU_MINIMAL,
+                'password.confirmed' => LokerLensCopy::SANDI_BARU_TIDAK_COCOK,
+            ]
+        );
 
-        // Here we will attempt to reset the user's password. If it is successful we
-        // will update the password on an actual user model and persist it to the
-        // database. Otherwise we will parse the error and return the response.
+        // Password broker memeriksa token (cocok, belum kedaluwarsa, belum dipakai),
+        // lalu menjalankan fungsi di bawah hanya jika semuanya valid.
+        // Setelah berhasil, token otomatis dihapus, jadi tautan hanya sekali pakai.
         $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function (User $user) use ($request) {
                 $user->forceFill([
-                    'password' => Hash::make($request->password),
+                    'password'       => Hash::make($request->password),
                     'remember_token' => Str::random(60),
                 ])->save();
 
@@ -52,12 +60,29 @@ class NewPasswordController extends Controller
             }
         );
 
-        // If the password was successfully reset, we will redirect the user back to
-        // the application's home authenticated view. If there is an error we can
-        // redirect them back to where they came from with their error message.
-        return $status == Password::PASSWORD_RESET
-                    ? redirect()->route('login')->with('status', __($status))
-                    : back()->withInput($request->only('email'))
-                        ->withErrors(['email' => __($status)]);
+        if ($status === Password::PASSWORD_RESET) {
+            return redirect()
+                ->route('password.success')
+                ->with('sandi_diubah', true);
+        }
+
+        // Token salah, kedaluwarsa, sudah dipakai, atau email tidak cocok:
+        // satu pesan yang sama, lalu arahkan untuk meminta tautan baru.
+        return redirect()
+            ->route('password.request')
+            ->withErrors(['email' => LokerLensCopy::TAUTAN_RESET_TIDAK_VALID]);
+    }
+
+    /**
+     * Layar 4: kata sandi berhasil diubah.
+     * Hanya bisa dibuka tepat setelah reset berhasil.
+     */
+    public function berhasil(Request $request): View|RedirectResponse
+    {
+        if (! $request->session()->has('sandi_diubah')) {
+            return redirect()->route('login');
+        }
+
+        return view('auth.reset-berhasil');
     }
 }

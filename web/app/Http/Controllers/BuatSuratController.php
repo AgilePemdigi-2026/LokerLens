@@ -10,6 +10,7 @@ use App\Models\SuratTeguranLaporanPolisi;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
@@ -35,7 +36,7 @@ class BuatSuratController extends Controller
             'hasilKlasifikasi.indikatorMencurigakan',
             'hasilKlasifikasi.tinjauanAnalis',
             'buktiPendukung',
-            'tindakLanjutKasus',
+            'tindakLanjutKasus.kepalaBidang',
         ])->findOrFail($pengaduanId);
 
         // FR-ST-02, NFR-SAF-03: Pastikan keputusan sudah "Tindaklanjuti"
@@ -75,34 +76,14 @@ class BuatSuratController extends Controller
         $request->validate([
             'kronologi'         => ['required', 'string'],
             'tujuan_kepolisian' => ['required', 'string', 'max:255'],
+            'pasal'             => ['array'],
+            'pasal.*'           => [Rule::in(array_keys(SuratTeguranLaporanPolisi::DAFTAR_PASAL))],
         ], [
             'kronologi.required'         => 'Kronologi kejadian wajib diisi.',
             'tujuan_kepolisian.required' => 'Tujuan kepolisian wajib dipilih.',
         ]);
 
-        // Tangani upload bukti tambahan (NFR-SEC-07: hanya pdf/jpg/png)
-        if ($request->hasFile('bukti_tambahan')) {
-            $request->validate([
-                'bukti_tambahan.*' => ['mimes:pdf,jpg,jpeg,png', 'max:10240'],
-            ]);
-
-            foreach ($request->file('bukti_tambahan') as $file) {
-                // Enum tipe_file hanya pdf/jpg/png, jadi .jpeg disamakan menjadi jpg
-                $tipeFile = strtolower($file->getClientOriginalExtension());
-                if ($tipeFile === 'jpeg') {
-                    $tipeFile = 'jpg';
-                }
-
-                $path = $file->store('bukti', 'public');
-                BuktiPendukung::create([
-                    'id_pengaduan' => $pengaduan->id_pengaduan,
-                    'nama_file'    => $file->getClientOriginalName(),
-                    'tipe_file'    => $tipeFile,
-                    'ukuran_file'  => $file->getSize(),
-                    'path_file'    => $path,
-                ]);
-            }
-        }
+            $this->simpanBuktiTambahan($request, $pengaduan);
 
         SuratTeguranLaporanPolisi::updateOrCreate(
             ['id_tindaklanjut' => $tindakLanjut->id_tindaklanjut],
@@ -110,6 +91,7 @@ class BuatSuratController extends Controller
                 'jenis_dokumen'       => 'Laporan Polisi',
                 'kronologi_kejadian'  => $request->kronologi,
                 'tujuan_instansi'     => $request->tujuan_kepolisian,
+                'pasal_dilanggar'     => $this->pasalTerpilih($request),
                 'status_penerbitan'   => 'Draft',
             ]
         );
@@ -136,7 +118,11 @@ class BuatSuratController extends Controller
         $request->validate([
             'kronologi'         => ['required', 'string'],
             'tujuan_kepolisian' => ['required', 'string', 'max:255'],
+            'pasal'             => ['array'],
+            'pasal.*'           => [Rule::in(array_keys(SuratTeguranLaporanPolisi::DAFTAR_PASAL))],
         ]);
+
+        $this->simpanBuktiTambahan($request, $pengaduan);
 
         $surat = SuratTeguranLaporanPolisi::updateOrCreate(
             ['id_tindaklanjut' => $tindakLanjut->id_tindaklanjut],
@@ -144,6 +130,7 @@ class BuatSuratController extends Controller
                 'jenis_dokumen'      => 'Laporan Polisi',
                 'kronologi_kejadian' => $request->kronologi,
                 'tujuan_instansi'    => $request->tujuan_kepolisian,
+                'pasal_dilanggar'    => $this->pasalTerpilih($request),
                 'status_penerbitan'  => 'Draft',
             ]
         );
@@ -186,6 +173,7 @@ class BuatSuratController extends Controller
             'lowonganKerja.perusahaan',
             'buktiPendukung',
             'tindakLanjutKasus.suratTeguranLaporanPolisi',
+            'tindakLanjutKasus.kepalaBidang',
         ])->whereHas('tindakLanjutKasus')
           ->findOrFail($pengaduanId);
 
@@ -196,6 +184,37 @@ class BuatSuratController extends Controller
 
         return view('buat-surat.terbit', compact('pengaduan', 'surat'));
     }
+    /**
+ * Simpan bukti tambahan yang diunggah Kepala Bidang (NFR-SEC-07: hanya pdf/jpg/png).
+ * Dipakai bersama oleh simpanDraft dan terbitkan.
+ */
+private function simpanBuktiTambahan(Request $request, Pengaduan $pengaduan): void
+{
+    if (! $request->hasFile('bukti_tambahan')) {
+        return;
+    }
+
+    $request->validate([
+        'bukti_tambahan.*' => ['mimes:pdf,jpg,jpeg,png', 'max:10240'],
+    ]);
+
+    foreach ($request->file('bukti_tambahan') as $file) {
+        // Enum tipe_file hanya pdf/jpg/png, jadi .jpeg disamakan menjadi jpg
+        $tipeFile = strtolower($file->getClientOriginalExtension());
+        if ($tipeFile === 'jpeg') {
+            $tipeFile = 'jpg';
+        }
+
+        $path = $file->store('bukti', 'public');
+        BuktiPendukung::create([
+            'id_pengaduan' => $pengaduan->id_pengaduan,
+            'nama_file'    => $file->getClientOriginalName(),
+            'tipe_file'    => $tipeFile,
+            'ukuran_file'  => $file->getSize(),
+            'path_file'    => $path,
+        ]);
+    }
+}
 
     /**
      * Surat yang sudah terbit (kasus Selesai) tidak bisa diubah atau diterbitkan ulang.
@@ -224,6 +243,17 @@ class BuatSuratController extends Controller
         }
 
         return $pengaduan;
+    }
+
+    /**
+     * Kode pasal yang dicentang di panel "Detail Pelanggaran".
+     * Tidak ada yang dicentang = daftar kosong.
+     *
+     * @return array<int, string>
+     */
+    private function pasalTerpilih(Request $request): array
+    {
+        return array_values(array_unique($request->input('pasal', [])));
     }
 
     private function buatKronologiDefault(Pengaduan $pengaduan): string

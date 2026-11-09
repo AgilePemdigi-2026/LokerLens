@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UI/UX Mockup — Riwayat Pengaduan · LokerLens</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy-900: #0b1c2c;
+    --navy-800: #1f2d3a;
+    --navy-700: #2a3f50;
+    --teal-600: #1f8a7a;
+    --teal-500: #2ba393;
+    --teal-400: #4dd0b8;
+    --teal-300: #6ee7c0;
+    --teal-700: #16695d;
+    --teal-800: #0f5349;
+    --teal-50:  #f0fdfa;
+    --cream-50: #f8f4ee;
+    --risk-high: #c0392b;
+    --risk-mid: #d68910;
+    --risk-low: #1e8449;
+    --text: #14202b;
+    --text-muted: #6b7a88;
+    --radius-card: 12px;
+    --radius-control: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    background: #0f172a;
+    color: var(--text);
+    min-height: 100vh;
+  }
+  .font-serif { font-family: 'Playfair Display', 'Georgia', serif; }
+
+  /* ── NAVBAR ── */
+  .navbar {
+    background: var(--navy-900);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    height: 56px;
+    gap: 8px;
+  }
+  .nav-logo {
+    display: flex; align-items: center; gap: 8px;
+    font-weight: 800; font-size: 16px; color: #fff;
+    margin-right: 28px; text-decoration: none;
+  }
+  .nav-logo .lens { color: var(--teal-400); }
+  .nav-logo-icon {
+    width: 28px; height: 28px; background: var(--teal-600);
+    border-radius: 6px; display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 13px; color: #fff;
+  }
+  .nav-link {
+    padding: 6px 12px; border-radius: 6px;
+    font-size: 13px; font-weight: 500; color: #b0bec5;
+    text-decoration: none; transition: all 0.15s;
+  }
+  .nav-link:hover { color: #fff; background: rgba(255,255,255,0.06); }
+  .nav-link.active {
+    color: var(--teal-400); background: var(--navy-800);
+    font-weight: 600;
+  }
+  .nav-spacer { flex: 1; }
+  .nav-user {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: #b0bec5;
+  }
+  .nav-avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--navy-800); border: 1.5px solid rgba(255,255,255,0.1);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 11px; color: var(--teal-400);
+  }
+
+  /* ── MAIN WRAPPER ── */
+  .main-wrap { max-width: 980px; margin: 0 auto; padding: 20px 16px 48px; }
+  .space-y > * + * { margin-top: 18px; }
+
+  /* ── HEADER BANNER ── */
+  .banner {
+    background: var(--navy-900); border: 1px solid var(--navy-800);
+    border-radius: 16px; padding: 36px 40px;
+    color: #fff; position: relative; overflow: hidden;
+  }
+  .banner-glow {
+    position: absolute; right: -40px; top: -40px;
+    width: 280px; height: 280px;
+    background: radial-gradient(circle, rgba(31,138,122,0.08), transparent 70%);
+    pointer-events: none;
+  }
+  .banner-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 24px; position: relative; z-index: 1;
+    flex-wrap: wrap;
+  }
+  .banner-label {
+    font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase;
+    font-weight: 700; color: var(--teal-400); margin-bottom: 8px;
+  }
+  .banner-title {
+    font-size: 30px; font-weight: 800; line-height: 1.15;
+    letter-spacing: -0.3px;
+  }
+  .banner-title .serif-i { font-style: italic; color: var(--teal-300); }
+  .banner-desc {
+    font-size: 13px; color: #8899a6; margin-top: 8px;
+    max-width: 420px; line-height: 1.6;
+  }
+  .stat-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+    flex-shrink: 0;
+  }
+  .stat-card {
+    background: rgba(31,45,58,0.8); border: 1px solid var(--navy-700);
+    border-radius: 12px; padding: 14px 16px; text-align: center; min-width: 88px;
+  }
+  .stat-value { font-size: 22px; font-weight: 800; color: #fff; }
+  .stat-value.teal { color: var(--teal-300); }
+  .stat-value.green { color: #6ee7b7; }
+  .stat-label {
+    font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px;
+    color: #8899a6; margin-top: 4px; font-weight: 600; line-height: 1.3;
+  }
+
+  /* ── SEARCH/FILTER BAR ── */
+  .filter-bar {
+    background: #fff; border-radius: 16px; border: 1px solid #f0f0f0;
+    padding: 16px 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  .search-wrap {
+    position: relative; flex: 1; min-width: 200px;
+  }
+  .search-icon {
+    position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+    width: 15px; height: 15px; color: #aab5c0;
+  }
+  .search-input {
+    width: 100%; padding: 9px 12px 9px 36px;
+    font-size: 13px; border: 1px solid #e5e7eb; border-radius: 8px;
+    background: #f9fafb; color: var(--text);
+    font-family: inherit; outline: none; transition: border 0.15s;
+  }
+  .search-input::placeholder { color: #b0bec5; }
+  .search-input:focus { border-color: var(--teal-600); box-shadow: 0 0 0 2px rgba(31,138,122,0.12); }
+  .filter-select {
+    padding: 9px 12px; font-size: 13px;
+    border: 1px solid #e5e7eb; border-radius: 8px;
+    background: #f9fafb; color: var(--text);
+    font-family: inherit; outline: none; cursor: pointer;
+  }
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 9px 18px; border-radius: 8px;
+    font-size: 13px; font-weight: 600; border: none; cursor: pointer;
+    text-decoration: none; transition: all 0.15s; white-space: nowrap;
+    font-family: inherit;
+  }
+  .btn-navy { background: var(--navy-900); color: #fff; }
+  .btn-navy:hover { background: var(--navy-800); }
+  .btn-teal { background: var(--teal-600); color: #fff; }
+  .btn-teal:hover { background: var(--teal-500); }
+  .btn-outline { background: transparent; border: 1px solid #e5e7eb; color: #6b7a88; }
+  .btn-outline:hover { border-color: #d1d5db; color: var(--text); }
+  .divider-v {
+    width: 1px; height: 28px; background: #e5e7eb; align-self: center;
+  }
+
+  /* ── RESULT COUNT ── */
+  .result-label { font-size: 12px; color: #6b7a88; padding: 0 4px; }
+  .result-label strong { color: var(--text); }
+
+  /* ── CARD LIST ── */
+  .card-list > * + * { margin-top: 10px; }
+  .card {
+    background: #fff; border-radius: 16px;
+    border: 1px solid #f0f0f0; transition: all 0.2s;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  }
+  .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); border-color: #e0e0e0; }
+  .card-inner {
+    padding: 18px 22px;
+    display: flex; align-items: center; gap: 16px;
+  }
+
+  /* tiket & tanggal */
+  .col-ticket { width: 140px; flex-shrink: 0; }
+  .ticket-badge {
+    font-family: 'SFMono-Regular', 'Cascadia Code', monospace;
+    font-size: 11px; font-weight: 700;
+    color: var(--teal-800); background: var(--teal-50);
+    border: 1px solid #ccfbf1; padding: 3px 10px; border-radius: 5px;
+    display: inline-block;
+  }
+  .ticket-date {
+    font-size: 10.5px; color: #9ca3af; margin-top: 6px; line-height: 1.45;
+  }
+
+  /* info lowongan */
+  .col-info { flex: 1; min-width: 0; }
+  .info-title {
+    font-size: 13.5px; font-weight: 700; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .info-company {
+    font-size: 12px; color: #6b7a88; margin-top: 2px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .info-company .dot { color: #d1d5db; margin: 0 5px; }
+
+  /* status badge */
+  .status-badge {
+    display: inline-flex; padding: 2px 10px; border-radius: 4px;
+    font-size: 10.5px; font-weight: 600; margin-top: 6px;
+  }
+  .status-teal { background: #f0fdfa; color: var(--teal-700); border: 1px solid #ccfbf1; }
+  .status-amber { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+  .status-blue { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+  .status-emerald { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+  .status-gray { background: #f9fafb; color: #4b5563; border: 1px solid #e5e7eb; }
+
+  /* skor */
+  .col-score { width: 100px; flex-shrink: 0; text-align: right; }
+  .score-label {
+    font-size: 9px; text-transform: uppercase; letter-spacing: 1.2px;
+    font-weight: 600; color: #9ca3af; line-height: 1;
+  }
+  .score-value { font-size: 24px; font-weight: 800; color: var(--text); margin-top: 2px; }
+  .score-value .pct { font-size: 13px; font-weight: 700; color: #6b7a88; }
+  .risk-badge {
+    display: inline-flex; padding: 1px 8px; border-radius: 4px;
+    font-size: 9.5px; font-weight: 600; margin-top: 3px;
+  }
+  .risk-high { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+  .risk-mid { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+  .risk-low { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+
+  /* tombol lihat */
+  .col-action { flex-shrink: 0; }
+  .btn-lihat {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 7px 14px; border-radius: 8px;
+    border: 1px solid #e5e7eb; background: transparent;
+    font-size: 12px; font-weight: 600; color: #4b5563;
+    text-decoration: none; transition: all 0.15s; cursor: pointer;
+    font-family: inherit;
+  }
+  .btn-lihat:hover {
+    border-color: var(--teal-400); color: var(--teal-700);
+    background: rgba(31,138,122,0.04);
+  }
+  .btn-lihat svg { width: 13px; height: 13px; }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    background: #fff; border-radius: 16px; border: 1px solid #f0f0f0;
+    padding: 64px 24px; text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .empty-icon {
+    width: 56px; height: 56px; border-radius: 14px;
+    background: #f9fafb; border: 1px solid #e5e7eb;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 18px;
+  }
+  .empty-icon svg { width: 28px; height: 28px; color: #d1d5db; }
+  .empty-title { font-size: 15px; font-weight: 700; color: var(--text); }
+  .empty-desc {
+    font-size: 13px; color: #6b7a88; margin-top: 6px;
+    max-width: 280px; margin-left: auto; margin-right: auto; line-height: 1.6;
+  }
+  .empty-btn {
+    margin-top: 20px; display: inline-flex; align-items: center; gap: 6px;
+    padding: 10px 22px; border-radius: 8px;
+    background: var(--navy-900); color: #fff;
+    font-size: 13px; font-weight: 600; border: none; cursor: pointer;
+    text-decoration: none; transition: background 0.15s;
+    font-family: inherit;
+  }
+  .empty-btn:hover { background: var(--navy-800); }
+
+  /* ── PAGINATION ── */
+  .pagination {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    margin-top: 20px;
+  }
+  .page-btn {
+    width: 32px; height: 32px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; border: 1px solid #e5e7eb;
+    background: #fff; color: #6b7a88; cursor: pointer; transition: all 0.12s;
+    font-family: inherit;
+  }
+  .page-btn:hover { border-color: var(--teal-400); color: var(--teal-700); }
+  .page-btn.active { background: var(--navy-900); color: #fff; border-color: var(--navy-900); }
+  .page-btn.disabled { opacity: 0.3; cursor: default; }
+
+  /* ── VIEW TOGGLE ── */
+  .view-toggle {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 4px;
+    background: var(--navy-900); border-radius: 10px; padding: 4px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3); z-index: 100;
+    border: 1px solid var(--navy-700);
+  }
+  .view-btn {
+    padding: 8px 20px; border-radius: 8px;
+    font-size: 12px; font-weight: 600; border: none;
+    cursor: pointer; transition: all 0.15s; font-family: inherit;
+    color: #8899a6; background: transparent;
+  }
+  .view-btn.active { background: var(--teal-600); color: #fff; }
+  .view-btn:hover:not(.active) { color: #fff; }
+
+  .mockup-badge {
+    position: fixed; top: 12px; right: 16px; z-index: 200;
+    background: rgba(31,138,122,0.9); color: #fff;
+    font-size: 10px; font-weight: 700; padding: 4px 12px;
+    border-radius: 20px; letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  /* annotations */
+  .anno {
+    position: absolute; background: rgba(31,138,122,0.92); color: #fff;
+    font-size: 9.5px; font-weight: 600; padding: 3px 10px;
+    border-radius: 4px; white-space: nowrap; z-index: 50;
+    pointer-events: none; letter-spacing: 0.3px;
+  }
+  .anno::after {
+    content: ''; position: absolute;
+    width: 0; height: 0;
+  }
+
+  @media (max-width: 768px) {
+    .banner-inner { flex-direction: column; }
+    .stat-grid { width: 100%; }
+    .card-inner { flex-direction: column; align-items: flex-start; }
+    .col-ticket { width: auto; }
+    .col-score { text-align: left; width: auto; }
+    .filter-bar { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<div class="mockup-badge">MOCKUP UI/UX</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     VIEW TOGGLE — Beralih antara State "Ada Data" dan "Kosong"
+═══════════════════════════════════════════════════════════════ -->
+<div class="view-toggle">
+  <button class="view-btn active" onclick="showView('data')" id="btn-data">Ada Data</button>
+  <button class="view-btn" onclick="showView('empty')" id="btn-empty">Data Kosong</button>
+  <button class="view-btn" onclick="showView('filter')" id="btn-filter">Hasil Pencarian</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     NAVBAR — Sesuai design.md §3.2 (Masyarakat)
+     Menu: Beranda · Periksa Lowongan · Status Pengaduan · Riwayat Pengaduan (active)
+═══════════════════════════════════════════════════════════════ -->
+<nav class="navbar">
+  <a href="#" class="nav-logo">
+    <div class="nav-logo-icon">L</div>
+    <span>Loker<span class="lens">Lens</span></span>
+  </a>
+  <a href="#" class="nav-link">Beranda</a>
+  <a href="#" class="nav-link">Periksa Lowongan</a>
+  <a href="#" class="nav-link">Status Pengaduan</a>
+  <a href="#" class="nav-link active">Riwayat Pengaduan</a>
+  <div class="nav-spacer"></div>
+  <div class="nav-user">
+    <span>Dinda Safitri</span>
+    <div class="nav-avatar">DS</div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     STATE 1: ADA DATA (default)
+═══════════════════════════════════════════════════════════════ -->
+<div id="view-data" class="main-wrap">
+  <div class="space-y">
+
+    <!-- HEADER BANNER -->
+    <div class="banner" style="position:relative;">
+      <div class="banner-glow"></div>
+      <div class="banner-inner">
+        <div>
+          <div class="banner-label">REKAM JEJAK PENGAWASAN</div>
+          <h1 class="banner-title">
+            Riwayat <span class="font-serif serif-i" style="font-style:italic; color: var(--teal-300);">Pengaduan</span>
+          </h1>
+          <p class="banner-desc">
+            Daftar seluruh pengaduan lowongan kerja mencurigakan yang pernah Anda ajukan
+            beserta hasil pemeriksaan dan status akhirnya.
+          </p>
+        </div>
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-value">7</div>
+            <div class="stat-label">Total Laporan</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value teal">3</div>
+            <div class="stat-label">Sedang Berjalan</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value green">4</div>
+            <div class="stat-label">Selesai</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEARCH & FILTER BAR -->
+    <div class="filter-bar">
+      <div class="search-wrap">
+        <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <input type="text" class="search-input" placeholder="Cari nomor tiket, posisi, atau nama perusahaan...">
+      </div>
+      <select class="filter-select">
+        <option>Semua Status</option>
+        <option>Selesai - Risiko Rendah</option>
+        <option>Perlu Tinjauan</option>
+        <option>Sedang Ditinjau</option>
+        <option>Tidak Terbukti</option>
+        <option>Menunggu Keputusan</option>
+        <option>Tindak Lanjut Disetujui</option>
+        <option>Tidak Ditindaklanjuti</option>
+        <option>Selesai</option>
+      </select>
+      <button class="btn btn-navy">Cari</button>
+      <div class="divider-v"></div>
+      <a href="#" class="btn btn-teal">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        Ajukan Pengaduan Baru
+      </a>
+    </div>
+
+    <!-- RESULT COUNT -->
+    <div class="result-label">
+      Menampilkan semua pengaduan · <strong>7</strong> total laporan
+    </div>
+
+    <!-- CARD LIST -->
+    <div class="card-list">
+
+      <!-- Kartu 1: Risiko Tinggi, Perlu Tinjauan -->
+      <div class="card">
+        <div class="card-inner">
+          <div class="col-ticket">
+            <span class="ticket-badge">LL-2026-0047</span>
+            <div class="ticket-date">08 Nov 2026<br>14:32 WIB</div>
+          </div>
+          <div class="col-info">
+            <div class="info-title">Staff Administrasi Online</div>
+            <div class="info-company">PT Sejahtera Digital<span class="dot">•</span>Jakarta Selatan</div>
+            <span class="status-badge status-teal">Perlu Tinjauan</span>
+          </div>
+          <div class="col-score">
+            <div class="score-label">KEYAKINAN SISTEM</div>
+            <div class="score-value">92<span class="pct">%</span></div>
+            <span class="risk-badge risk-high">Risiko Tinggi</span>
+          </div>
+          <div class="col-action">
+            <a href="#" class="btn-lihat">
+              Lihat Hasil
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Kartu 2: Risiko Tinggi, Menunggu Keputusan -->
+      <div class="card">
+        <div class="card-inner">
+          <div class="col-ticket">
+            <span class="ticket-badge">LL-2026-0041</span>
+            <div class="ticket-date">05 Nov 2026<br>09:15 WIB</div>
+          </div>
+          <div class="col-info">
+            <div class="info-title">Customer Service WFH — Gaji 8 Juta</div>
+            <div class="info-company">CV Mitra Nusantara<span class="dot">•</span>Bandung</div>
+            <span class="status-badge status-amber">Menunggu Keputusan</span>
+          </div>
+          <div class="col-score">
+            <div class="score-label">KEYAKINAN SISTEM</div>
+            <div class="score-value">85<span class="pct">%</span></div>
+            <span class="risk-badge risk-high">Risiko Tinggi</span>
+          </div>
+          <div class="col-action">
+            <a href="#" class="btn-lihat">
+              Lihat Hasil
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Kartu 3: Risiko Sedang, Tindak Lanjut Disetujui -->
+      <div class="card">
+        <div class="card-inner">
+          <div class="col-ticket">
+            <span class="ticket-badge">LL-2026-0038</span>
+            <div class="ticket-date">01 Nov 2026<br>16:48 WIB</div>
+          </div>
+          <div class="col-info">
+            <div class="info-title">Data Entry Remote — Pendapatan Harian</div>
+            <div class="info-company">PT Karya Global<span class="dot">•</span>Surabaya</div>
+            <span class="status-badge status-blue">Tindak Lanjut Disetujui</span>
+          </div>
+          <div class="col-score">
+            <div class="score-label">KEYAKINAN SISTEM</div>
+            <div class="score-value">63<span class="pct">%</span></div>
+            <span class="risk-badge risk-mid">Risiko Sedang</span>
+          </div>
+          <div class="col-action">
+            <a href="#" class="btn-lihat">
+              Lihat Hasil
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Kartu 4: Selesai -->
+      <div class="card">
+        <div class="card-inner">
+          <div class="col-ticket">
+            <span class="ticket-badge">LL-2026-0029</span>
+            <div class="ticket-date">25 Okt 2026<br>10:22 WIB</div>
+          </div>
+          <div class="col-info">
+            <div class="info-title">Marketing Freelance — Bonus Bulanan</div>
+            <div class="info-company">PT Bintang Pratama<span class="dot">•</span>Yogyakarta</div>
+            <span class="status-badge status-emerald">Selesai</span>
+          </div>
+          <div class="col-score">
+            <div class="score-label">KEYAKINAN SISTEM</div>
+            <div class="score-value">78<span class="pct">%</span></div>
+            <span class="risk-badge risk-high">Risiko Tinggi</span>
+          </div>
+          <div class="col-action">
+            <a href="#" class="btn-lihat">
+              Lihat Hasil
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Kartu 5: Selesai - Risiko Rendah -->
+      <div class="card">
+        <div class="card-inner">
+          <div class="col-ticket">
+            <span class="ticket-badge">LL-2026-0023</span>
+            <div class="ticket-date">18 Okt 2026<br>08:05 WIB</div>
+          </div>
+          <div class="col-info">
+            <div class="info-title">Web Developer — PT Teknologi Indonesia</div>
+            <div class="info-company">PT Teknologi Indonesia<span class="dot">•</span>Jakarta Pusat</div>
+            <span class="status-badge status-gray">Selesai - Risiko Rendah</span>
+          </div>
+          <div class="col-score">
+            <div class="score-label">KEYAKINAN SISTEM</div>
+            <div class="score-value">22<span class="pct">%</span></div>
+            <span class="risk-badge risk-low">Risiko Rendah</span>
+          </div>
+          <div class="col-action">
+            <a href="#" class="btn-lihat">
+              Lihat Hasil
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PAGINATION -->
+    <div class="pagination">
+      <button class="page-btn disabled">‹</button>
+      <button class="page-btn active">1</button>
+      <button class="page-btn">2</button>
+      <button class="page-btn">›</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     STATE 2: DATA KOSONG
+═══════════════════════════════════════════════════════════════ -->
+<div id="view-empty" class="main-wrap" style="display:none;">
+  <div class="space-y">
+
+    <!-- HEADER BANNER (same but 0) -->
+    <div class="banner">
+      <div class="banner-glow"></div>
+      <div class="banner-inner">
+        <div>
+          <div class="banner-label">REKAM JEJAK PENGAWASAN</div>
+          <h1 class="banner-title">
+            Riwayat <span class="font-serif" style="font-style:italic; color: var(--teal-300);">Pengaduan</span>
+          </h1>
+          <p class="banner-desc">
+            Daftar seluruh pengaduan lowongan kerja mencurigakan yang pernah Anda ajukan
+            beserta hasil pemeriksaan dan status akhirnya.
+          </p>
+        </div>
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-value">0</div><div class="stat-label">Total Laporan</div></div>
+          <div class="stat-card"><div class="stat-value teal">0</div><div class="stat-label">Sedang Berjalan</div></div>
+          <div class="stat-card"><div class="stat-value green">0</div><div class="stat-label">Selesai</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEARCH BAR (tetap tampil) -->
+    <div class="filter-bar">
+      <div class="search-wrap">
+        <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <input type="text" class="search-input" placeholder="Cari nomor tiket, posisi, atau nama perusahaan...">
+      </div>
+      <select class="filter-select"><option>Semua Status</option></select>
+      <button class="btn btn-navy">Cari</button>
+      <div class="divider-v"></div>
+      <a href="#" class="btn btn-teal">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        Ajukan Pengaduan Baru
+      </a>
+    </div>
+
+    <div class="result-label">
+      Menampilkan semua pengaduan · <strong>0</strong> total laporan
+    </div>
+
+    <!-- EMPTY STATE — LokerLensCopy::BELUM_ADA_PENGADUAN -->
+    <div class="empty-state">
+      <div class="empty-icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293
+                   l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+      </div>
+      <div class="empty-title">Belum ada pengaduan yang diajukan</div>
+      <div class="empty-desc">
+        Anda belum memiliki riwayat pengaduan lowongan kerja mencurigakan.
+        Mulai laporan pertama Anda sekarang.
+      </div>
+      <button class="empty-btn">
+        Ajukan Pengaduan Sekarang
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     STATE 3: HASIL PENCARIAN KOSONG
+═══════════════════════════════════════════════════════════════ -->
+<div id="view-filter" class="main-wrap" style="display:none;">
+  <div class="space-y">
+
+    <div class="banner">
+      <div class="banner-glow"></div>
+      <div class="banner-inner">
+        <div>
+          <div class="banner-label">REKAM JEJAK PENGAWASAN</div>
+          <h1 class="banner-title">
+            Riwayat <span class="font-serif" style="font-style:italic; color: var(--teal-300);">Pengaduan</span>
+          </h1>
+          <p class="banner-desc">
+            Daftar seluruh pengaduan lowongan kerja mencurigakan yang pernah Anda ajukan
+            beserta hasil pemeriksaan dan status akhirnya.
+          </p>
+        </div>
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-value">7</div><div class="stat-label">Total Laporan</div></div>
+          <div class="stat-card"><div class="stat-value teal">3</div><div class="stat-label">Sedang Berjalan</div></div>
+          <div class="stat-card"><div class="stat-value green">4</div><div class="stat-label">Selesai</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEARCH BAR — Dengan nilai pencarian aktif -->
+    <div class="filter-bar">
+      <div class="search-wrap">
+        <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <input type="text" class="search-input" value="Lowongan ABCDEF" style="border-color: var(--teal-600);">
+      </div>
+      <select class="filter-select">
+        <option>Semua Status</option>
+      </select>
+      <button class="btn btn-navy">Cari</button>
+      <a href="#" class="btn btn-outline">Reset</a>
+      <div class="divider-v"></div>
+      <a href="#" class="btn btn-teal">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        Ajukan Pengaduan Baru
+      </a>
+    </div>
+
+    <div class="result-label">
+      Menampilkan <strong>0</strong> hasil untuk "<strong>Lowongan ABCDEF</strong>"
+    </div>
+
+    <!-- EMPTY STATE — Filter tidak cocok -->
+    <div class="empty-state">
+      <div class="empty-icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293
+                   l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+      </div>
+      <div class="empty-title">Data Lowongan Tidak Ditemukan</div>
+      <div class="empty-desc">
+        Tidak ada pengaduan yang sesuai dengan kata kunci atau filter yang dipilih.
+      </div>
+      <button class="empty-btn" style="background:transparent; border:1px solid #e5e7eb; color: #4b5563;">
+        ← Lihat Semua Pengaduan
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function showView(view) {
+  document.getElementById('view-data').style.display = view === 'data' ? '' : 'none';
+  document.getElementById('view-empty').style.display = view === 'empty' ? '' : 'none';
+  document.getElementById('view-filter').style.display = view === 'filter' ? '' : 'none';
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('btn-' + view).classList.add('active');
+}
+</script>
+
+</body>
+</html>

@@ -26,13 +26,23 @@ Route::middleware('guest')->group(function () {
         ->name('password.request');
 
     Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
+        ->middleware('throttle:5,1')
         ->name('password.email');
+
+    // Layar 2: konfirmasi "tautan reset telah dikirim" (netral)
+    Route::get('forgot-password/terkirim', [PasswordResetLinkController::class, 'terkirim'])
+        ->name('password.sent');
 
     Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])
         ->name('password.reset');
 
     Route::post('reset-password', [NewPasswordController::class, 'store'])
+        ->middleware('throttle:5,1')
         ->name('password.store');
+
+    // Layar 4: kata sandi berhasil diubah
+    Route::get('reset-password-berhasil', [NewPasswordController::class, 'berhasil'])
+        ->name('password.success');
 });
 
 Route::middleware('auth')->group(function () {

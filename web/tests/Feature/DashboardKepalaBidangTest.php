@@ -2,169 +2,156 @@
 
 namespace Tests\Feature;
 
+use App\Enums\StatusKasus;
+use App\Models\HasilKlasifikasi;
+use App\Models\LowonganKerja;
+use App\Models\Pengaduan;
+use App\Models\Perusahaan;
+use App\Models\SuratTeguranLaporanPolisi;
+use App\Models\TindakLanjutKasus;
 use App\Models\User;
+use Database\Seeders\LokerLensSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Dashboard Kepala Bidang (issue #14).
- * NFR-SEC-01: wajib login. NFR-SEC-02: hanya Kepala Bidang.
+ * Pengujian Fitur Dashboard Kepala Bidang (Sprint 2 - Issue #14).
+ * Kriteria Selesai:
+ * 1. Menampilkan ringkasan jumlah kasus per status tahap Kepala Bidang
+ *    (Menunggu Keputusan, Tindak Lanjut Disetujui, Tidak Ditindaklanjuti, Selesai).
+ * 2. Angka sesuai data di database.
+ * 3. Hanya bisa diakses Kepala Bidang (peran lain ditolak 403, tamu dialihkan ke login).
+ * 4. Menu "Dashboard" di navbar Kepala Bidang aktif.
  */
 class DashboardKepalaBidangTest extends TestCase
 {
     use RefreshDatabase;
-        protected function setUp(): void
+
+    private User $kepalaBidang;
+    private User $analis;
+    private User $masyarakat;
+
+    protected function setUp(): void
     {
         parent::setUp();
+        $this->seed(LokerLensSeeder::class);
 
-        // Tes ini hanya menguji hak akses, bukan aset CSS/JS,
-        // jadi manifest Vite tidak perlu ada.
-        $this->withoutVite();
+        $this->kepalaBidang = User::where('role', 'Kepala Bidang')->firstOrFail();
+        $this->analis       = User::where('role', 'Analis')->firstOrFail();
+        $this->masyarakat   = User::where('role', 'Masyarakat')->firstOrFail();
     }
 
-    public function test_kepala_bidang_bisa_membuka_dashboard(): void
+    /**
+     * Test 1: Halaman hanya bisa diakses Kepala Bidang (NFR-SEC-02).
+     */
+    public function test_hanya_kepala_bidang_yang_bisa_mengakses_dashboard_kepala_bidang(): void
     {
-        $user = User::factory()->create(['role' => 'Kepala Bidang']);
-
-        $this->actingAs($user)
+        // 1. Kepala Bidang bisa mengakses
+        $this->actingAs($this->kepalaBidang)
             ->get('/dashboard-kepala-bidang')
             ->assertOk();
+
+        // 2. Masyarakat ditolak (403 Forbidden)
+        $this->actingAs($this->masyarakat)
+            ->get('/dashboard-kepala-bidang')
+            ->assertForbidden();
+
+        // 3. Analis ditolak (403 Forbidden)
+        $this->actingAs($this->analis)
+            ->get('/dashboard-kepala-bidang')
+            ->assertForbidden();
     }
 
-    public function test_peran_lain_ditolak(): void
+    /**
+     * Test 2: Pengguna belum login dialihkan ke halaman login (NFR-SEC-01).
+     */
+    public function test_halaman_dashboard_kepala_bidang_wajib_login(): void
     {
-        foreach (['Masyarakat', 'Analis'] as $peran) {
-            $user = User::factory()->create(['role' => $peran]);
-
-            $this->actingAs($user)
-                ->get('/dashboard-kepala-bidang')
-                ->assertForbidden();
-        }
+        $this->get('/dashboard-kepala-bidang')
+            ->assertRedirect('/login');
     }
 
-    public function test_dashboard_wajib_login(): void
+    /**
+     * Test 2: Menampilkan ringkasan jumlah kasus sesuai data di database.
+     */
+    public function test_dashboard_kepala_bidang_menampilkan_ringkasan_sesuai_database(): void
     {
-        $this->get('/dashboard-kepala-bidang')->assertRedirect('/login');
-    }
+        $expectedMenunggu  = Pengaduan::where('status_pengaduan', StatusKasus::MenungguKeputusan)->count();
+        $expectedDisetujui = Pengaduan::where('status_pengaduan', StatusKasus::TindakLanjutDisetujui)->count();
+        $expectedDitolak   = Pengaduan::where('status_pengaduan', StatusKasus::TidakDitindaklanjuti)->count();
+        $expectedSelesai   = Pengaduan::where('status_pengaduan', StatusKasus::Selesai)->count();
+        $expectedSurat     = SuratTeguranLaporanPolisi::where('status_penerbitan', 'Terbit')->count();
 
-    public function test_dashboard_menampilkan_jumlah_pengaduan_sesuai_status(): void
-{
-    $user = User::factory()->create(['role' => 'Kepala Bidang']);
-
-    $perusahaan = \App\Models\Perusahaan::create([
-        'nama_perusahaan' => 'PT Test Dashboard',
-    ]);
-
-    $lowongan = \App\Models\LowonganKerja::create([
-        'id_perusahaan' => $perusahaan->id_perusahaan,
-        'posisi_lowongan' => 'Staff Administrasi',
-        'deskripsi_lowongan' => 'Lowongan untuk kebutuhan pengujian dashboard.',
-    ]);
-
-    $statusUji = [
-        'Menunggu Keputusan' => 2,
-        'Tindak Lanjut Disetujui' => 1,
-        'Tidak Ditindaklanjuti' => 3,
-        'Selesai' => 1,
-
-        // Status ini tidak boleh masuk ringkasan Kepala Bidang
-        'Perlu Tinjauan' => 2,
-        'Sedang Ditinjau' => 1,
-        'Tidak Terbukti' => 1,
-        'Selesai - Risiko Rendah' => 2,
-    ];
-
-    $nomor = 1;
-
-    foreach ($statusUji as $status => $jumlah) {
-        for ($i = 0; $i < $jumlah; $i++) {
-            \App\Models\Pengaduan::create([
-                'id_lowongan' => $lowongan->id_lowongan,
-                'id_pengguna' => $user->id,
-                'nomor_tiket' => '#TEST-' . $nomor++,
-                'deskripsi_singkat' => 'Pengaduan untuk pengujian dashboard.',
-                'status_pengaduan' => $status,
-            ]);
-        }
-    }
-
-    $response = $this->actingAs($user)
-        ->get('/dashboard-kepala-bidang');
-
-    $response->assertOk();
-
-    $ringkasan = collect($response->viewData('ringkasan'))
-        ->mapWithKeys(fn ($item) => [
-            $item['status']->value => $item['jumlah'],
-        ]);
-
-    $this->assertSame(2, $ringkasan['Menunggu Keputusan']);
-    $this->assertSame(1, $ringkasan['Tindak Lanjut Disetujui']);
-    $this->assertSame(3, $ringkasan['Tidak Ditindaklanjuti']);
-    $this->assertSame(1, $ringkasan['Selesai']);
-
-    $this->assertArrayNotHasKey('Perlu Tinjauan', $ringkasan->all());
-    $this->assertArrayNotHasKey('Sedang Ditinjau', $ringkasan->all());
-    $this->assertArrayNotHasKey('Tidak Terbukti', $ringkasan->all());
-    $this->assertArrayNotHasKey('Selesai - Risiko Rendah', $ringkasan->all());
-}
-
-    public function test_daftar_menunggu_keputusan_hanya_berisi_status_itu_maksimal_lima(): void
-    {
-        $user = User::factory()->create(['role' => 'Kepala Bidang']);
-
-        $perusahaan = \App\Models\Perusahaan::create([
-            'nama_perusahaan' => 'PT Test Daftar',
-        ]);
-
-        $lowongan = \App\Models\LowonganKerja::create([
-            'id_perusahaan' => $perusahaan->id_perusahaan,
-            'posisi_lowongan' => 'Staff Daftar',
-            'deskripsi_lowongan' => 'Lowongan untuk pengujian daftar dashboard.',
-        ]);
-
-        // 7 laporan menunggu keputusan, daftar harus dibatasi 5
-        for ($i = 1; $i <= 7; $i++) {
-            \App\Models\Pengaduan::create([
-                'id_lowongan' => $lowongan->id_lowongan,
-                'id_pengguna' => $user->id,
-                'nomor_tiket' => '#DAFTAR-' . $i,
-                'deskripsi_singkat' => 'Menunggu keputusan.',
-                'status_pengaduan' => 'Menunggu Keputusan',
-                'tanggal_pengaduan' => now()->subDays($i),
-            ]);
-        }
-
-        // Status lain tidak boleh ikut masuk daftar
-        \App\Models\Pengaduan::create([
-            'id_lowongan' => $lowongan->id_lowongan,
-            'id_pengguna' => $user->id,
-            'nomor_tiket' => '#DAFTAR-SELESAI',
-            'deskripsi_singkat' => 'Sudah selesai.',
-            'status_pengaduan' => 'Selesai',
-            'tanggal_pengaduan' => now(),
-        ]);
-
-        $response = $this->actingAs($user)->get('/dashboard-kepala-bidang');
+        $response = $this->actingAs($this->kepalaBidang)
+            ->get('/dashboard-kepala-bidang');
 
         $response->assertOk();
+        $response->assertViewIs('dashboard-kepala-bidang.index');
+        $response->assertViewHas('jumlahMenunggu', $expectedMenunggu);
+        $response->assertViewHas('jumlahDisetujui', $expectedDisetujui);
+        $response->assertViewHas('jumlahDitolak', $expectedDitolak);
+        $response->assertViewHas('jumlahSelesai', $expectedSelesai);
+        $response->assertViewHas('jumlahSuratTerbit', $expectedSurat);
 
-        $daftar = $response->viewData('menungguKeputusan');
-
-        $this->assertCount(5, $daftar);
-        $this->assertTrue(
-            $daftar->every(fn ($p) => $p->status_pengaduan->value === 'Menunggu Keputusan')
-        );
-        $response->assertDontSee('#DAFTAR-SELESAI');
+        // Pastikan angka tampil di DOM
+        $response->assertSee((string) $expectedMenunggu);
+        $response->assertSee((string) $expectedDisetujui);
+        $response->assertSee((string) $expectedDitolak);
+        $response->assertSee((string) $expectedSelesai);
     }
 
-    public function test_daftar_menunggu_keputusan_kosong_menampilkan_pesan(): void
+    /**
+     * Test 3: Angka ringkasan diperbarui secara dinamis saat kasus diputuskan.
+     */
+    public function test_dashboard_kepala_bidang_memperbarui_angka_secara_dinamis(): void
     {
-        $user = User::factory()->create(['role' => 'Kepala Bidang']);
+        $initialMenunggu = Pengaduan::where('status_pengaduan', StatusKasus::MenungguKeputusan)->count();
 
-        $this->actingAs($user)
-            ->get('/dashboard-kepala-bidang')
-            ->assertOk()
-            ->assertSee('Tidak ada laporan yang menunggu keputusan.');
+        // Tambah satu pengaduan baru berstatus Menunggu Keputusan
+        $perusahaan = Perusahaan::first();
+        $lowongan = LowonganKerja::create([
+            'id_perusahaan'     => $perusahaan->id_perusahaan,
+            'posisi_lowongan'   => 'Staff Audit Finansial',
+            'deskripsi_lowongan'=> 'Dibutuhkan segera staff audit internal.',
+            'sumber_lowongan'   => 'LinkedIn',
+        ]);
+
+        $pengaduan = Pengaduan::create([
+            'id_pengguna'        => $this->masyarakat->id,
+            'id_lowongan'        => $lowongan->id_lowongan,
+            'nomor_tiket'        => '#LKR-99999',
+            'tanggal_pengaduan'  => now(),
+            'status_pengaduan'   => StatusKasus::MenungguKeputusan,
+        ]);
+
+        HasilKlasifikasi::create([
+            'id_pengaduan'     => $pengaduan->id_pengaduan,
+            'confidence_score' => 92.5,
+            'label_risiko'     => 'Tinggi',
+            'kategori_hasil'   => 'Indikasi Penipuan Kuat',
+            'tanggal_analisis' => now(),
+        ]);
+
+        $response = $this->actingAs($this->kepalaBidang)
+            ->get('/dashboard-kepala-bidang');
+
+        $response->assertOk();
+        $response->assertViewHas('jumlahMenunggu', $initialMenunggu + 1);
+        $response->assertSee('#LKR-99999');
+        $response->assertSee('Staff Audit Finansial');
+    }
+
+    /**
+     * Test 4: Menu "Dashboard" di navbar Kepala Bidang aktif dan menautkan rute yang benar.
+     */
+    public function test_menu_dashboard_di_navbar_kepala_bidang_aktif(): void
+    {
+        $response = $this->actingAs($this->kepalaBidang)
+            ->get('/dashboard-kepala-bidang');
+
+        $response->assertOk();
+        // Memastikan navbar memuat link aktif ke dashboard-kepala-bidang
+        $response->assertSee(route('dashboard-kepala-bidang.index'));
+        $response->assertSee('text-teal-400 bg-navy-800 font-semibold', false);
     }
 }

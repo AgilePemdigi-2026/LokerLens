@@ -1,9 +1,13 @@
 <?php
 
+use App\Http\Controllers\ArsipKasusController;
 use App\Http\Controllers\BerandaController;
 use App\Http\Controllers\BuatSuratController;
+use App\Http\Controllers\DashboardAnalisController;
+use App\Http\Controllers\DashboardKepalaBidangController;
 use App\Http\Controllers\PeriksaLowonganController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RiwayatPengaduanController;
 use App\Http\Controllers\TindakLanjutController;
 use App\Http\Controllers\TinjauLowonganController;
 use Illuminate\Support\Facades\Route;
@@ -43,10 +47,18 @@ Route::middleware('auth')->group(function () {
             ->name('periksa-lowongan.store');
         Route::get('/periksa-lowongan/hasil/{id}', [PeriksaLowonganController::class, 'hasil'])
             ->name('periksa-lowongan.hasil');
+
+        // Riwayat Pengaduan — /riwayat-pengaduan (Sprint 2)
+        Route::get('/riwayat-pengaduan', [RiwayatPengaduanController::class, 'index'])
+            ->name('riwayat-pengaduan.index');
     });
 
     // ── Analis ──────────────────────────────────────────────────────────────
     Route::middleware('role:Analis')->group(function () {
+
+        // Dashboard Analis — /dashboard-analis (Sprint 2)
+        Route::get('/dashboard-analis', [DashboardAnalisController::class, 'index'])
+            ->name('dashboard-analis.index');
 
         // Tinjau Lowongan — /tinjau-lowongan/ (Sprint 1)
         Route::get('/tinjau-lowongan', [TinjauLowonganController::class, 'index'])
@@ -60,6 +72,10 @@ Route::middleware('auth')->group(function () {
     // ── Kepala Bidang ────────────────────────────────────────────────────────
     Route::middleware('role:Kepala Bidang')->group(function () {
 
+        // Dashboard Kepala Bidang — /dashboard-kepala-bidang (Sprint 2 - Issue #14)
+        Route::get('/dashboard-kepala-bidang', [DashboardKepalaBidangController::class, 'index'])
+            ->name('dashboard-kepala-bidang.index');
+
         // Tindak Lanjut — /tindak-lanjut/ (Sprint 1)
         Route::get('/tindak-lanjut', [TindakLanjutController::class, 'index'])
             ->name('tindak-lanjut.index');
@@ -69,6 +85,12 @@ Route::middleware('auth')->group(function () {
             ->name('tindak-lanjut.keputusan');
         Route::get('/tindak-lanjut/{id}/hasil', [TindakLanjutController::class, 'hasil'])
             ->name('tindak-lanjut.hasil');
+
+        // Arsip Kasus — /arsip-kasus (Sprint 2 - Issue #14)
+        Route::get('/arsip-kasus', [ArsipKasusController::class, 'index'])
+            ->name('arsip-kasus.index');
+        Route::get('/arsip-kasus/{pengaduan}', [ArsipKasusController::class, 'show'])
+            ->name('arsip-kasus.show');
 
         // Buat Surat — /buat-surat/ (Sprint 1) — FR-ST-02: hanya setelah Tindaklanjuti
         Route::get('/buat-surat/{pengaduanId}', [BuatSuratController::class, 'index'])

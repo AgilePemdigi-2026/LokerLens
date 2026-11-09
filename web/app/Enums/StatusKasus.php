@@ -87,6 +87,20 @@ enum StatusKasus: string
     }
 
     /**
+     * Status kasus yang masuk kategori arsip pengawasan (status akhir).
+     *
+     * @return array<int, self>
+     */
+    public static function statusAkhir(): array
+    {
+        return [
+            self::Selesai,
+            self::TidakDitindaklanjuti,
+            self::TidakTerbukti,
+        ];
+    }
+
+    /**
      * @return array<int, string>
      */
     public static function values(): array

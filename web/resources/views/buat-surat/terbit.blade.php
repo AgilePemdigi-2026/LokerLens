@@ -105,7 +105,7 @@
                         Kembali ke Laporan
                     </a>
 
-                    <a href="{{ route('tindak-lanjut.index') }}"
+                    <a href="{{ route('arsip-kasus.show', $pengaduan->id_pengaduan) }}"
                        class="w-full sm:w-auto px-6 py-2.5 rounded-control bg-navy-900 hover:bg-navy-800 text-white text-xs font-semibold shadow-lg transition flex items-center justify-center space-x-1.5">
                         <span>Lihat Arsip Kasus</span>
                         <span>→</span>

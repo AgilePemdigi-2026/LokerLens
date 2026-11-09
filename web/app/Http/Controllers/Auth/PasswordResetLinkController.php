@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Constants\LokerLensCopy;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class PasswordResetLinkController extends Controller
 {
     /**
-     * Display the password reset link request view.
+     * Layar 1: form masukkan email.
      */
     public function create(): View
     {
@@ -20,26 +20,42 @@ class PasswordResetLinkController extends Controller
     }
 
     /**
-     * Handle an incoming password reset link request.
+     * Kirim tautan reset ke email.
      *
-     * @throws ValidationException
+     * Respons SELALU sama, apa pun hasilnya (email terdaftar, tidak terdaftar,
+     * atau sedang dibatasi throttle). Dengan begitu orang luar tidak bisa
+     * menebak email siapa saja yang terdaftar di LokerLens.
      */
     public function store(Request $request): RedirectResponse
     {
-        $request->validate([
-            'email' => ['required', 'email'],
-        ]);
-
-        // We will send the password reset link to this user. Once we have attempted
-        // to send the link, we will examine the response then see the message we
-        // need to show to the user. Finally, we'll send out a proper response.
-        $status = Password::sendResetLink(
-            $request->only('email')
+        $request->validate(
+            ['email' => ['required', 'email']],
+            [
+                'email.required' => LokerLensCopy::LUPA_EMAIL_WAJIB,
+                'email.email'    => LokerLensCopy::LUPA_EMAIL_TIDAK_VALID,
+            ]
         );
 
-        return $status == Password::RESET_LINK_SENT
-                    ? back()->with('status', __($status))
-                    : back()->withInput($request->only('email'))
-                        ->withErrors(['email' => __($status)]);
+        // Hasilnya sengaja tidak dipakai (lihat penjelasan di atas).
+        Password::sendResetLink($request->only('email'));
+
+        return redirect()
+            ->route('password.sent')
+            ->with('email_reset', $request->input('email'));
+    }
+
+    /**
+     * Layar 2: konfirmasi "tautan reset telah dikirim" (netral).
+     * Hanya bisa dibuka setelah form dikirim; kalau dibuka langsung, kembali ke form.
+     */
+    public function terkirim(Request $request): View|RedirectResponse
+    {
+        if (! $request->session()->has('email_reset')) {
+            return redirect()->route('password.request');
+        }
+
+        return view('auth.link-terkirim', [
+            'email' => $request->session()->get('email_reset'),
+        ]);
     }
 }

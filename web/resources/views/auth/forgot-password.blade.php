@@ -79,12 +79,6 @@
                     </p>
                 </div>
 
-                <!-- Session Status (Sukses Kirim Tautan) -->
-                @if (session('status'))
-                    <div class="mb-5 bg-teal-50 border-l-4 border-teal-600 p-4 rounded-r-lg text-teal-900 text-xs sm:text-sm font-medium">
-                        {{ session('status') }}
-                    </div>
-                @endif
 
                 <!-- Banner Error Validasi -->
                 @if ($errors->any())

@@ -116,13 +116,27 @@
                             class="w-full px-3.5 py-2.5 rounded-lg border text-sm text-navy-900 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-600 transition {{ $errors->has('email') ? 'border-risk-high' : 'border-gray-300' }}" />
                     </div>
 
-                    <!-- Kata Sandi Baru dengan Toggle Mata -->
-                    <div x-data="{ show: false }">
+                    <!-- Kata Sandi Baru dengan Toggle Mata + Indikator Kekuatan -->
+                    <div x-data="{
+                        show: false,
+                        pw: '',
+                        get skor() {
+                            if (this.pw.length === 0) return 0;
+                            let s = 0;
+                            if (this.pw.length >= 8) s++;
+                            if (/[a-zA-Z]/.test(this.pw) && /\d/.test(this.pw)) s++;
+                            if (/[A-Z]/.test(this.pw) && /[a-z]/.test(this.pw)) s++;
+                            if (/[^A-Za-z0-9]/.test(this.pw)) s++;
+                            return Math.max(1, s);
+                        },
+                        get label() { return ['', 'Lemah', 'Cukup', 'Kuat', 'Sangat kuat'][this.skor]; },
+                        get warna() { return ['', 'bg-red-500', 'bg-amber-500', 'bg-teal-500', 'bg-teal-600'][this.skor]; }
+                    }">
                         <label for="password" class="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
                             Kata Sandi Baru <span class="text-risk-high">*</span>
                         </label>
                         <div class="relative">
-                            <input id="password" :type="show ? 'text' : 'password'" name="password" required autocomplete="new-password"
+                            <input id="password" x-model="pw" :type="show ? 'text' : 'password'" name="password" required autocomplete="new-password"
                                 placeholder="Minimal 8 karakter"
                                 class="w-full px-3.5 py-2.5 rounded-lg border text-sm text-navy-900 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-600 transition pr-10 {{ $errors->has('password') ? 'border-risk-high' : 'border-gray-300' }}" />
                             <button type="button" @click="show = !show" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600" aria-label="Tampilkan sandi">
@@ -134,6 +148,18 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"></path>
                                 </svg>
                             </button>
+                        </div>
+
+                        <!-- Indikator Kekuatan Sandi (hanya tampil setelah mengetik) -->
+                        <div x-show="pw.length > 0" x-cloak class="mt-2">
+                            <div class="flex gap-1">
+                                <template x-for="i in 4" :key="i">
+                                    <div class="h-1.5 flex-1 rounded-full transition-colors" :class="i <= skor ? warna : 'bg-gray-200'"></div>
+                                </template>
+                            </div>
+                            <p class="text-xs text-gray-600 mt-1">
+                                Kekuatan sandi: <span class="font-semibold" x-text="label"></span>
+                            </p>
                         </div>
                     </div>
 

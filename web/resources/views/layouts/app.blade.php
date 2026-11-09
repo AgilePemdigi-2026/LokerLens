@@ -73,9 +73,10 @@
                                 </a>
                             </li>
                             <li>
-                                <span class="text-sm text-gray-500 cursor-not-allowed" title="Fitur Sprint 2">
+                                 <a href="{{ route('riwayat-pengaduan.index') }}"
+                                class="px-3 py-2 text-sm flex items-center gap-1.5 {{ request()->routeIs('riwayat-pengaduan.*') ? 'text-navy-900 font-semibold' : 'text-gray-600 hover:text-navy-900' }}">
                                     Riwayat Pengaduan
-                                </span>
+                                </a>
                             </li>
                         </ul>
                     </div>

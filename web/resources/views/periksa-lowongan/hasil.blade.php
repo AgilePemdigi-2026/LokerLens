@@ -241,7 +241,7 @@
 
             <div class="mt-6 pt-4 border-t border-navy-800 flex flex-wrap items-center justify-between gap-3">
                 <div class="flex flex-wrap items-center gap-3">
-                    <a href="{{ route('beranda') }}" class="px-5 py-2 rounded-control bg-navy-800 hover:bg-navy-700 text-gray-200 text-xs font-semibold transition">
+                    <a href="{{ route('riwayat-pengaduan.index') }}" class="px-5 py-2 rounded-control bg-navy-800 hover:bg-navy-700 text-gray-200 text-xs font-semibold transition">
                         Lihat Riwayat
                     </a>
                     {{-- Pantau perkembangan pengaduan ini di halaman Status Pengaduan (#11) --}}

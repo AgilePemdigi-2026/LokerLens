@@ -8,6 +8,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StatusPengaduanController;
 use App\Http\Controllers\TindakLanjutController;
 use App\Http\Controllers\TinjauLowonganController;
+use App\Http\Controllers\RiwayatPengaduanController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -58,6 +59,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/status-pengaduan/{id}', [StatusPengaduanController::class, 'detail'])
             ->whereNumber('id')
             ->name('status-pengaduan.detail');
+
+        // Riwayat Pengaduan — /riwayat-pengaduan/ (Sprint 2)
+            Route::get('/riwayat-pengaduan', [RiwayatPengaduanController::class, 'index'])
+            ->name('riwayat-pengaduan.index');
     });
 
     // ── Analis ──────────────────────────────────────────────────────────────

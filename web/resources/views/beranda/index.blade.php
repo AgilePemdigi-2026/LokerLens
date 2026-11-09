@@ -96,6 +96,8 @@
                             <span aria-hidden="true">&rarr;</span>
                         </a>
                     </div>
+                     </div>   {{-- tambahkan: tutup grid kartu --}}
+        </div>       {{-- tambahkan: tutup pembungkus Layanan Utama --}}
 
         <!-- 3. Pengaduan Terbaru Anda (Teks Wajib jika kosong: "Belum ada pengaduan yang diajukan") -->
         <div id="pengaduan-terbaru" class="bg-white rounded-card shadow-lg p-6 sm:p-8 text-navy-900 border border-gray-100">

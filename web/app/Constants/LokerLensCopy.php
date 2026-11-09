@@ -179,4 +179,31 @@ final class LokerLensCopy
     public const PESAN_BERHENTI_RISIKO_RENDAH     = 'Lowongan ini tidak menunjukkan risiko tinggi, sehingga tidak perlu ditinjau lebih lanjut.';
     public const PESAN_BERHENTI_TIDAK_TERBUKTI    = 'Hasil tinjauan Analis: lowongan tidak terbukti mencurigakan. Pengaduan ditutup pada tahap ini.';
     public const PESAN_BERHENTI_TIDAK_DITINDAKLANJUTI = 'Kepala Bidang memutuskan laporan tidak ditindaklanjuti. Pengaduan diarsipkan pada tahap ini.';
+
+    // ──────────────────────────────────────────────
+    //  Lupa Password (issue #9)
+    //  Belum ada di SRS; teks dari rancangan tim.
+    // ──────────────────────────────────────────────
+    public const LUPA_EMAIL_WAJIB          = 'Email wajib diisi.';
+    public const LUPA_EMAIL_TIDAK_VALID    = 'Format email tidak valid. Silakan periksa kembali alamat email Anda.';
+    public const LUPA_TERLALU_SERING       = 'Terlalu banyak permintaan. Silakan coba lagi beberapa saat lagi.';
+
+    // Layar konfirmasi: netral, tidak menyebut apakah email terdaftar.
+    public const LUPA_TERKIRIM_JUDUL       = 'Periksa email Anda';
+    public const LUPA_TERKIRIM_PESAN       = 'Jika alamat email tersebut terdaftar di LokerLens, tautan untuk mengatur ulang kata sandi telah dikirim. Tautan berlaku selama 60 menit dan hanya dapat digunakan satu kali.';
+
+    // Form kata sandi baru
+    public const SANDI_BARU_WAJIB          = 'Kata Sandi Baru wajib diisi.';
+    public const SANDI_BARU_MINIMAL        = 'Kata Sandi minimal 8 karakter.';
+    public const SANDI_BARU_TIDAK_COCOK    = 'Konfirmasi Kata Sandi tidak cocok.';
+    public const TAUTAN_RESET_TIDAK_VALID  = 'Tautan atur ulang kata sandi tidak valid atau sudah kedaluwarsa. Silakan minta tautan baru.';
+
+    // Layar berhasil
+    public const SANDI_BERHASIL_JUDUL      = 'Kata sandi berhasil diubah';
+    public const SANDI_BERHASIL_PESAN      = 'Kata sandi Anda telah diperbarui. Silakan masuk menggunakan kata sandi baru.';
+
+    public const BTN_KIRIM_TAUTAN_RESET    = 'Kirim Tautan Reset Kata Sandi';
+    public const BTN_SIMPAN_SANDI_BARU     = 'Simpan Kata Sandi Baru';
+    public const BTN_KEMBALI_LOGIN         = 'Kembali ke Login';
+    public const BTN_MINTA_TAUTAN_BARU     = 'Minta Tautan Baru';
 }

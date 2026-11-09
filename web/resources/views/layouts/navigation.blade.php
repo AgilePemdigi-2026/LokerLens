@@ -31,10 +31,9 @@
                         </span>
                     @elseif(Auth::user()->isAnalis())
                         {{-- Analis Navbar (§5.2): Dashboard · Laporan · Pemantauan (aktif) · Arsip Kasus --}}
-                        <span class="px-3 py-2 text-sm text-gray-400 cursor-not-allowed flex items-center gap-1.5" title="Fitur Sprint 2">
+                        <a href="{{ route('dashboard-analis.index') }}" class="px-3 py-2 rounded-md text-sm font-medium transition {{ request()->routeIs('dashboard-analis.*') ? 'text-teal-400 bg-navy-800 font-semibold' : 'text-gray-300 hover:text-white hover:bg-navy-800/60' }}">
                             Dashboard
-                            <span class="text-[10px] bg-navy-800 border border-gray-700 text-gray-400 px-1.5 py-0.5 rounded">Sprint 2</span>
-                        </span>
+                        </a>
                         <span class="px-3 py-2 text-sm text-gray-400 cursor-not-allowed flex items-center gap-1.5" title="Fitur Sprint 2">
                             Laporan
                             <span class="text-[10px] bg-navy-800 border border-gray-700 text-gray-400 px-1.5 py-0.5 rounded">Sprint 2</span>

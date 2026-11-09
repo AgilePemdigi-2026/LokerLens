@@ -89,6 +89,11 @@ final class LokerLensCopy
 
         public const JUDUL_DASHBOARD_KEPALA_BIDANG = 'Dashboard Kepala Bidang';
     public const DESKRIPSI_DASHBOARD_KEPALA_BIDANG = 'Ringkasan jumlah laporan berdasarkan status penanganan.';
+    public const JUDUL_DASHBOARD_ANALIS            = 'Dashboard Analis';
+    public const DESKRIPSI_DASHBOARD_ANALIS        = 'Pantau beban kerja dan prioritaskan lowongan berisiko tinggi.';
+    public const ANTREAN_ANALIS_KOSONG_JUDUL       = 'Belum ada antrean pada periode ini';
+    public const ANTREAN_ANALIS_KOSONG_KETERANGAN  = 'Ubah filter periode untuk melihat pengaduan yang perlu ditinjau.';
+    public const BTN_TAMPILKAN_7_HARI              = 'Tampilkan 7 hari terakhir';
 
     // ──────────────────────────────────────────────
     //  Catatan hasil analisis (NFR-SAF-01, BR-04)

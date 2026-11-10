@@ -7,14 +7,25 @@
             $tinjauan = $klasifikasi->tinjauanAnalis;
             // Tingkat risiko & warna dari model HasilKlasifikasi (sama dengan halaman Hasil Pemeriksaan)
             $warna = $klasifikasi->warna_risiko;
+            // Mode hanya-baca dari Riwayat Tinjauan (RiwayatTinjauanController@detail): form tinjauan tidak tampil
+            $modeBaca = $modeBaca ?? false;
         @endphp
 
         <!-- Navigasi Atas & Tombol Kembali -->
         <div class="flex items-center justify-between text-xs text-gray-400">
             <div class="flex items-center space-x-2">
-                <a href="{{ route('tinjau-lowongan.index') }}" class="hover:text-teal-400 transition font-medium">← Kembali ke Antrean</a>
+                @if($modeBaca)
+                    <a href="{{ route('riwayat-tinjauan.index') }}" class="hover:text-teal-400 transition font-medium">{{ \App\Constants\LokerLensCopy::BTN_KEMBALI_RIWAYAT_TINJAUAN }}</a>
+                @else
+                    <a href="{{ route('tinjau-lowongan.index') }}" class="hover:text-teal-400 transition font-medium">← Kembali ke Antrean</a>
+                @endif
                 <span>›</span>
                 <span class="text-white font-medium">Tiket {{ $pengaduan->nomor_tiket }}</span>
+                @if($modeBaca)
+                    <span id="label-hanya-baca" class="ml-2 px-2 py-0.5 rounded bg-navy-800 border border-navy-700 text-gray-300 font-semibold text-[11px]">
+                        {{ \App\Constants\LokerLensCopy::LABEL_MODE_HANYA_BACA }}
+                    </span>
+                @endif
             </div>
             <span class="px-2.5 py-1 rounded bg-risk-high/20 border border-risk-high text-red-300 font-bold text-[11px] tracking-wider uppercase">
                 {{-- Dari hasil_klasifikasi.status_prioritas (halaman ini hanya untuk kasus prioritas tinggi) --}}
@@ -229,6 +240,9 @@
             </div>
         </div>
 
+        @if($modeBaca)
+            @include('tinjau-lowongan.partials.hasil-hanya-baca')
+        @else
         <!-- 4. Formulir Keputusan & Rekomendasi Tindak Lanjut (BDD Hooks: catatan_tinjauan, hasil_tinjauan, Lanjutkan) -->
         <div class="bg-navy-900 text-white rounded-card shadow-xl p-6 sm:p-8 border border-navy-800">
             <div class="border-b border-navy-800 pb-4 mb-6">
@@ -330,5 +344,6 @@
             </form>
             @endif
         </div>
+        @endif
     </div>
 </x-app-layout>

@@ -8,6 +8,7 @@ use App\Http\Controllers\DashboardKepalaBidangController;
 use App\Http\Controllers\PeriksaLowonganController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RiwayatPengaduanController;
+use App\Http\Controllers\RiwayatTinjauanController;
 use App\Http\Controllers\StatusPengaduanController;
 use App\Http\Controllers\TindakLanjutController;
 use App\Http\Controllers\TinjauLowonganController;
@@ -81,6 +82,13 @@ Route::middleware('auth')->group(function () {
             ->name('tinjau-lowongan.detail');
         Route::post('/tinjau-lowongan/detail/{id}/simpan', [TinjauLowonganController::class, 'simpanTinjauan'])
             ->name('tinjau-lowongan.simpan');
+
+        // Riwayat Tinjauan — /riwayat-tinjauan (issue #25): kasus yang sudah ditinjau, detail hanya-baca
+        Route::get('/riwayat-tinjauan', [RiwayatTinjauanController::class, 'index'])
+            ->name('riwayat-tinjauan.index');
+        Route::get('/riwayat-tinjauan/{id}', [RiwayatTinjauanController::class, 'detail'])
+            ->whereNumber('id')
+            ->name('riwayat-tinjauan.detail');
     });
 
     // ── Kepala Bidang ────────────────────────────────────────────────────────

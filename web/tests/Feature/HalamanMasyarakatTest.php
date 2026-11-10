@@ -3,15 +3,18 @@
 namespace Tests\Feature;
 
 use App\Constants\LokerLensCopy;
-use App\Enums\StatusKasus;
-use App\Models\BuktiPendukung;
 use App\Models\Pengaduan;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
+/**
+ * Halaman Masyarakat: form Periksa Lowongan (Data Mockup Gambar 2.5–2.6) dan Hasil Pemeriksaan (Gambar 2.7).
+ * API ML selalu dipalsukan dengan palsukanApiMl() (lihat tests/TestCase.php).
+ *
+ * Catatan: Masyarakat tidak punya fitur upload bukti, jadi tidak ada test file_bukti.
+ * Kegagalan API ML diuji di KlasifikasiMlTest (pengaduan tetap tersimpan dengan pesan jelas).
+ */
 class HalamanMasyarakatTest extends TestCase
 {
     use RefreshDatabase;
@@ -22,100 +25,34 @@ class HalamanMasyarakatTest extends TestCase
     {
         parent::setUp();
         $this->masyarakat = User::factory()->create(['role' => 'Masyarakat']);
-        Storage::fake('public');
     }
 
-    public function test_form_periksa_memuat_semua_elemen_dan_fitur_alpine(): void
+    public function test_form_periksa_memuat_semua_isian_dan_tombol(): void
     {
         $response = $this->actingAs($this->masyarakat)->get('/periksa-lowongan');
 
         $response->assertOk();
         $html = $response->getContent();
 
-        // 1. Memuat seluruh field yang diminta
+        // Isian sesuai Data Mockup Gambar 2.5
+        $this->assertStringContainsString('name="link_lowongan"', $html);
         $this->assertStringContainsString('name="nama_perusahaan"', $html);
         $this->assertStringContainsString('name="posisi_lowongan"', $html);
-        $this->assertStringContainsString('name="link_lowongan"', $html);
         $this->assertStringContainsString('name="deskripsi_lowongan"', $html);
         $this->assertStringContainsString('name="informasi_tambahan"', $html);
         $this->assertStringContainsString('name="checklist[]"', $html);
-        $this->assertStringContainsString('name="file_bukti"', $html);
+        $this->assertStringContainsString('Minimal 50 karakter', $html);
 
-        // 2. Input file memuat accept pdf/jpg/jpeg/png
-        $this->assertStringContainsString('accept=".pdf,.jpg,.jpeg,.png"', $html);
-        $this->assertStringContainsString('enctype="multipart/form-data"', $html);
-
-        // 3. Alpine.js: pratinjau nama file, penghitung karakter, dan status loading Memeriksa...
-        $this->assertStringContainsString('x-text="fileName"', $html);
-        $this->assertStringContainsString('x-text="deskripsi.length"', $html);
-        $this->assertStringContainsString('Memeriksa…', $html);
+        // Tombol dan status proses (Gambar 2.5–2.6)
+        $response->assertSee(LokerLensCopy::BTN_RESET_FORM)
+            ->assertSee(LokerLensCopy::BTN_PERIKSA_SEKARANG)
+            ->assertSee('Sedang Memeriksa...');
     }
 
-    public function test_validasi_file_bukti_hanya_menerima_pdf_jpg_png(): void
+    public function test_halaman_hasil_menampilkan_nomor_tiket_label_skor_dan_kata_pemicu(): void
     {
-        // 1. File tidak valid (.txt / .exe) ditolak
-        $invalidFile = UploadedFile::fake()->create('dokumen.txt', 100, 'text/plain');
+        $this->palsukanApiMl(0.9, ['biaya pendaftaran', 'transfer']);
 
-        $responseInvalid = $this->actingAs($this->masyarakat)->post('/periksa-lowongan', [
-            'nama_perusahaan'    => 'PT Contoh Aman',
-            'posisi_lowongan'    => 'Staff HRD',
-            'deskripsi_lowongan' => str_repeat('Deskripsi pekerjaan resmi dan lengkap untuk lowongan ini. ', 2),
-            'file_bukti'         => $invalidFile,
-        ]);
-
-        $responseInvalid->assertSessionHasErrors(['file_bukti']);
-
-        // 2. File valid (.pdf) diterima dan disimpan ke database bukti_pendukung
-        $validFile = UploadedFile::fake()->create('bukti_loker.pdf', 500, 'application/pdf');
-
-        $responseValid = $this->actingAs($this->masyarakat)->post('/periksa-lowongan', [
-            'nama_perusahaan'    => 'PT Contoh Valid',
-            'posisi_lowongan'    => 'Staff Administrasi',
-            'deskripsi_lowongan' => str_repeat('Lowongan pekerjaan ini membutuhkan staf administrasi berpengalaman. ', 2),
-            'file_bukti'         => $validFile,
-        ]);
-
-        $responseValid->assertSessionHasNoErrors();
-        $responseValid->assertRedirect();
-
-        $pengaduan = Pengaduan::latest('id_pengaduan')->firstOrFail();
-        $this->assertDatabaseHas('bukti_pendukung', [
-            'id_pengaduan' => $pengaduan->id_pengaduan,
-            'nama_file'    => 'bukti_loker.pdf',
-            'tipe_file'    => 'pdf',
-        ]);
-    }
-
-    public function test_kegagalan_layanan_ml_menolak_pemeriksaan_dan_mempertahankan_isian(): void
-    {
-        $payload = [
-            'nama_perusahaan'    => 'PT Sumber Berkah',
-            'posisi_lowongan'    => 'Customer Service',
-            'deskripsi_lowongan' => 'Lowongan kerja dengan transfer biaya reservasi hotel sebelum interview di hotel.',
-            'informasi_tambahan' => 'Kontak WA 08123456789',
-        ];
-
-        // Header simulasi kegagalan ML
-        $response = $this->actingAs($this->masyarakat)
-            ->withHeader('X-Simulate-ML-Failure', '1')
-            ->post('/periksa-lowongan', $payload);
-
-        $response->assertRedirect();
-        $response->assertSessionHas('error', LokerLensCopy::ERROR_API_ML);
-
-        // Memastikan isian tetap dipertahankan via old()
-        $this->assertSame($payload['nama_perusahaan'], session()->getOldInput('nama_perusahaan'));
-        $this->assertSame($payload['posisi_lowongan'], session()->getOldInput('posisi_lowongan'));
-        $this->assertSame($payload['deskripsi_lowongan'], session()->getOldInput('deskripsi_lowongan'));
-
-        // Memastikan tidak ada pengaduan yang tersimpan sebagian
-        $this->assertDatabaseMissing('pengaduan', [
-            'deskripsi_singkat' => 'Periksa lowongan: Customer Service di PT Sumber Berkah',
-        ]);
-    }
-
-    public function test_halaman_hasil_menampilkan_nomor_tiket_label_skor_kata_pemicu_dan_sorotan(): void
-    {
         $response = $this->actingAs($this->masyarakat)->post('/periksa-lowongan', [
             'nama_perusahaan'    => 'PT Penipu Digital',
             'posisi_lowongan'    => 'Data Entry',
@@ -126,95 +63,77 @@ class HalamanMasyarakatTest extends TestCase
         $response->assertSessionHasNoErrors();
         $pengaduan = Pengaduan::latest('id_pengaduan')->firstOrFail();
 
-        $hasilResponse = $this->actingAs($this->masyarakat)->get("/periksa-lowongan/hasil/{$pengaduan->id_pengaduan}");
-        $hasilResponse->assertOk();
-
-        $html = $hasilResponse->getContent();
-
-        // 1. Nomor Tiket
-        $this->assertStringContainsString($pengaduan->nomor_tiket, $html);
-
-        // 2. Label Asli / Palsu
-        $this->assertStringContainsString('PALSU', $html);
-
-        // 3. Skor & Hasil Pemeriksaan
-        $this->assertStringContainsString('Hasil Pemeriksaan', $html);
-        $this->assertStringContainsString('Probabilitas Penipuan', $html);
-
-        // 4. Status Kasus
-        $this->assertStringContainsString($pengaduan->status_pengaduan->value, $html);
-
-        // 5. Daftar Kata Pemicu
-        $this->assertStringContainsString('id="kata-pemicu"', $html);
-        $this->assertStringContainsString('biaya', strtolower($html));
-
-        // 6. Penyorotan kata pemicu dan deskripsi aman ter-escape
-        $this->assertStringContainsString('Gaji tinggi tanpa pengalaman', $html);
-        $this->assertStringContainsString('keywords', $html);
-        $this->assertStringContainsString('biaya', $html);
+        $this->actingAs($this->masyarakat)->get("/periksa-lowongan/hasil/{$pengaduan->id_pengaduan}")
+            ->assertOk()
+            ->assertSee($pengaduan->nomor_tiket)
+            ->assertSee(LokerLensCopy::JUDUL_HASIL_PEMERIKSAAN)
+            ->assertSee($pengaduan->hasilKlasifikasi->label_risiko)
+            ->assertSee('Probabilitas penipuan')
+            ->assertSee('id="kata-pemicu"', false)
+            ->assertSee('biaya pendaftaran')
+            ->assertSee('Gaji tinggi tanpa pengalaman');
     }
 
     /**
      * Kriteria Selesai SRS Table B.2:
-     * 1. Mengisi PT Maju Bersama Sejahtera, Staff Administrasi, dan deskripsi wajib transfer biaya pendaftaran -> Hasil Pemeriksaan dengan kata-pemicu memuat "biaya".
-     * 2. Menekan Periksa Sekarang dengan field wajib kosong -> "Data belum lengkap, mohon lengkapi terlebih dahulu" dan tidak menampilkan "Hasil Pemeriksaan".
-     * 3. Reset form mengosongkan field.
+     * 1. Isian lengkap → Hasil Pemeriksaan dengan kata-pemicu memuat "biaya".
+     * 2. Field wajib kosong → "Data belum lengkap, mohon lengkapi terlebih dahulu" tanpa "Hasil Pemeriksaan".
+     * 3. Tombol Reset Form tersedia.
      */
     public function test_kriteria_selesai_srs_tabel_b2(): void
     {
-        // 1. Skenario Sukses: Isian lengkap sesuai SRS Tabel B.2
-        $startTime = microtime(true);
+        $this->palsukanApiMl(0.9, ['biaya pendaftaran', 'transfer']);
+
+        // 1. Isian lengkap sesuai SRS Table B.2
+        $mulai = microtime(true);
         $response = $this->actingAs($this->masyarakat)->post('/periksa-lowongan', [
             'nama_perusahaan'    => 'PT Maju Bersama Sejahtera',
             'posisi_lowongan'    => 'Staff Administrasi',
             'deskripsi_lowongan' => 'Dibutuhkan staff administrasi, wajib transfer biaya pendaftaran sebelum wawancara.',
         ]);
-        $duration = microtime(true) - $startTime;
+        $durasi = microtime(true) - $mulai;
 
-        // NFR-PERF-02: Waktu pemeriksaan <= 5 detik
-        $this->assertLessThan(5.0, $duration, "Waktu pemeriksaan lowongan harus <= 5 detik (NFR-PERF-02). Aktual: {$duration}s");
+        // NFR-PERF-02: pemeriksaan <= 5 detik
+        $this->assertLessThan(5.0, $durasi, "Pemeriksaan lowongan harus <= 5 detik (NFR-PERF-02). Aktual: {$durasi}s");
 
-        $response->assertSessionHasNoErrors();
-        $response->assertRedirect();
+        $response->assertSessionHasNoErrors()->assertRedirect();
 
         $pengaduan = Pengaduan::where('deskripsi_singkat', 'like', '%PT Maju Bersama Sejahtera%')->latest('id_pengaduan')->firstOrFail();
-        $hasilResponse = $this->actingAs($this->masyarakat)->get("/periksa-lowongan/hasil/{$pengaduan->id_pengaduan}");
-        $hasilResponse->assertOk();
+        $html = $this->actingAs($this->masyarakat)->get("/periksa-lowongan/hasil/{$pengaduan->id_pengaduan}")
+            ->assertOk()
+            ->getContent();
 
-        $html = $hasilResponse->getContent();
-        // Menampilkan "Hasil Pemeriksaan"
-        $this->assertStringContainsString('Hasil Pemeriksaan', $html);
-        // Ada elemen kata-pemicu dan "biaya" muncul di elemen tersebut
-        $this->assertStringContainsString('id="kata-pemicu"', $html);
+        $this->assertStringContainsString(LokerLensCopy::JUDUL_HASIL_PEMERIKSAAN, $html);
         $this->assertMatchesRegularExpression('/id="kata-pemicu"[^>]*>[\s\S]*?biaya[\s\S]*?<\/div>/i', $html);
 
-        // 2. Skenario Field Wajib Kosong: Validasi gagal dan tidak menampilkan "Hasil Pemeriksaan"
-        $responseEmpty = $this->actingAs($this->masyarakat)
+        // 2. Field wajib kosong
+        $isianKosong = [
+            'nama_perusahaan'    => '',
+            'posisi_lowongan'    => '',
+            'deskripsi_lowongan' => '',
+        ];
+
+        $this->actingAs($this->masyarakat)
             ->from('/periksa-lowongan')
-            ->post('/periksa-lowongan', [
-                'nama_perusahaan'    => '',
-                'posisi_lowongan'    => '',
-                'deskripsi_lowongan' => '',
+            ->post('/periksa-lowongan', $isianKosong)
+            ->assertRedirect('/periksa-lowongan')
+            ->assertSessionHasErrors([
+                'nama_perusahaan'    => LokerLensCopy::VALIDASI_BELUM_LENGKAP,
+                'posisi_lowongan'    => LokerLensCopy::VALIDASI_BELUM_LENGKAP,
+                'deskripsi_lowongan' => LokerLensCopy::VALIDASI_BELUM_LENGKAP,
             ]);
 
-        $responseEmpty->assertSessionHasErrors([
-            'nama_perusahaan'    => LokerLensCopy::VALIDASI_BELUM_LENGKAP,
-            'posisi_lowongan'    => LokerLensCopy::VALIDASI_BELUM_LENGKAP,
-            'deskripsi_lowongan' => LokerLensCopy::VALIDASI_BELUM_LENGKAP,
-        ]);
-        $responseEmpty->assertRedirect();
-
-        // Render view periksa-lowongan.index dengan error validasi
-        $errorBag = $responseEmpty->getSession()->get('errors');
-        $view = $this->actingAs($this->masyarakat)->view('periksa-lowongan.index', [
-            'errors' => $errorBag,
-        ]);
-        $view->assertSee('Data belum lengkap, mohon lengkapi terlebih dahulu');
-        $view->assertDontSee('Hasil Pemeriksaan');
-
-        // 3. Tombol Reset Form tersedia dan memiliki fungsi reset
-        $view->assertSee('Reset Form');
-        $view->assertSee('resetForm()', false);
+        // Halaman form setelah dikembalikan menampilkan pesan resmi
+        $this->actingAs($this->masyarakat)
+            ->from('/periksa-lowongan')
+            ->followingRedirects()
+            ->post('/periksa-lowongan', $isianKosong)
+            ->assertOk()
+            ->assertSee(LokerLensCopy::VALIDASI_BELUM_LENGKAP)
+            ->assertDontSee(LokerLensCopy::JUDUL_HASIL_PEMERIKSAAN)
+            // 3. Tombol Reset Form dengan fungsi reset
+            ->assertSee(LokerLensCopy::BTN_RESET_FORM)
+            ->assertSee('resetForm()', false);
     }
 
     /**

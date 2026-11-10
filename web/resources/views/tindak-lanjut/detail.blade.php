@@ -70,7 +70,8 @@
                 </div>
                 <div>
                     <span class="text-gray-500 block text-xs">Identitas Pelapor:</span>
-                    <span class="font-medium text-gray-800">{{ $pengaduan->pengguna->name ?? '-' }} ({{ $pengaduan->pengguna->email ?? '-' }})</span>
+                    {{-- NFR-SEC-05: hanya nama pelapor (Data Mockup Gambar 2.11). Email dan nomor telepon tidak ditampilkan. --}}
+                    <span class="font-medium text-gray-800">{{ $pengaduan->pengguna->name ?? '-' }}</span>
                 </div>
                 <div>
                     <span class="text-gray-500 block text-xs">Kanal Pengaduan:</span>

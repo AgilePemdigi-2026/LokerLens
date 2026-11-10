@@ -206,7 +206,7 @@ composer test-bdd -- --tags="@javascript"   # argumen setelah "--" diteruskan ke
 - Folder `web/bdd/laporan/` tidak ikut di-commit (lihat `.gitignore`), kecuali `assets/` dan laporan final sprint `hasil-test-bdd_2026-10-28_15-38.html`.
 - Pengaturannya ada di bagian `formatters` dan `extensions` di `web/bdd/behat.yml`.
 
-**Pengaman.** Test berhenti sebelum menyentuh data jika `DB_DATABASE` di `.env.behat` tidak diakhiri `_testing`, atau jika server di port 8010 tidak memakai `.env.behat` (judul halaman harus "LokerLens BEHAT"). Skenario `@ml` berhenti dengan pesan jelas jika API ML belum menyala.
+**Pengaman.** Test berhenti sebelum menyentuh data jika `DB_DATABASE` di `.env.behat` tidak diakhiri `_testing`, atau jika server di port 8010 tidak memakai `.env.behat`. Pengecekannya memakai `APP_KEY`: cookie dari server harus sah menurut `APP_KEY` di `.env.behat`, jadi `APP_KEY` di `.env.behat` wajib berbeda dari `.env` (buat dengan `php artisan key:generate --env=behat`). Skenario `@ml` berhenti dengan pesan jelas jika API ML belum menyala.
 
 ---
 

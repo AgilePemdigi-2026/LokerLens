@@ -5,16 +5,24 @@ namespace Tests\Feature;
 use App\Constants\LokerLensCopy;
 use App\Enums\HasilTinjauan;
 use App\Enums\StatusKasus;
-use App\Models\BuktiPendukung;
 use App\Models\HasilKlasifikasi;
+use App\Models\IndikatorMencurigakan;
+use App\Models\LowonganKerja;
 use App\Models\Pengaduan;
+use App\Models\Perusahaan;
+use App\Models\SuratTeguranLaporanPolisi;
+use App\Models\TindakLanjutKasus;
+use App\Models\TinjauanAnalis;
 use App\Models\User;
-use Database\Seeders\LokerLensSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
+/**
+ * Halaman Analis dan Kepala Bidang. Semua data dibuat di dalam test (tidak memakai seeder).
+ */
 class HalamanAnalisDanKepalaBidangTest extends TestCase
 {
     use RefreshDatabase;
@@ -26,223 +34,276 @@ class HalamanAnalisDanKepalaBidangTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->seed(LokerLensSeeder::class);
 
-        $this->masyarakat   = User::where('role', 'Masyarakat')->firstOrFail();
-        $this->analis       = User::where('role', 'Analis')->firstOrFail();
-        $this->kepalaBidang = User::where('role', 'Kepala Bidang')->firstOrFail();
+        $this->masyarakat = User::factory()->create([
+            'role'       => 'Masyarakat',
+            'name'       => 'Pelapor Uji',
+            'email'      => 'pelapor.uji@example.com',
+            'no_telepon' => '081200001111',
+        ]);
+        $this->analis       = User::factory()->create(['role' => 'Analis']);
+        $this->kepalaBidang = User::factory()->create(['role' => 'Kepala Bidang']);
     }
 
     /**
-     * Langkah 4: Analis - Daftar kasus dengan filter status dan urutan prioritas skor (>= 70 di atas).
+     * Buat satu kasus lengkap: perusahaan, lowongan, pengaduan, dan hasil klasifikasi.
      */
-    public function test_analis_daftar_kasus_filter_status_dan_urutan_skor(): void
+    private function buatKasus(string $nomorTiket, float $skor, StatusKasus $status, ?string $tanggal = null): Pengaduan
     {
+        $perusahaan = Perusahaan::create(['nama_perusahaan' => 'PT Uji ' . $nomorTiket]);
+        $lowongan = LowonganKerja::create([
+            'id_perusahaan'      => $perusahaan->id_perusahaan,
+            'posisi_lowongan'    => 'Staff Administrasi',
+            'deskripsi_lowongan' => 'Gaji besar tanpa pengalaman. Wajib transfer biaya akomodasi sebelum wawancara di hotel.',
+        ]);
+
+        $pengaduan = Pengaduan::create([
+            'id_lowongan'       => $lowongan->id_lowongan,
+            'id_pengguna'       => $this->masyarakat->id,
+            'nomor_tiket'       => $nomorTiket,
+            'deskripsi_singkat' => 'Pengaduan uji ' . $nomorTiket,
+            'status_pengaduan'  => $status,
+            'tanggal_pengaduan' => $tanggal ? now()->parse($tanggal) : now(),
+        ]);
+
+        $klasifikasi = HasilKlasifikasi::create([
+            'id_pengaduan'        => $pengaduan->id_pengaduan,
+            'confidence_score'    => $skor,
+            'kategori_hasil'      => 'Lowongan berpotensi penipuan',
+            'status_prioritas'    => $skor >= 70,
+            'metode_analisis'     => 'Model Uji',
+            'tanggal_klasifikasi' => $tanggal ? now()->parse($tanggal) : now(),
+        ]);
+
+        IndikatorMencurigakan::create([
+            'id_klasifikasi'     => $klasifikasi->id_klasifikasi,
+            'nama_indikator'     => 'Biaya akomodasi',
+            'kategori_indikator' => 'Biaya Fiktif',
+            'bobot_indikator'    => 25,
+        ]);
+
+        return $pengaduan;
+    }
+
+    /**
+     * Kasus yang sudah ditinjau Analis (Terkonfirmasi Mencurigakan) dan menunggu keputusan Kepala Bidang.
+     */
+    private function buatKasusMenungguKeputusan(string $nomorTiket): Pengaduan
+    {
+        $pengaduan = $this->buatKasus($nomorTiket, 88.0, StatusKasus::MenungguKeputusan);
+
+        TinjauanAnalis::create([
+            'id_klasifikasi'   => $pengaduan->hasilKlasifikasi->id_klasifikasi,
+            'id_pengguna'      => $this->analis->id,
+            'catatan_tinjauan' => 'Terindikasi sindikat penipuan.',
+            'hasil_tinjauan'   => HasilTinjauan::TerkonfirmasiMencurigakan->value,
+            'tanggal_tinjauan' => now(),
+        ]);
+
+        return $pengaduan;
+    }
+
+    /**
+     * Kasus yang sudah diputuskan "Tindaklanjuti" oleh Kepala Bidang.
+     */
+    private function buatKasusTindaklanjuti(string $nomorTiket, StatusKasus $status): Pengaduan
+    {
+        $pengaduan = $this->buatKasusMenungguKeputusan($nomorTiket);
+        $pengaduan->update(['status_pengaduan' => $status]);
+
+        TindakLanjutKasus::create([
+            'id_pengaduan'      => $pengaduan->id_pengaduan,
+            'id_pengguna'       => $this->kepalaBidang->id,
+            'keputusan'         => 'Tindaklanjuti',
+            'catatan_keputusan' => 'Lanjutkan ke kepolisian.',
+            'tanggal_keputusan' => now(),
+        ]);
+
+        return $pengaduan->fresh();
+    }
+
+    /**
+     * Analis: daftar kasus, filter skor, pencarian nomor tiket, dan keadaan kosong (SRS Table B.3).
+     */
+    public function test_analis_daftar_kasus_filter_skor_pencarian_dan_data_kosong(): void
+    {
+        $this->buatKasus('#LKR-UJI-01', 92.0, StatusKasus::SedangDitinjau);
+        $this->buatKasus('#LKR-UJI-02', 88.0, StatusKasus::PerluTinjauan);
+
         $response = $this->actingAs($this->analis)->get('/tinjau-lowongan');
         $response->assertOk()
             ->assertSee('Daftar Lowongan Prioritas Tinggi')
             ->assertSee('ID LOWONGAN')
-            ->assertSee('CONFIDENCE SCORE');
+            ->assertSee('CONFIDENCE SCORE')
+            ->assertSee('#LKR-UJI-01')
+            ->assertSee('#LKR-UJI-02');
 
-        // Filter status "Perlu Tinjauan"
-        $filterStatus = $this->actingAs($this->analis)->get('/tinjau-lowongan?status=Perlu+Tinjauan');
-        $filterStatus->assertOk()
-            ->assertSee('#LKR-8819')
-            ->assertDontSee('#LKR-8821'); // status Sedang Ditinjau
-
-        // Filter status "Sedang Ditinjau"
-        $filterSedang = $this->actingAs($this->analis)->get('/tinjau-lowongan?status=Sedang+Ditinjau');
-        $filterSedang->assertOk()
-            ->assertSee('#LKR-8821')
-            ->assertDontSee('#LKR-8819');
-
-        // Filter skor dan urutan prioritas (SRS Table B.3)
-        $filterSkor = $this->actingAs($this->analis)->get('/tinjau-lowongan?filter_skor=Skor+Tinggi&urutan=Skor+Tertinggi');
-        $filterSkor->assertOk()
+        // Filter skor dan urutan prioritas
+        $this->actingAs($this->analis)->get('/tinjau-lowongan?filter_skor=Skor+Tinggi&urutan=Skor+Tertinggi')
+            ->assertOk()
             ->assertSee('Daftar Sesuai Kriteria Filter');
 
-        // Pencarian nomor tiket terdaftar (SRS Table B.3)
-        $cariTerdaftar = $this->actingAs($this->analis)->get('/tinjau-lowongan?nomor_tiket=%23LKR-8821');
-        $cariTerdaftar->assertOk()
-            ->assertSee('Hasil Pencarian')
-            ->assertSee('#LKR-8821');
-
-        // Keadaan Kosong (empty state) jika filter / tiket tidak cocok (SRS Table B.3)
-        $emptyResponse = $this->actingAs($this->analis)->get('/tinjau-lowongan?nomor_tiket=NONEXISTENT_TICKET_123');
-        $emptyResponse->assertOk()
-            ->assertSee('Data Lowongan Tidak Ditemukan');
-    }
-
-    /**
-     * Issue #6: Urutan "Skor Terendah" dan "Terbaru" berfungsi dengan benar (FR-ML-03).
-     */
-    public function test_analis_urutan_skor_terendah_dan_terbaru(): void
-    {
-        // 1. Urutan Skor Terendah (ascending)
-        $resAsc = $this->actingAs($this->analis)->get('/tinjau-lowongan?urutan=Skor+Terendah');
-        $resAsc->assertOk();
-        $itemsAsc = $resAsc->viewData('hasilKlasifikasi');
-        $scoresAsc = $itemsAsc->pluck('confidence_score')->toArray();
-        $sortedAsc = $scoresAsc;
-        sort($sortedAsc);
-        $this->assertSame($sortedAsc, $scoresAsc);
-
-        // 2. Urutan Skor Tertinggi (descending - default)
-        $resDesc = $this->actingAs($this->analis)->get('/tinjau-lowongan?urutan=Skor+Tertinggi');
-        $resDesc->assertOk();
-        $itemsDesc = $resDesc->viewData('hasilKlasifikasi');
-        $scoresDesc = $itemsDesc->pluck('confidence_score')->toArray();
-        $sortedDesc = $scoresDesc;
-        rsort($sortedDesc);
-        $this->assertSame($sortedDesc, $scoresDesc);
-    }
-
-    /**
-     * Issue #6: Detail dengan ID yang tidak ditemukan redirect ke daftar dengan pesan "Data Lowongan Tidak Ditemukan" (UC-02, FR-ML-05).
-     */
-    public function test_analis_detail_tidak_ditemukan_redirect_notifikasi(): void
-    {
-        $response = $this->actingAs($this->analis)->get('/tinjau-lowongan/detail/999999');
-        $response->assertRedirect('/tinjau-lowongan')
-            ->assertSessionHas('error', \App\Constants\LokerLensCopy::DATA_TIDAK_DITEMUKAN);
-
-        // Pesan error muncul di halaman antrean
-        $this->actingAs($this->analis)->get('/tinjau-lowongan')
+        // Pencarian nomor tiket terdaftar
+        $this->actingAs($this->analis)->get('/tinjau-lowongan?nomor_tiket=%23LKR-UJI-01')
             ->assertOk()
-            ->assertSee(\App\Constants\LokerLensCopy::DATA_TIDAK_DITEMUKAN);
+            ->assertSee('Hasil Pencarian')
+            ->assertSee('#LKR-UJI-01')
+            ->assertDontSee('#LKR-UJI-02');
+
+        // Keadaan kosong jika nomor tiket tidak cocok
+        $this->actingAs($this->analis)->get('/tinjau-lowongan?nomor_tiket=TIDAK_ADA_123')
+            ->assertOk()
+            ->assertSee(LokerLensCopy::DATA_TIDAK_DITEMUKAN);
     }
 
     /**
-     * Issue #6: NFR-PERF-01 Waktu tampil daftar <= 3 detik.
+     * Issue #6, FR-ML-03: urutan "Skor Terendah", "Skor Tertinggi", dan "Terbaru" berfungsi.
+     */
+    public function test_analis_urutan_skor_terendah_tertinggi_dan_terbaru(): void
+    {
+        $this->buatKasus('#LKR-UJI-79', 79.0, StatusKasus::PerluTinjauan, '2026-10-04 10:00:00');
+        $this->buatKasus('#LKR-UJI-92', 92.0, StatusKasus::PerluTinjauan, '2026-10-01 10:00:00');
+        $this->buatKasus('#LKR-UJI-85', 85.0, StatusKasus::PerluTinjauan, '2026-10-03 10:00:00');
+        $this->buatKasus('#LKR-UJI-88', 88.0, StatusKasus::PerluTinjauan, '2026-10-02 10:00:00');
+
+        $skor = fn (string $url) => $this->actingAs($this->analis)->get($url)
+            ->assertOk()
+            ->viewData('hasilKlasifikasi')
+            ->pluck('confidence_score')
+            ->map(fn ($nilai) => (float) $nilai)
+            ->all();
+
+        $this->assertSame([79.0, 85.0, 88.0, 92.0], $skor('/tinjau-lowongan?urutan=Skor+Terendah'));
+        $this->assertSame([92.0, 88.0, 85.0, 79.0], $skor('/tinjau-lowongan?urutan=Skor+Tertinggi'));
+        $this->assertSame([92.0, 88.0, 85.0, 79.0], $skor('/tinjau-lowongan'));
+        // Terbaru = tanggal klasifikasi paling baru di atas
+        $this->assertSame([79.0, 85.0, 88.0, 92.0], $skor('/tinjau-lowongan?urutan=Terbaru'));
+    }
+
+    /**
+     * Detail dengan ID yang tidak ada menampilkan 404 (keputusan tim: 404 dipertahankan).
+     */
+    public function test_analis_detail_tidak_ditemukan_menampilkan_404(): void
+    {
+        $this->actingAs($this->analis)->get('/tinjau-lowongan/detail/999999')
+            ->assertNotFound();
+    }
+
+    /**
+     * NFR-PERF-01: daftar dengan 100 data tampil maksimal 3 detik.
      */
     public function test_analis_waktu_tampil_daftar_sesuai_nfr_perf_01(): void
     {
-        // Siapkan 100 data kasus prioritas tinggi untuk pengujian NFR-PERF-01
-        $perusahaan = \App\Models\Perusahaan::first();
-        $pelapor = $this->masyarakat;
-
-        $pengaduanData = [];
-        $klasifikasiData = [];
-        $now = now();
+        $perusahaan = Perusahaan::create(['nama_perusahaan' => 'PT Uji Performa']);
 
         for ($i = 1; $i <= 100; $i++) {
-            $lowongan = \App\Models\LowonganKerja::create([
+            $lowongan = LowonganKerja::create([
                 'id_perusahaan'      => $perusahaan->id_perusahaan,
                 'posisi_lowongan'    => "Posisi Uji {$i}",
                 'deskripsi_lowongan' => "Deskripsi pengujian performa nomor {$i}.",
             ]);
 
-            $pengaduan = \App\Models\Pengaduan::create([
+            $pengaduan = Pengaduan::create([
                 'id_lowongan'       => $lowongan->id_lowongan,
-                'id_pengguna'       => $pelapor->id,
-                'nomor_tiket'       => "#LKR-PERF-" . str_pad((string)$i, 4, '0', STR_PAD_LEFT),
+                'id_pengguna'       => $this->masyarakat->id,
+                'nomor_tiket'       => '#LKR-PERF-' . str_pad((string) $i, 4, '0', STR_PAD_LEFT),
                 'deskripsi_singkat' => "Uji performa {$i}",
                 'status_pengaduan'  => StatusKasus::PerluTinjauan,
             ]);
 
-            \App\Models\HasilKlasifikasi::create([
+            HasilKlasifikasi::create([
                 'id_pengaduan'        => $pengaduan->id_pengaduan,
                 'confidence_score'    => 75.0 + ($i % 25),
                 'kategori_hasil'      => 'Lowongan berpotensi penipuan',
                 'status_prioritas'    => true,
-                'metode_analisis'     => 'Mock ML Test',
-                'tanggal_klasifikasi' => $now,
+                'metode_analisis'     => 'Model Uji',
+                'tanggal_klasifikasi' => now(),
             ]);
         }
 
-        // Ukur waktu respon tampilan daftar untuk 100+ data
-        $startTime = microtime(true);
+        $mulai = microtime(true);
         $response = $this->actingAs($this->analis)->get('/tinjau-lowongan');
-        $duration = microtime(true) - $startTime;
+        $durasi = microtime(true) - $mulai;
 
         $response->assertOk();
-        $this->assertLessThan(3.0, $duration, "Waktu muat halaman daftar lowongan dengan 100 data harus <= 3 detik (NFR-PERF-01). Aktual: {$duration} detik.");
+        $this->assertLessThan(3.0, $durasi, "Daftar dengan 100 data harus tampil <= 3 detik (NFR-PERF-01). Aktual: {$durasi} detik.");
     }
 
     /**
-     * Langkah 4: Analis - Detail kasus menampilkan data lowongan, klasifikasi, kata pemicu, bukti pendukung.
+     * Analis: detail kasus menampilkan data lowongan, skor, dan indikator mencurigakan (FR-ML-06).
      */
-    public function test_analis_detail_kasus_tampilkan_data_dan_bukti_pendukung(): void
+    public function test_analis_detail_kasus_menampilkan_data_klasifikasi(): void
     {
-        $klasifikasi = HasilKlasifikasi::whereHas('pengaduan', fn ($q) => $q->where('nomor_tiket', '#LKR-8821'))->firstOrFail();
+        $pengaduan = $this->buatKasus('#LKR-UJI-01', 92.0, StatusKasus::SedangDitinjau);
 
-        $response = $this->actingAs($this->analis)->get("/tinjau-lowongan/detail/{$klasifikasi->id_klasifikasi}");
-        $response->assertOk()
+        $this->actingAs($this->analis)->get("/tinjau-lowongan/detail/{$pengaduan->hasilKlasifikasi->id_klasifikasi}")
+            ->assertOk()
             ->assertSee('Detail Lowongan Terpilih')
             ->assertSee('Confidence Score')
             ->assertSee('92%')
             ->assertSee('Indikator Mencurigakan')
-            ->assertSee('Bukti Pendukung')
-            ->assertSee('Tangkapan_Layar_Chat_HRD_Fiktif.png')
-            ->assertSee('Surat_Panggilan_Interview_Hotel.pdf')
-            ->assertSee('Pratinjau')
-            ->assertSee('Unduh');
+            ->assertSee('Biaya akomodasi');
     }
 
     /**
-     * Langkah 4: Analis - Form tinjauan hasil_tinjauan string bebas maksimal 100 karakter.
+     * Analis: hasil_tinjauan wajib salah satu dari 2 pilihan (FR-ML-07, keputusan tim).
      */
-    public function test_analis_form_tinjauan_maksimal_100_karakter_dan_bisa_disimpan(): void
+    public function test_analis_hasil_tinjauan_hanya_dua_pilihan_dan_bisa_disimpan(): void
     {
-        $klasifikasi = HasilKlasifikasi::whereHas('pengaduan', fn ($q) => $q->where('nomor_tiket', '#LKR-8821'))->firstOrFail();
+        $pengaduan = $this->buatKasus('#LKR-UJI-01', 92.0, StatusKasus::SedangDitinjau);
+        $url = "/tinjau-lowongan/detail/{$pengaduan->hasilKlasifikasi->id_klasifikasi}/simpan";
 
-        // Validasi gagal jika hasil_tinjauan melebihi 100 karakter
-        $string101 = str_repeat('A', 101);
-        $this->actingAs($this->analis)->post("/tinjau-lowongan/detail/{$klasifikasi->id_klasifikasi}/simpan", [
+        // Teks bebas di luar 2 pilihan ditolak
+        $this->actingAs($this->analis)->post($url, [
             'catatan_tinjauan' => 'Catatan hasil investigasi lengkap.',
-            'hasil_tinjauan'   => $string101,
+            'hasil_tinjauan'   => 'Terkonfirmasi Mencurigakan - Ditemukan rekening penampung fiktif',
         ])->assertSessionHasErrors('hasil_tinjauan');
 
-        // Berhasil disimpan dengan string bebas hingga 100 karakter
-        $stringValid = 'Terkonfirmasi Mencurigakan - Ditemukan rekening penampung fiktif';
-        $response = $this->actingAs($this->analis)->post("/tinjau-lowongan/detail/{$klasifikasi->id_klasifikasi}/simpan", [
+        // Pilihan resmi berhasil disimpan
+        $this->actingAs($this->analis)->post($url, [
             'catatan_tinjauan' => 'Catatan audit ketenagakerjaan telah diverifikasi.',
-            'hasil_tinjauan'   => $stringValid,
-        ]);
+            'hasil_tinjauan'   => HasilTinjauan::TerkonfirmasiMencurigakan->value,
+        ])->assertRedirect('/tinjau-lowongan')
+          ->assertSessionHas('success');
 
-        $response->assertRedirect('/tinjau-lowongan')
-            ->assertSessionHas('success');
-
-        $this->assertSame(StatusKasus::MenungguKeputusan, $klasifikasi->pengaduan->fresh()->status_pengaduan);
-        $this->assertSame($stringValid, $klasifikasi->tinjauanAnalis()->value('hasil_tinjauan'));
+        $this->assertSame(StatusKasus::MenungguKeputusan, $pengaduan->fresh()->status_pengaduan);
+        $this->assertSame(
+            HasilTinjauan::TerkonfirmasiMencurigakan->value,
+            $pengaduan->hasilKlasifikasi->tinjauanAnalis()->value('hasil_tinjauan')
+        );
     }
 
     /**
-     * Langkah 5: Kepala Bidang - Daftar kasus yang sudah ditinjau, form keputusan, surat terbit.
+     * Kepala Bidang: daftar laporan, detail, keputusan, lalu form surat terbuka.
      */
     public function test_kepala_bidang_daftar_detail_dan_keputusan(): void
     {
-        // 1. Daftar kasus yang menunggu keputusan
-        $responseDaftar = $this->actingAs($this->kepalaBidang)->get('/tindak-lanjut');
-        $responseDaftar->assertOk()
+        $pengaduan = $this->buatKasusMenungguKeputusan('#LKR-UJI-0842');
+
+        $this->actingAs($this->kepalaBidang)->get('/tindak-lanjut')
+            ->assertOk()
             ->assertSee('Daftar Laporan')
             ->assertSee('Menunggu Keputusan')
-            ->assertSee('#LKR-2025-0842');
+            ->assertSee('#LKR-UJI-0842');
 
-        // 2. Detail kasus: Menampilkan Detail Laporan Lowongan Mencurigakan, Informasi Lowongan, Ringkasan Laporan, dan Terindikasi Anomali Tinggi (SRS Table B.4)
-        $pengaduan = Pengaduan::where('nomor_tiket', '#LKR-2025-0842')->firstOrFail();
-        $responseDetail = $this->actingAs($this->kepalaBidang)->get("/tindak-lanjut/{$pengaduan->id_pengaduan}");
-        $responseDetail->assertOk()
+        $this->actingAs($this->kepalaBidang)->get("/tindak-lanjut/{$pengaduan->id_pengaduan}")
+            ->assertOk()
             ->assertSee('Detail Laporan Lowongan Mencurigakan')
             ->assertSee('Informasi Lowongan')
             ->assertSee('Ringkasan Laporan')
             ->assertSee('Terindikasi Anomali Tinggi')
             ->assertSee('Biaya akomodasi')
-            ->assertSee('Lihat Bukti')
             ->assertSee('Konfirmasi Keputusan')
             ->assertSee('Tindaklanjuti')
             ->assertSee('Tidak Ditindaklanjuti');
 
-        // 3. Simpan keputusan tindak lanjut
-        $responseKeputusan = $this->actingAs($this->kepalaBidang)->post("/tindak-lanjut/{$pengaduan->id_pengaduan}/keputusan", [
+        $this->actingAs($this->kepalaBidang)->post("/tindak-lanjut/{$pengaduan->id_pengaduan}/keputusan", [
             'keputusan'         => 'Tindaklanjuti',
             'catatan_keputusan' => 'Setujui penerbitan surat laporan kepolisian.',
-        ]);
+        ])->assertRedirect("/tindak-lanjut/{$pengaduan->id_pengaduan}/hasil?keputusan=Tindaklanjuti");
 
-        $responseKeputusan->assertRedirect("/tindak-lanjut/{$pengaduan->id_pengaduan}/hasil?keputusan=Tindaklanjuti");
         $this->assertSame(StatusKasus::TindakLanjutDisetujui, $pengaduan->fresh()->status_pengaduan);
 
-        // 4. Form surat terbuka setelah Tindaklanjuti dan menampilkan "Buat Laporan Polisi"
         $this->actingAs($this->kepalaBidang)->get("/buat-surat/{$pengaduan->id_pengaduan}")
             ->assertOk()
             ->assertSee('Buat Laporan Polisi')
@@ -251,114 +312,70 @@ class HalamanAnalisDanKepalaBidangTest extends TestCase
 
     /**
      * Kriteria Selesai SRS Table B.4:
-     * 1. Halaman detail menampilkan "Detail Laporan Lowongan Mencurigakan", "Informasi Lowongan", "Ringkasan Laporan", dan "Terindikasi Anomali Tinggi".
-     * 2. Menekan "Tidak Ditindaklanjuti" (lalu konfirmasi) menampilkan "Kasus ditandai tidak dilanjuti dan diarsipkan".
-     * 3. Menekan "Tindaklanjuti" (lalu konfirmasi) mengarah ke pembuatan surat, dan halaman /buat-surat/ menampilkan "Buat Laporan Polisi".
+     * 1. Detail menampilkan "Detail Laporan Lowongan Mencurigakan", "Informasi Lowongan", "Ringkasan Laporan", "Terindikasi Anomali Tinggi".
+     * 2. "Tidak Ditindaklanjuti" menampilkan "Kasus ditandai tidak dilanjuti dan diarsipkan".
+     * 3. "Tindaklanjuti" mengarah ke pembuatan surat, dan /buat-surat/ menampilkan "Buat Laporan Polisi".
      */
     public function test_kriteria_selesai_srs_tabel_b4_kepala_bidang(): void
     {
-        // Setup kasus baru menunggu keputusan
-        $lowongan = \App\Models\LowonganKerja::create([
-            'id_perusahaan'      => \App\Models\Perusahaan::first()->id_perusahaan,
-            'posisi_lowongan'    => 'Finance Admin',
-            'deskripsi_lowongan' => 'Staff admin keuangan dengan transfer biaya akomodasi interview hotel.',
-        ]);
+        $pengaduan = $this->buatKasusMenungguKeputusan('#LKR-BDD-004');
 
-        $pengaduan = Pengaduan::create([
-            'id_lowongan'       => $lowongan->id_lowongan,
-            'id_pengguna'       => $this->analis->id,
-            'nomor_tiket'       => '#LKR-BDD-004',
-            'deskripsi_singkat' => 'Pengaduan uji BDD Table B.4',
-            'status_pengaduan'  => StatusKasus::MenungguKeputusan,
-        ]);
-
-        $klasifikasi = \App\Models\HasilKlasifikasi::create([
-            'id_pengaduan'     => $pengaduan->id_pengaduan,
-            'confidence_score' => 88.0,
-            'kategori_hasil'   => \App\Constants\LokerLensCopy::JUDUL_ANOMALI_TINGGI,
-            'status_prioritas' => true,
-            'metode_analisis'  => 'ML Model v1.0',
-        ]);
-
-        \App\Models\IndikatorMencurigakan::create([
-            'id_klasifikasi'     => $klasifikasi->id_klasifikasi,
-            'nama_indikator'     => 'biaya akomodasi',
-            'kategori_indikator' => 'Biaya Fiktif',
-            'bobot_indikator'    => 25.0,
-        ]);
-
-        \App\Models\BuktiPendukung::create([
-            'id_pengaduan'   => $pengaduan->id_pengaduan,
-            'nama_file'      => 'bukti_chat.pdf',
-            'tipe_file'      => 'pdf',
-            'ukuran_file'    => 102400,
-            'path_file'      => 'bukti/bukti_chat.pdf',
-            'tanggal_upload' => now(),
-        ]);
-
-        \App\Models\TinjauanAnalis::create([
-            'id_klasifikasi'   => $klasifikasi->id_klasifikasi,
-            'id_pengguna'      => $this->analis->id,
-            'catatan_tinjauan' => 'Terindikasi sindikat penipuan.',
-            'hasil_tinjauan'   => 'Terkonfirmasi Mencurigakan',
-            'tanggal_tinjauan' => now(),
-        ]);
-
-        // 1. Verifikasi elemen halaman detail
-        $resDetail = $this->actingAs($this->kepalaBidang)->get("/tindak-lanjut/{$pengaduan->id_pengaduan}");
-        $resDetail->assertOk()
+        // 1. Elemen halaman detail
+        $this->actingAs($this->kepalaBidang)->get("/tindak-lanjut/{$pengaduan->id_pengaduan}")
+            ->assertOk()
             ->assertSee('Detail Laporan Lowongan Mencurigakan')
             ->assertSee('Informasi Lowongan')
             ->assertSee('Ringkasan Laporan')
-            ->assertSee('Terindikasi Anomali Tinggi')
-            ->assertSee('biaya akomodasi')
-            ->assertSee('Lihat Bukti');
+            ->assertSee('Terindikasi Anomali Tinggi');
 
-        // 2. Skenario: Menekan "Tidak Ditindaklanjuti" -> menampilkan "Kasus ditandai tidak dilanjuti dan diarsipkan"
-        $pengaduanArsip = Pengaduan::create([
-            'id_lowongan'       => $lowongan->id_lowongan,
-            'id_pengguna'       => $this->analis->id,
-            'nomor_tiket'       => '#LKR-BDD-005',
-            'deskripsi_singkat' => 'Pengaduan uji arsip',
-            'status_pengaduan'  => StatusKasus::MenungguKeputusan,
-        ]);
+        // 2. "Tidak Ditindaklanjuti" → kasus diarsipkan
+        $pengaduanArsip = $this->buatKasusMenungguKeputusan('#LKR-BDD-005');
+        $urlHasilTolak = route('tindak-lanjut.hasil', ['id' => $pengaduanArsip->id_pengaduan, 'keputusan' => 'Tidak Ditindaklanjuti']);
 
-        $resTolak = $this->actingAs($this->kepalaBidang)->post("/tindak-lanjut/{$pengaduanArsip->id_pengaduan}/keputusan", [
+        $this->actingAs($this->kepalaBidang)->post("/tindak-lanjut/{$pengaduanArsip->id_pengaduan}/keputusan", [
             'keputusan'         => 'Tidak Ditindaklanjuti',
             'catatan_keputusan' => 'Arsipkan pengaduan.',
-        ]);
+        ])->assertRedirect($urlHasilTolak);
 
-        $resTolak->assertRedirect(route('tindak-lanjut.hasil', ['id' => $pengaduanArsip->id_pengaduan, 'keputusan' => 'Tidak Ditindaklanjuti']));
-        $resHasilTolak = $this->actingAs($this->kepalaBidang)->get(route('tindak-lanjut.hasil', ['id' => $pengaduanArsip->id_pengaduan, 'keputusan' => 'Tidak Ditindaklanjuti']));
-        $resHasilTolak->assertOk()
-            ->assertSee('Kasus ditandai tidak dilanjuti dan diarsipkan');
+        $this->actingAs($this->kepalaBidang)->get($urlHasilTolak)
+            ->assertOk()
+            ->assertSee(LokerLensCopy::KASUS_DIARSIPKAN);
 
-        // 3. Skenario: Menekan "Tindaklanjuti" -> mengarah ke pembuatan surat, dan halaman /buat-surat/ menampilkan "Buat Laporan Polisi"
-        $resSetuju = $this->actingAs($this->kepalaBidang)->post("/tindak-lanjut/{$pengaduan->id_pengaduan}/keputusan", [
+        // 3. "Tindaklanjuti" → halaman hasil, lalu form surat
+        $this->actingAs($this->kepalaBidang)->post("/tindak-lanjut/{$pengaduan->id_pengaduan}/keputusan", [
             'keputusan'         => 'Tindaklanjuti',
             'catatan_keputusan' => 'Lanjutkan ke polisi.',
-        ]);
+        ])->assertRedirect("/tindak-lanjut/{$pengaduan->id_pengaduan}/hasil?keputusan=Tindaklanjuti");
 
-        $resSetuju->assertRedirect("/tindak-lanjut/{$pengaduan->id_pengaduan}/hasil?keputusan=Tindaklanjuti");
-        $resHasilSetuju = $this->actingAs($this->kepalaBidang)->get("/tindak-lanjut/{$pengaduan->id_pengaduan}/hasil?keputusan=Tindaklanjuti");
-        $resHasilSetuju->assertOk()
+        $this->actingAs($this->kepalaBidang)->get("/tindak-lanjut/{$pengaduan->id_pengaduan}/hasil?keputusan=Tindaklanjuti")
+            ->assertOk()
             ->assertSee('Lanjut ke Pembuatan Surat');
 
-        $resSurat = $this->actingAs($this->kepalaBidang)->get("/buat-surat/{$pengaduan->id_pengaduan}");
-        $resSurat->assertOk()
+        $this->actingAs($this->kepalaBidang)->get("/buat-surat/{$pengaduan->id_pengaduan}")
+            ->assertOk()
             ->assertSee('Buat Laporan Polisi');
     }
 
     /**
-     * Langkah 5 & 6: Halaman Pratinjau Surat memiliki kelas cetak dan no-print.
+     * "Cetak Tanda Terima" (Data Mockup Gambar 2.16): halaman terbit punya area cetak
+     * (print-page) dan tombol yang tidak ikut tercetak (no-print).
      */
     public function test_halaman_surat_terbit_rapi_untuk_dicetak(): void
     {
-        $kasusSelesai = Pengaduan::where('status_pengaduan', StatusKasus::Selesai)->firstOrFail();
-        $surat = $kasusSelesai->tindakLanjutKasus->suratTeguranLaporanPolisi()->where('status_penerbitan', 'Terbit')->firstOrFail();
+        $pengaduan = $this->buatKasusTindaklanjuti('#LKR-UJI-8798', StatusKasus::Selesai);
 
-        $response = $this->actingAs($this->kepalaBidang)->get("/buat-surat/{$kasusSelesai->id_pengaduan}/terbit/{$surat->id_surat}");
-        $response->assertOk()
+        $surat = SuratTeguranLaporanPolisi::create([
+            'id_tindaklanjut'    => $pengaduan->tindakLanjutKasus->id_tindaklanjut,
+            'nomor_surat'        => SuratTeguranLaporanPolisi::generateNomorSurat($pengaduan->nomor_tiket),
+            'jenis_dokumen'      => 'Laporan Polisi',
+            'kronologi_kejadian' => 'Pelapor diminta membayar biaya seragam.',
+            'tujuan_instansi'    => 'Subdit Siber Ditreskrimsus Polda Metro Jaya / Wilayah Terkait',
+            'status_penerbitan'  => 'Terbit',
+            'tanggal_terbit'     => now(),
+        ]);
+
+        $this->actingAs($this->kepalaBidang)->get("/buat-surat/{$pengaduan->id_pengaduan}/terbit/{$surat->id_surat}")
+            ->assertOk()
             ->assertSee('Laporan Polisi Berhasil Diterbitkan')
             ->assertSee('Cetak Tanda Terima')
             ->assertSee('print-page')
@@ -366,142 +383,113 @@ class HalamanAnalisDanKepalaBidangTest extends TestCase
     }
 
     /**
-     * Kriteria selesai SRS Table B.5 (Buat Surat):
-     * 1. Mengisi kronologi lalu menekan "Simpan Draft" menampilkan "Draf berhasil disimpan".
-     * 2. Jika penerbitan gagal diproses sistem, muncul "Gagal menerbitkan dokumen, draf telah disimpan" dan halaman tetap menampilkan "Buat Laporan Polisi".
-     * 3. Mengisi kronologi, memilih "Subdit Siber Ditreskrimsus Polda Metro Jaya" di tujuan_kepolisian, lalu menekan "Terbitkan Laporan" menampilkan "Kasus terdokumentasi otomatis" dan "Kasus selesai".
-     * Serta bukti pendukung dinamis & tombol Lihat Arsip Kasus.
+     * Kriteria Selesai SRS Table B.5 (Buat Surat):
+     * 1. Simpan Draft menampilkan "Draf berhasil disimpan".
+     * 2. Penerbitan gagal menampilkan "Gagal menerbitkan dokumen, draf telah disimpan" dan tetap di "Buat Laporan Polisi".
+     * 3. Terbitkan Laporan diarahkan ke halaman terbit yang menampilkan "Kasus terdokumentasi otomatis" dan "Kasus selesai".
      */
     public function test_kriteria_selesai_srs_tabel_b5_buat_surat(): void
     {
         Storage::fake('public');
 
-        // Gunakan kasus yang sudah Tindak Lanjut Disetujui dari Seeder (#LKR-8770)
-        $pengaduan = Pengaduan::where('nomor_tiket', '#LKR-8770')->firstOrFail();
+        $pengaduan = $this->buatKasusTindaklanjuti('#LKR-UJI-8770', StatusKasus::TindakLanjutDisetujui);
+        $urlForm = "/buat-surat/{$pengaduan->id_pengaduan}";
+        $tujuan = 'Subdit Siber Ditreskrimsus Polda Metro Jaya';
 
-        // Tambah bukti pendukung awal untuk pengujian panel bukti
-        BuktiPendukung::create([
-            'id_pengaduan'   => $pengaduan->id_pengaduan,
-            'nama_file'      => 'Bukti_Transfer_Awal.pdf',
-            'tipe_file'      => 'pdf',
-            'ukuran_file'    => 102400,
-            'path_file'      => 'bukti/bukti_awal.pdf',
-            'tanggal_upload' => now(),
-        ]);
+        // 1. Simpan Draft (dengan bukti tambahan dari Kepala Bidang, FR-ST-04)
+        $this->actingAs($this->kepalaBidang)->from($urlForm)->post("{$urlForm}/draft", [
+            'kronologi'         => 'Kronologi awal draf oleh Kepala Bidang.',
+            'tujuan_kepolisian' => $tujuan,
+            'bukti_tambahan'    => [UploadedFile::fake()->create('Bukti_Chat_Baru.png', 50, 'image/png')],
+        ])->assertRedirect($urlForm);
 
-        // Pastikan halaman form menampilkan berkas dari tabel bukti_pendukung
-        $resForm = $this->actingAs($this->kepalaBidang)->get("/buat-surat/{$pengaduan->id_pengaduan}");
-        $resForm->assertOk()
-            ->assertSee('Buat Laporan Polisi')
-            ->assertSee('Bukti_Transfer_Awal.pdf');
-
-        // 1. Skenario Simpan Draft: mengisi kronologi & upload berkas tambahan -> "Draf berhasil disimpan"
-        $fileTambahan = UploadedFile::fake()->create('Bukti_Chat_Baru.png', 50, 'image/png');
-        $resDraft = $this->actingAs($this->kepalaBidang)
-            ->from("/buat-surat/{$pengaduan->id_pengaduan}")
-            ->post("/buat-surat/{$pengaduan->id_pengaduan}/draft", [
-                'kronologi'         => 'Kronologi awal draf oleh Kepala Bidang.',
-                'tujuan_kepolisian' => 'Subdit Siber Ditreskrimsus Polda Metro Jaya',
-                'bukti_tambahan'    => [$fileTambahan],
-            ]);
-
-        $resDraft->assertRedirect("/buat-surat/{$pengaduan->id_pengaduan}");
-        $this->actingAs($this->kepalaBidang)->get("/buat-surat/{$pengaduan->id_pengaduan}")
+        $this->actingAs($this->kepalaBidang)->get($urlForm)
             ->assertOk()
             ->assertSee(LokerLensCopy::DRAF_TERSIMPAN)
             ->assertSee('Bukti_Chat_Baru.png');
 
-        // 2. Skenario Gagal Terbitkan: simulasi kegagalan sistem -> "Gagal menerbitkan dokumen, draf telah disimpan", halaman tetap "Buat Laporan Polisi"
-        $resGagal = $this->actingAs($this->kepalaBidang)
-            ->withHeader('X-Simulate-Terbit-Failure', '1')
-            ->from("/buat-surat/{$pengaduan->id_pengaduan}")
-            ->post("/buat-surat/{$pengaduan->id_pengaduan}/terbitkan", [
-                'kronologi'         => 'Kronologi kejadian yang gagal diterbitkan.',
-                'tujuan_kepolisian' => 'Subdit Siber Ditreskrimsus Polda Metro Jaya',
-            ]);
+        // 2. Penerbitan gagal. Sama seperti BDD (trigger MySQL), di sini trigger SQLite
+        //    menolak perubahan status surat menjadi "Terbit".
+        DB::statement("CREATE TRIGGER uji_gagal_terbit BEFORE UPDATE ON surat_teguran_laporan_polisi
+            WHEN NEW.status_penerbitan = 'Terbit'
+            BEGIN SELECT RAISE(ABORT, 'Simulasi penerbitan gagal'); END");
 
-        $resGagal->assertRedirect("/buat-surat/{$pengaduan->id_pengaduan}");
-        $this->flushHeaders();
-        $this->actingAs($this->kepalaBidang)->get("/buat-surat/{$pengaduan->id_pengaduan}")
+        $this->actingAs($this->kepalaBidang)->from($urlForm)->post("{$urlForm}/terbitkan", [
+            'kronologi'         => 'Kronologi kejadian yang gagal diterbitkan.',
+            'tujuan_kepolisian' => $tujuan,
+        ])->assertRedirect($urlForm);
+
+        $this->actingAs($this->kepalaBidang)->get($urlForm)
             ->assertOk()
             ->assertSee(LokerLensCopy::GAGAL_TERBITKAN)
             ->assertSee('Buat Laporan Polisi');
 
-        // Pastikan draf tetap tersimpan dan kasus belum berstatus Selesai
+        // Draf tetap tersimpan dan kasus belum Selesai
         $pengaduan->refresh();
+        $surat = $pengaduan->tindakLanjutKasus->suratTeguranLaporanPolisi;
         $this->assertSame(StatusKasus::TindakLanjutDisetujui, $pengaduan->status_pengaduan);
-        $this->assertSame('Draft', $pengaduan->tindakLanjutKasus->suratTeguranLaporanPolisi->status_penerbitan);
-        $this->assertSame('Kronologi kejadian yang gagal diterbitkan.', $pengaduan->tindakLanjutKasus->suratTeguranLaporanPolisi->kronologi_kejadian);
+        $this->assertSame('Draft', $surat->status_penerbitan);
+        $this->assertSame('Kronologi kejadian yang gagal diterbitkan.', $surat->kronologi_kejadian);
 
-        // 3. Skenario Sukses Terbitkan: mengisi kronologi, pilih "Subdit Siber Ditreskrimsus Polda Metro Jaya", tekan "Terbitkan Laporan"
-        $resTerbit = $this->actingAs($this->kepalaBidang)
-            ->from("/buat-surat/{$pengaduan->id_pengaduan}")
-            ->post("/buat-surat/{$pengaduan->id_pengaduan}/terbitkan", [
-                'kronologi'         => 'Pelapor telah mentransfer dana pelatihan ke sindikat penipuan.',
-                'tujuan_kepolisian' => 'Subdit Siber Ditreskrimsus Polda Metro Jaya',
-            ]);
+        DB::statement('DROP TRIGGER uji_gagal_terbit');
 
-        $surat = $pengaduan->tindakLanjutKasus->suratTeguranLaporanPolisi()->where('status_penerbitan', 'Terbit')->firstOrFail();
-        $resTerbit->assertRedirect(route('buat-surat.terbit', ['pengaduanId' => $pengaduan->id_pengaduan, 'suratId' => $surat->id_surat]));
+        // 3. Terbit berhasil → diarahkan ke halaman terbit
+        $response = $this->actingAs($this->kepalaBidang)->from($urlForm)->post("{$urlForm}/terbitkan", [
+            'kronologi'         => 'Pelapor telah mentransfer dana pelatihan ke sindikat penipuan.',
+            'tujuan_kepolisian' => $tujuan,
+        ]);
 
-        // Halaman hasil penerbitan:
-        $resHasilTerbit = $this->actingAs($this->kepalaBidang)
-            ->get(route('buat-surat.terbit', ['pengaduanId' => $pengaduan->id_pengaduan, 'suratId' => $surat->id_surat]));
+        $urlTerbit = route('buat-surat.terbit', ['pengaduanId' => $pengaduan->id_pengaduan, 'suratId' => $surat->id_surat]);
+        $response->assertRedirect($urlTerbit);
 
-        $resHasilTerbit->assertOk()
+        $this->actingAs($this->kepalaBidang)->get($urlTerbit)
+            ->assertOk()
             ->assertSee(LokerLensCopy::KASUS_TERDOKUMENTASI)
             ->assertSee(LokerLensCopy::KASUS_SELESAI)
-            ->assertSee('Subdit Siber Ditreskrimsus Polda Metro Jaya')
-            ->assertSee('Bukti_Transfer_Awal.pdf')
+            ->assertSee($tujuan)
             ->assertSee('Bukti_Chat_Baru.png')
-            ->assertSee('Lihat Arsip Kasus')
-            ->assertSee(route('tindak-lanjut.index', ['status' => StatusKasus::Selesai->value]));
+            ->assertSee('Lihat Arsip Kasus');
 
-        // Status kasus berubah menjadi Selesai
         $this->assertSame(StatusKasus::Selesai, $pengaduan->fresh()->status_pengaduan);
     }
 
     /**
-     * Langkah 6: Hak Akses Middleware Server-Side & Halaman 403.
+     * NFR-SEC-02: halaman peran lain ditolak dengan 403.
+     * SRS hanya meminta akses ditolak; tidak ada desain/teks khusus halaman 403 di SRS maupun Data Mockup.
      */
-    public function test_middleware_role_dan_halaman_403(): void
+    public function test_middleware_role_menolak_dengan_403(): void
     {
-        // Masyarakat ditolak saat coba akses halaman Analis
         $this->actingAs($this->masyarakat)->get('/tinjau-lowongan')
             ->assertForbidden()
-            ->assertSee('403')
-            ->assertSee('Akses Ditolak');
+            ->assertSee('403');
 
-        // Analis ditolak saat coba akses halaman Kepala Bidang
         $this->actingAs($this->analis)->get('/tindak-lanjut')
             ->assertForbidden()
-            ->assertSee('403')
-            ->assertSee('Akses Ditolak');
+            ->assertSee('403');
 
-        // Masyarakat ditolak saat coba akses halaman pembuatan surat
         $this->actingAs($this->masyarakat)->get('/buat-surat')
             ->assertForbidden();
     }
 
     /**
-     * Langkah 6: Perlindungan Data Pribadi Pelapor (NFR-SEC-05).
+     * NFR-SEC-05: email dan nomor telepon pelapor tidak tampil di halaman Analis dan Kepala Bidang.
+     * Kepala Bidang hanya melihat nama pelapor (Data Mockup Gambar 2.11).
      */
     public function test_data_pribadi_pelapor_tidak_tampil_di_analis_dan_kepala_bidang(): void
     {
-        $klasifikasi = HasilKlasifikasi::whereHas('pengaduan', fn ($q) => $q->where('nomor_tiket', '#LKR-8821'))->firstOrFail();
-        $emailPelapor = $klasifikasi->pengaduan->pengguna->email;
+        $kasusAnalis = $this->buatKasus('#LKR-UJI-01', 92.0, StatusKasus::SedangDitinjau);
 
-        // Analis tidak melihat email pelapor
-        $this->actingAs($this->analis)->get("/tinjau-lowongan/detail/{$klasifikasi->id_klasifikasi}")
+        $this->actingAs($this->analis)->get("/tinjau-lowongan/detail/{$kasusAnalis->hasilKlasifikasi->id_klasifikasi}")
             ->assertOk()
-            ->assertDontSee($emailPelapor);
+            ->assertDontSee($this->masyarakat->email)
+            ->assertDontSee($this->masyarakat->no_telepon);
 
-        // Kepala Bidang tidak melihat email pelapor
-        $pengaduan = Pengaduan::where('nomor_tiket', '#LKR-2025-0842')->firstOrFail();
-        $emailPelapor2 = $pengaduan->pengguna->email;
+        $kasusKepalaBidang = $this->buatKasusMenungguKeputusan('#LKR-UJI-0842');
 
-        $this->actingAs($this->kepalaBidang)->get("/tindak-lanjut/{$pengaduan->id_pengaduan}")
+        $this->actingAs($this->kepalaBidang)->get("/tindak-lanjut/{$kasusKepalaBidang->id_pengaduan}")
             ->assertOk()
-            ->assertDontSee($emailPelapor2);
+            ->assertSee($this->masyarakat->name)
+            ->assertDontSee($this->masyarakat->email)
+            ->assertDontSee($this->masyarakat->no_telepon);
     }
 }

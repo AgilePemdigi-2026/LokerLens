@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 namespace Tests\Feature;
 
@@ -54,7 +54,8 @@ class FormPeriksaDanLoginTest extends TestCase
         return [
             'Masyarakat'    => ['Masyarakat', '/beranda'],
             'Analis'        => ['Analis', '/tinjau-lowongan'],
-            'Kepala Bidang' => ['Kepala Bidang', '/tindak-lanjut'],
+            // Sejak PR #47: Kepala Bidang diarahkan ke Dashboard
+            'Kepala Bidang' => ['Kepala Bidang', '/dashboard-kepala-bidang'],
         ];
     }
 

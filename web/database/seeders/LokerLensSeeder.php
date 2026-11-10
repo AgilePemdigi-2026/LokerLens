@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\Hash;
 /**
  * Seeder data mock LokerLens sesuai Bagian 11 panduan.
  * Semua data FIKTIF untuk keperluan pengembangan dan demo.
- * Master Mock Data masih ? TBD (Appendix C no. 20).
+ * Master Mock Data masih ❓ TBD (Appendix C no. 20).
  */
 class LokerLensSeeder extends Seeder
 {
@@ -34,7 +34,7 @@ class LokerLensSeeder extends Seeder
 
     public function run(): void
     {
-        // ??? Pengguna ?????????????????????????????????????????????????????
+        // ─── Pengguna ─────────────────────────────────────────────────────
         $masyarakat = User::create([
             'name'     => 'Adela Ulin Nadhroh',
             'email'    => self::AKUN_DEMO['Masyarakat'],
@@ -59,7 +59,7 @@ class LokerLensSeeder extends Seeder
             'no_telepon' => '081234567892',
         ]);
 
-        // ??? Perusahaan (fiktif) ?????????????????????????????????????????
+        // ─── Perusahaan (fiktif) ─────────────────────────────────────────
         $perusahaanUtama = Perusahaan::create([
             'nama_perusahaan'  => 'PT Mandiri Sukses Global',
             'status_terdaftar' => 'Tidak Terdaftar',
@@ -88,7 +88,7 @@ class LokerLensSeeder extends Seeder
             'status_terdaftar' => 'Tidak Terdaftar',
         ]);
 
-        // ??? Lowongan Kerja (fiktif) ?????????????????????????????????????
+        // ─── Lowongan Kerja (fiktif) ─────────────────────────────────────
         $lowongan1 = LowonganKerja::create([
             'id_perusahaan'      => $perusahaanUtama->id_perusahaan,
             'posisi_lowongan'    => 'Staff Administrasi',
@@ -124,7 +124,7 @@ class LokerLensSeeder extends Seeder
 
         // Urutan tanggal tiap kasus: tanggal pengaduan = saat klasifikasi, lalu riwayat status sesudahnya.
 
-        // ??? Pengaduan & Klasifikasi (kasus utama #LKR-8821) ????????????
+        // ─── Pengaduan & Klasifikasi (kasus utama #LKR-8821) ────────────
         $diajukan1 = $this->waktu(5, 9, 12);
         $pengaduan1 = Pengaduan::create([
             'id_lowongan'       => $lowongan1->id_lowongan,
@@ -146,7 +146,7 @@ class LokerLensSeeder extends Seeder
 
         IndikatorMencurigakan::insert([
             ['id_klasifikasi' => $klasifikasi1->id_klasifikasi, 'nama_indikator' => 'biaya administrasi Rp150.000 sebelum wawancara', 'kategori_indikator' => 'Biaya Fiktif', 'bobot_indikator' => 25, 'created_at' => now(), 'updated_at' => now()],
-            ['id_klasifikasi' => $klasifikasi1->id_klasifikasi, 'nama_indikator' => 'Gaji Rp8.000.000?Rp12.000.000 tanpa pengalaman', 'kategori_indikator' => 'Gaji Janggal', 'bobot_indikator' => 20, 'created_at' => now(), 'updated_at' => now()],
+            ['id_klasifikasi' => $klasifikasi1->id_klasifikasi, 'nama_indikator' => 'Gaji Rp8.000.000–Rp12.000.000 tanpa pengalaman', 'kategori_indikator' => 'Gaji Janggal', 'bobot_indikator' => 20, 'created_at' => now(), 'updated_at' => now()],
             ['id_klasifikasi' => $klasifikasi1->id_klasifikasi, 'nama_indikator' => 'mandirisuksesglobal@gmail.com (email gratisan)', 'kategori_indikator' => 'Email Tidak Resmi', 'bobot_indikator' => 20, 'created_at' => now(), 'updated_at' => now()],
             ['id_klasifikasi' => $klasifikasi1->id_klasifikasi, 'nama_indikator' => 'Interview di Hotel, bukan kantor resmi', 'kategori_indikator' => 'Lokasi Mencurigakan', 'bobot_indikator' => 15, 'created_at' => now(), 'updated_at' => now()],
         ]);
@@ -156,7 +156,7 @@ class LokerLensSeeder extends Seeder
             [StatusKasus::SedangDitinjau, 'Laporan masuk ke Analis', $this->waktu(3, 10, 30)],
         ]);
 
-        // ??? #LKR-8819 ??????????????????????????????????????????????????
+        // ─── #LKR-8819 ──────────────────────────────────────────────────
         $diajukan2 = $this->waktu(4, 13, 40);
         $pengaduan2 = Pengaduan::create([
             'id_lowongan' => $lowongan2->id_lowongan, 'id_pengguna' => $masyarakat->id,
@@ -169,7 +169,7 @@ class LokerLensSeeder extends Seeder
         $this->buatKataPemicu($klasifikasi2, ['proses cepat 1 hari' => 14]);
         $this->buatRiwayat($pengaduan2, [[StatusKasus::PerluTinjauan, 'Pengaduan diterima dan klasifikasi dilakukan. Masuk antrean tinjauan Analis.', $diajukan2]]);
 
-        // ??? #LKR-8790 ??????????????????????????????????????????????????
+        // ─── #LKR-8790 ──────────────────────────────────────────────────
         $diajukan3 = $this->waktu(3, 8, 5);
         $pengaduan3 = Pengaduan::create([
             'id_lowongan' => $lowongan3->id_lowongan, 'id_pengguna' => $masyarakat->id,
@@ -181,7 +181,7 @@ class LokerLensSeeder extends Seeder
         $this->buatKataPemicu($klasifikasi3, ['di kost' => 24, '@yahoo.com' => 18, 'gaji dibayar mingguan' => 12]);
         $this->buatRiwayat($pengaduan3, [[StatusKasus::PerluTinjauan, 'Pengaduan diterima dan klasifikasi dilakukan. Masuk antrean tinjauan Analis.', $diajukan3]]);
 
-        // ??? #LKR-8765 ??????????????????????????????????????????????????
+        // ─── #LKR-8765 ──────────────────────────────────────────────────
         $diajukan4 = $this->waktu(2, 19, 22);
         $pengaduan4 = Pengaduan::create([
             'id_lowongan' => $lowongan4->id_lowongan, 'id_pengguna' => $masyarakat->id,
@@ -193,7 +193,7 @@ class LokerLensSeeder extends Seeder
         $this->buatKataPemicu($klasifikasi4, ['biaya bpjs' => 26, 'wajib dp' => 20, 'tidak perlu pengalaman' => 11]);
         $this->buatRiwayat($pengaduan4, [[StatusKasus::PerluTinjauan, 'Pengaduan diterima dan klasifikasi dilakukan. Masuk antrean tinjauan Analis.', $diajukan4]]);
 
-        // ??? Kasus Kepala Bidang (LKR-2025-0842, sudah ditinjau Analis) ?
+        // ─── Kasus Kepala Bidang (LKR-2025-0842, sudah ditinjau Analis) ─
         $diajukan5 = $this->waktu(8, 10, 0);
         $ditinjau5 = $this->waktu(4, 15, 10);
         $pengaduan5 = Pengaduan::create([
@@ -366,7 +366,7 @@ class LokerLensSeeder extends Seeder
      * Buat satu kasus lengkap. Status pertama dicatat saat pengaduan diajukan ($diajukan),
      * status berikutnya masing-masing 1 hari 2 jam sesudahnya.
      *
-     * @param  array<string, float>  $kataPemicu  kata pemicu => bobot (0?100)
+     * @param  array<string, float>  $kataPemicu  kata pemicu => bobot (0–100)
      * @param  array<string, string>  $alur  nilai StatusKasus => keterangan, sesuai urutan yang sudah dilalui
      */
     private function buatKasus(User $pelapor, string $namaPerusahaan, string $posisi, string $nomorTiket, float $skor, string $deskripsi, array $kataPemicu, Carbon $diajukan, array $alur): Pengaduan
@@ -410,7 +410,7 @@ class LokerLensSeeder extends Seeder
     /**
      * Kata pemicu seperti hasil model ML (kategori "Kata Pemicu Model").
      *
-     * @param  array<string, float>  $kataPemicu  kata pemicu => bobot (0?100)
+     * @param  array<string, float>  $kataPemicu  kata pemicu => bobot (0–100)
      */
     private function buatKataPemicu(HasilKlasifikasi $klasifikasi, array $kataPemicu): void
     {

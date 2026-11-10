@@ -202,11 +202,28 @@ class FeatureContext extends MinkContext
 
     /**
      * Pengaman: server di base_url harus berjalan dengan .env.behat.
-     * Halaman lupa password memakai judul dari APP_NAME ("LokerLens BEHAT").
+     *
+     * Caranya tidak bergantung pada tampilan halaman (judul/teks bisa berubah saat desain diubah):
+     * Laravel mengenkripsi cookie XSRF-TOKEN dengan APP_KEY server. Kalau cookie itu sah
+     * menurut APP_KEY di .env.behat, berarti server membaca .env.behat, sehingga database yang
+     * dipakai adalah DB_DATABASE dari .env.behat (sudah dicek berakhiran "_testing").
+     * Supaya pembuktian ini berarti, APP_KEY .env.behat harus berbeda dari APP_KEY .env biasa.
      */
     private function pastikanServerBehat(): void
     {
-        $url = rtrim($this->getMinkParameter('base_url'), '/') . '/forgot-password';
+        $kunciBehat = $this->kunciAplikasi($this->env('APP_KEY'));
+        $kunciBiasa = $this->kunciAplikasi($this->nilaiDariFile(self::FOLDER_WEB . '/.env', 'APP_KEY'));
+
+        if ($kunciBehat === '') {
+            throw new RuntimeException('APP_KEY di web/.env.behat masih kosong. Jalankan dari folder web/: php artisan key:generate --env=behat');
+        }
+
+        if ($kunciBehat === $kunciBiasa) {
+            throw new RuntimeException('APP_KEY di web/.env.behat sama dengan web/.env, jadi server test tidak bisa dibedakan dari server biasa. '
+                . 'Buat kunci baru dari folder web/: php artisan key:generate --env=behat');
+        }
+
+        $url = rtrim($this->getMinkParameter('base_url'), '/') . '/login';
         $html = @file_get_contents($url, false, stream_context_create(['http' => ['timeout' => 5]]));
 
         if ($html === false) {
@@ -214,11 +231,46 @@ class FeatureContext extends MinkContext
                 . 'Nyalakan dulu dari folder web/: $env:APP_ENV="behat"; php artisan serve --port=8010');
         }
 
-        if (! str_contains($html, '<title>LokerLens BEHAT</title>')) {
+        $cookie = $this->ambilCookie(http_get_last_response_headers() ?? [], 'XSRF-TOKEN');
+
+        if ($cookie === null || ! $this->cookieDariKunci($cookie, $kunciBehat)) {
             throw new RuntimeException('Server di ' . $this->getMinkParameter('base_url') . ' TIDAK memakai .env.behat. '
                 . 'Test dihentikan supaya database biasa tidak tersentuh. '
                 . 'Matikan server itu, lalu jalankan: $env:APP_ENV="behat"; php artisan serve --port=8010');
         }
+    }
+
+    /** Ubah APP_KEY ("base64:...") menjadi kunci biner yang dipakai Laravel. */
+    private function kunciAplikasi(string $appKey): string
+    {
+        return str_starts_with($appKey, 'base64:') ? (string) base64_decode(substr($appKey, 7)) : $appKey;
+    }
+
+    /** Ambil nilai cookie dari header "Set-Cookie" jawaban server. */
+    private function ambilCookie(array $header, string $nama): ?string
+    {
+        foreach ($header as $baris) {
+            if (preg_match('/^Set-Cookie:\s*' . preg_quote($nama, '/') . '=([^;]+)/i', $baris, $cocok)) {
+                return urldecode($cocok[1]);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Cek apakah cookie terenkripsi dibuat dengan kunci ini.
+     * Cookie Laravel (cipher AES-256-CBC) berisi iv, value, dan mac = HMAC-SHA256(iv . value, kunci).
+     */
+    private function cookieDariKunci(string $cookie, string $kunci): bool
+    {
+        $data = json_decode((string) base64_decode($cookie), true);
+
+        if (! is_array($data) || ! is_string($data['iv'] ?? null) || ! is_string($data['value'] ?? null) || ! is_string($data['mac'] ?? null)) {
+            return false;
+        }
+
+        return hash_equals(hash_hmac('sha256', $data['iv'] . $data['value'], $kunci), $data['mac']);
     }
 
     private function koneksiDatabase(): PDO
@@ -234,23 +286,30 @@ class FeatureContext extends MinkContext
     /** Baca satu nilai dari web/.env.behat (format KEY=nilai). */
     private function env(string $kunci): string
     {
-        static $isi = null;
+        $file = self::FOLDER_WEB . '/.env.behat';
+        if (! is_file($file)) {
+            throw new RuntimeException('web/.env.behat belum ada. Salin dari web/.env.behat.example.');
+        }
 
-        if ($isi === null) {
-            $file = self::FOLDER_WEB . '/.env.behat';
-            if (! is_file($file)) {
-                throw new RuntimeException('web/.env.behat belum ada. Salin dari web/.env.behat.example.');
-            }
-            $isi = [];
-            foreach (file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $baris) {
+        return $this->nilaiDariFile($file, $kunci);
+    }
+
+    /** Baca satu nilai dari file env (format KEY=nilai). File tidak ada = nilai kosong. */
+    private function nilaiDariFile(string $file, string $kunci): string
+    {
+        static $cache = [];
+
+        if (! isset($cache[$file])) {
+            $cache[$file] = [];
+            foreach (is_file($file) ? file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) : [] as $baris) {
                 if (str_starts_with(trim($baris), '#') || ! str_contains($baris, '=')) {
                     continue;
                 }
                 [$k, $v] = explode('=', $baris, 2);
-                $isi[trim($k)] = trim($v, " \"'");
+                $cache[$file][trim($k)] = trim($v, " \"'");
             }
         }
 
-        return $isi[$kunci] ?? '';
+        return $cache[$file][$kunci] ?? '';
     }
 }

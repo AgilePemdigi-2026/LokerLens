@@ -1,0 +1,29 @@
+# Pengaturan editor untuk seluruh repo LokerLens.
+# Tujuannya supaya semua anggota tim menyimpan file dengan format yang sama
+# (UTF-8 tanpa BOM, akhir baris LF) dan tidak ada lagi karakter rusak jadi "?".
+# Catatan: folder web/ punya .editorconfig sendiri dengan aturan yang sama.
+root = true
+
+# Aturan umum untuk semua file
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+
+# Markdown: spasi di akhir baris dipakai untuk ganti baris, jadi jangan dihapus
+[*.md]
+trim_trailing_whitespace = false
+
+# YAML memakai indentasi 2 spasi
+[*.{yml,yaml}]
+indent_size = 2
+
+# File data (CSV) jangan diubah format/encoding-nya oleh editor
+[*.csv]
+charset = unset
+end_of_line = unset
+insert_final_newline = unset
+trim_trailing_whitespace = unset

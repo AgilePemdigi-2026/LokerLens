@@ -36,8 +36,7 @@ class TinjauLowonganController extends Controller
             'pengaduan.pengguna',
             'tinjauanAnalis',
         ])->where('status_prioritas', true)
-          ->whereHas('pengaduan', fn ($q) => $q->whereIn('status_pengaduan', StatusKasus::tahapAnalis()))
-          ->orderBy('confidence_score', 'desc');
+          ->whereHas('pengaduan', fn ($q) => $q->whereIn('status_pengaduan', StatusKasus::tahapAnalis()));
 
         // Pencarian berdasarkan nomor_tiket / perusahaan
         if ($request->filled('nomor_tiket')) {
@@ -61,16 +60,13 @@ class TinjauLowonganController extends Controller
             });
         }
 
-        // Urutan
-        if ($request->filled('urutan')) {
-            $query->when($request->urutan === 'Skor Tertinggi', function ($q) {
-                $q->orderBy('confidence_score', 'desc');
-            })->when($request->urutan === 'Skor Terendah', function ($q) {
-                $q->orderBy('confidence_score', 'asc');
-            })->when($request->urutan === 'Terbaru', function ($q) {
-                $q->orderBy('tanggal_klasifikasi', 'desc');
-            });
-        }
+        // Urutan (FR-ML-03). Hanya satu urutan yang dipasang; tanpa pilihan = skor tertinggi.
+        // Kalau urutan bawaan dipasang lebih dulu, pilihan "Skor Terendah"/"Terbaru" tidak berpengaruh.
+        match ($request->urutan) {
+            'Skor Terendah' => $query->orderBy('confidence_score', 'asc'),
+            'Terbaru'       => $query->orderBy('tanggal_klasifikasi', 'desc'),
+            default         => $query->orderBy('confidence_score', 'desc'),
+        };
 
         $hasilKlasifikasi = $query->paginate(10)->withQueryString();
         $adaFilter = $request->filled('nomor_tiket') || $request->filled('filter_skor') || $request->filled('urutan');

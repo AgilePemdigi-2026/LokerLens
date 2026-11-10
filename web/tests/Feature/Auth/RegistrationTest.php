@@ -26,7 +26,10 @@ class RegistrationTest extends TestCase
             'persetujuan' => '1',
         ]);
 
-        $this->assertAuthenticated();
-        $response->assertRedirect(route('beranda', absolute: false));
+        // Sejak PR #37: setelah daftar diarahkan ke login dengan pesan sukses, dan belum login
+        $this->assertGuest();
+        $response->assertRedirect(route('login', absolute: false))
+            ->assertSessionHas('status', 'Akun berhasil dibuat. Silakan masuk.');
+        $this->assertDatabaseHas('users', ['email' => 'test@example.com']);
     }
 }

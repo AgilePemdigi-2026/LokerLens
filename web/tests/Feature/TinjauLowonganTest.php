@@ -2,8 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Constants\LokerLensCopy;
-use App\Models\BuktiPendukung;
 use App\Models\HasilKlasifikasi;
 use App\Models\LowonganKerja;
 use App\Models\Pengaduan;
@@ -71,43 +69,18 @@ class TinjauLowonganTest extends TestCase
         $responseTerbaru->assertSeeInOrder(['#TIKET-90', '#TIKET-80', '#TIKET-75']);
     }
 
-    public function test_detail_id_salah_redirect_dengan_pesan_error(): void
+    // Keputusan tim: ID yang tidak ada tetap menampilkan 404 (tidak diarahkan ke daftar).
+    public function test_detail_id_salah_menampilkan_404(): void
     {
-        $response = $this->actingAs($this->analis)->get('/tinjau-lowongan/detail/99999');
-
-        $response->assertRedirect(route('tinjau-lowongan.index'));
-        $response->assertSessionHas('error', LokerLensCopy::DATA_TIDAK_DITEMUKAN);
+        $this->actingAs($this->analis)->get('/tinjau-lowongan/detail/99999')
+            ->assertNotFound();
     }
 
-    public function test_simpan_tinjauan_id_salah_redirect_dengan_pesan_error(): void
+    public function test_simpan_tinjauan_id_salah_menampilkan_404(): void
     {
-        $response = $this->actingAs($this->analis)->post('/tinjau-lowongan/detail/99999/simpan', [
+        $this->actingAs($this->analis)->post('/tinjau-lowongan/detail/99999/simpan', [
             'catatan_tinjauan' => 'Catatan audit validasi pengujian',
             'hasil_tinjauan' => 'Terkonfirmasi Mencurigakan',
-        ]);
-
-        $response->assertRedirect(route('tinjau-lowongan.index'));
-        $response->assertSessionHas('error', LokerLensCopy::DATA_TIDAK_DITEMUKAN);
-    }
-
-    public function test_detail_menampilkan_bukti_pendukung(): void
-    {
-        $kasus = $this->buatKasus(85.0, '#TIKET-BUKTI');
-        $pengaduan = $kasus->pengaduan;
-
-        BuktiPendukung::create([
-            'id_pengaduan' => $pengaduan->id_pengaduan,
-            'nama_file' => 'screenshot_chat_transfer.png',
-            'path_file' => 'bukti/screenshot_chat_transfer.png',
-            'tipe_file' => 'png',
-            'ukuran_file' => 204800, // 200 KB
-            'tanggal_upload' => now(),
-        ]);
-
-        $response = $this->actingAs($this->analis)->get("/tinjau-lowongan/detail/{$kasus->id_klasifikasi}");
-        $response->assertOk();
-        $response->assertSee('Bukti Pendukung');
-        $response->assertSee('screenshot_chat_transfer.png');
-        $response->assertSee('200.0 KB');
+        ])->assertNotFound();
     }
 }

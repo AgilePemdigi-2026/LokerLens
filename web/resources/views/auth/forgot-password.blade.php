@@ -99,7 +99,9 @@
                 @endif
 
                 <!-- Form Lupa Password -->
-                <form method="POST" action="{{ route('password.email') }}" class="space-y-4">
+                {{-- novalidate: validasi oleh server supaya pesan resmi ("Email wajib diisi.", format email
+                     tidak valid) tampil, bukan tooltip bawaan browser --}}
+                <form method="POST" action="{{ route('password.email') }}" class="space-y-4" novalidate>
                     @csrf
 
                     <!-- Email Field -->

@@ -20,14 +20,13 @@
                     @if(Auth::user()->isMasyarakat())
                         {{-- Navbar Masyarakat (Gambar 2.4): Ajukan Pengaduan · Status Pengaduan · Riwayat Pengaduan --}}
                         <a href="{{ route('periksa-lowongan.index') }}" class="px-3 py-2 rounded-md text-sm font-medium transition {{ request()->routeIs('periksa-lowongan.*') ? 'text-teal-700 bg-teal-50 font-semibold' : 'text-gray-600 hover:text-navy-900 hover:bg-gray-100' }}">
-                            Ajukan Pengaduan
+                            {{ \App\Constants\LokerLensCopy::BTN_AJUKAN_PENGADUAN }}
                         </a>
                         <a href="{{ route('status-pengaduan.index') }}" class="px-3 py-2 rounded-md text-sm font-medium transition {{ request()->routeIs('status-pengaduan.*') ? 'text-teal-700 bg-teal-50 font-semibold' : 'text-gray-600 hover:text-navy-900 hover:bg-gray-100' }}">
                             Status Pengaduan
                         </a>
-                        <a href="{{ route('riwayat-pengaduan.index') }}"
-                          class="px-3 py-2 text-sm flex items-center gap-1.5 {{ request()->routeIs('riwayat-pengaduan.*') ? 'text-navy-900 font-semibold' : 'text-gray-600 hover:text-navy-900' }}">
-                                 Riwayat Pengaduan
+                        <a href="{{ route('riwayat-pengaduan.index') }}" class="px-3 py-2 rounded-md text-sm font-medium transition {{ request()->routeIs('riwayat-pengaduan.*') ? 'text-teal-700 bg-teal-50 font-semibold' : 'text-gray-600 hover:text-navy-900 hover:bg-gray-100' }}">
+                            Riwayat Pengaduan
                         </a>
                     @elseif(Auth::user()->isAnalis())
                         {{-- Analis Navbar (§5.2): Dashboard · Laporan · Pemantauan (aktif) · Arsip Kasus --}}

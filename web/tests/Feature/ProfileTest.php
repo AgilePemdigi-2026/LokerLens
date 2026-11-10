@@ -61,39 +61,34 @@ class ProfileTest extends TestCase
         $this->assertNotNull($user->refresh()->email_verified_at);
     }
 
-    public function test_user_can_delete_their_account(): void
+    /**
+     * Issue #25: fitur Hapus Akun dihapus untuk semua peran, karena menghapus akun
+     * ikut menghapus riwayat kasus (cascadeOnDelete).
+     */
+    public function test_akun_tidak_bisa_dihapus_lewat_profil(): void
     {
         $user = User::factory()->create();
 
-        $response = $this
-            ->actingAs($user)
-            ->delete('/profile', [
-                'password' => 'password',
-            ]);
+        $this->actingAs($user)
+            ->delete('/profile', ['password' => 'password'])
+            ->assertStatus(405); // route DELETE /profile tidak ada lagi
 
-        $response
-            ->assertSessionHasNoErrors()
-            ->assertRedirect('/');
-
-        $this->assertGuest();
-        $this->assertNull($user->fresh());
+        $this->assertAuthenticatedAs($user);
+        $this->assertNotNull($user->fresh());
+        $this->assertFalse(\Illuminate\Support\Facades\Route::has('profile.destroy'));
     }
 
-    public function test_correct_password_must_be_provided_to_delete_account(): void
+    public function test_halaman_profil_tidak_menampilkan_hapus_akun_untuk_semua_peran(): void
     {
-        $user = User::factory()->create();
-
-        $response = $this
-            ->actingAs($user)
-            ->from('/profile')
-            ->delete('/profile', [
-                'password' => 'wrong-password',
-            ]);
-
-        $response
-            ->assertSessionHasErrorsIn('userDeletion', 'password')
-            ->assertRedirect('/profile');
-
-        $this->assertNotNull($user->fresh());
+        foreach (['Masyarakat', 'Analis', 'Kepala Bidang'] as $peran) {
+            $this->actingAs(User::factory()->create(['role' => $peran]))
+                ->get('/profile')
+                ->assertOk()
+                ->assertSee(\App\Constants\LokerLensCopy::PROFIL_JUDUL)
+                ->assertSee(\App\Constants\LokerLensCopy::PROFIL_SANDI_JUDUL)
+                ->assertDontSee('Hapus Akun')
+                ->assertDontSee('Delete Account')
+                ->assertDontSee('Profile Information');
+        }
     }
 }

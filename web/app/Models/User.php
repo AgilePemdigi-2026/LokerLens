@@ -68,14 +68,15 @@ class User extends Authenticatable
     /**
      * Halaman awal sesuai peran (setelah login, atau saat pengguna yang sudah
      * login membuka halaman khusus tamu seperti /login).
-     * Masyarakat → Beranda; Analis → Tinjau Lowongan; Kepala Bidang → Tindak Lanjut.
+     * Masyarakat → Beranda; Analis → Dashboard Analis; Kepala Bidang → Dashboard Kepala Bidang.
+     * Juga dipakai sebagai tujuan logo LokerLens di navbar.
      */
     public function halamanAwal(): string
-{
-    return match ($this->role) {
-        'Analis'        => route('tinjau-lowongan.index'),
-        'Kepala Bidang' => route('dashboard-kepala-bidang.index'),
-        default         => route('beranda'), // Masyarakat
-    };
-}
+    {
+        return match ($this->role) {
+            'Analis'        => route('dashboard-analis.index'),
+            'Kepala Bidang' => route('dashboard-kepala-bidang.index'),
+            default         => route('beranda'), // Masyarakat
+        };
+    }
 }

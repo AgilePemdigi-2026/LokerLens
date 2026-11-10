@@ -101,9 +101,8 @@ class StatusPengaduanTest extends TestCase
             ->assertSee(LokerLensCopy::BELUM_ADA_PENGADUAN_BERJALAN)
             ->assertSee(route('periksa-lowongan.index'), false)
             ->assertDontSee('id="filter-pengaduan"', false)
-            // Riwayat Pengaduan (#12) belum ada, jadi tombolnya disembunyikan
-            // (teks "Riwayat Pengaduan" tetap ada di navbar/footer sebagai menu nonaktif)
-            ->assertDontSee('/riwayat-pengaduan', false);
+            // Riwayat Pengaduan sudah aktif (feat/15), tombol tampil di halaman kosong
+            ->assertSee(route('riwayat-pengaduan.index'), false);
     }
 
     public function test_daftar_hanya_berisi_pengaduan_belum_selesai_terbaru_di_atas(): void

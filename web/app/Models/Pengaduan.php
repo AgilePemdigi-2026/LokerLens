@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\StatusKasus;
 use App\Exceptions\PerubahanStatusTidakValid;
 use App\Support\ProgresPengaduan;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
    use Illuminate\Database\Eloquent\Casts\Attribute;
 
@@ -82,10 +83,44 @@ class Pengaduan extends Model
     public function catatRiwayat(string $keterangan): RiwayatKasus
     {
         return RiwayatKasus::create([
-            'id_pengaduan' => $this->id_pengaduan,
-            'status_kasus' => $this->status_pengaduan->value,
-            'keterangan'   => $keterangan,
+            'id_pengaduan'   => $this->id_pengaduan,
+            'status_kasus'   => $this->status_pengaduan->value,
+            'keterangan'     => $keterangan,
+            // Diisi dari aplikasi (WIB), bukan CURRENT_TIMESTAMP database yang mengikuti jam server
+            'tanggal_update' => now(),
         ]);
+    }
+
+    /**
+     * Tambahkan kolom "tanggal_selesai": waktu kasus mencapai status saat ini,
+     * diambil dari Riwayat Kasus. Dipakai Arsip Kasus untuk kolom tanggal dan urutan.
+     */
+    public function scopeDenganTanggalSelesai($query)
+    {
+        return $query->addSelect(['tanggal_selesai' => RiwayatKasus::select('tanggal_update')
+            ->whereColumn('riwayat_kasus.id_pengaduan', 'pengaduan.id_pengaduan')
+            ->whereColumn('riwayat_kasus.status_kasus', 'pengaduan.status_pengaduan')
+            ->orderByDesc('tanggal_update')
+            ->limit(1),
+        ]);
+    }
+
+    /**
+     * Tanggal kasus diselesaikan (status akhir dicapai).
+     * Urutan sumber: kolom tanggal_selesai (scope di atas) → Riwayat Kasus → tanggal keputusan Kepala Bidang.
+     */
+    public function tanggalSelesai(): ?Carbon
+    {
+        if ($this->tanggal_selesai) {
+            return Carbon::parse($this->tanggal_selesai);
+        }
+
+        $riwayat = $this->riwayatKasus
+            ->where('status_kasus', $this->status_pengaduan->value)
+            ->sortByDesc('tanggal_update')
+            ->first();
+
+        return $riwayat?->tanggal_update ?? $this->tindakLanjutKasus?->tanggal_keputusan;
     }
 
     /**

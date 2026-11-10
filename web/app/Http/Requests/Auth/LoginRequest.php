@@ -35,6 +35,21 @@ class LoginRequest extends FormRequest
     }
 
     /**
+     * Pesan isian kosong/format salah, tampil di bawah isian masing-masing.
+     * Pesan gagal login (NFR-SEC-03) tetap satu pesan di banner, lihat authenticate().
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'email.required'    => LokerLensCopy::LOGIN_EMAIL_WAJIB,
+            'email.email'       => LokerLensCopy::LOGIN_EMAIL_TIDAK_VALID,
+            'password.required' => LokerLensCopy::LOGIN_SANDI_WAJIB,
+        ];
+    }
+
+    /**
      * Attempt to authenticate the request's credentials.
      *
      * @throws ValidationException

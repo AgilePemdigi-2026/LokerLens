@@ -49,7 +49,7 @@
         </div>
 
         {{-- Filter periode --}}
-        <div x-data="{ kustom: {{ $periode === 'kustom' ? 'true' : 'false' }} }"
+        <div x-data="{ kustom: {{ $periode === 'kustom' || $pesanPeriode ? 'true' : 'false' }} }"
              class="bg-white rounded-card border border-gray-100 shadow-sm p-4 sm:p-5 text-navy-900">
             <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div>
@@ -69,7 +69,8 @@
                                 class="px-4 py-1.5 rounded-md transition {{ $periode === 'kustom' ? 'bg-white shadow text-navy-900 font-semibold' : 'text-gray-500 hover:text-navy-900' }}">Kustom</button>
                     </div>
 
-                    <form method="GET" action="{{ route('dashboard-analis.index') }}" x-show="kustom" x-cloak
+                    {{-- novalidate: tanggal kosong/tidak valid dicek server, pesannya tampil di bawah isian tanggal --}}
+                    <form method="GET" action="{{ route('dashboard-analis.index') }}" x-show="kustom" x-cloak novalidate
                           class="flex flex-wrap items-center gap-2 text-sm">
                         <input type="hidden" name="periode" value="kustom">
                         <input type="date" name="dari" required max="{{ now()->format('Y-m-d') }}"
@@ -80,6 +81,9 @@
                                value="{{ $periode === 'kustom' ? $sampai->format('Y-m-d') : '' }}"
                                class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-teal-600">
                         <button type="submit" class="px-4 py-1.5 rounded-lg bg-navy-900 hover:bg-navy-800 text-white font-semibold transition">Terapkan</button>
+                        @if ($pesanPeriode)
+                            <p class="w-full text-xs text-risk-high">{{ $pesanPeriode }}</p>
+                        @endif
                     </form>
                 </div>
             </div>

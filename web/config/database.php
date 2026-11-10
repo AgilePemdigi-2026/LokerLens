@@ -59,6 +59,9 @@ return [
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
+            // Zona waktu sesi MySQL disamakan dengan aplikasi (WIB), supaya kolom yang
+            // diisi CURRENT_TIMESTAMP (mis. tanggal_pengaduan) tidak mengikuti jam server.
+            'timezone' => env('DB_TIMEZONE', '+07:00'),
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
@@ -79,6 +82,9 @@ return [
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
+            // Zona waktu sesi MySQL disamakan dengan aplikasi (WIB), supaya kolom yang
+            // diisi CURRENT_TIMESTAMP (mis. tanggal_pengaduan) tidak mengikuti jam server.
+            'timezone' => env('DB_TIMEZONE', '+07:00'),
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],

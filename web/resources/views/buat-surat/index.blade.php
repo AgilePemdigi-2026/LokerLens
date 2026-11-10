@@ -49,7 +49,8 @@
         @endif
 
         <!-- Formulir Pembuatan Laporan Polisi (6 Panel Bernomor - Bagian 6.6) -->
-        <form method="POST" id="form-surat" enctype="multipart/form-data" class="space-y-5">
+        {{-- novalidate: validasi oleh server supaya pesan bahasa Indonesia tampil di dekat isian, bukan tooltip bawaan browser. --}}
+        <form method="POST" id="form-surat" enctype="multipart/form-data" class="space-y-5" novalidate>
             @csrf
 
             <!-- [ 1. Data Kasus ] (READ-ONLY - FR-ST-03) -->
@@ -140,6 +141,9 @@
                             </div>
                         </label>
                     @endforeach
+                    @foreach(collect($errors->get('pasal*'))->flatten()->unique() as $pesan)
+                        <p class="text-xs text-risk-high mt-1">{{ $pesan }}</p>
+                    @endforeach
                 </div>
             </div>
 
@@ -175,6 +179,10 @@
                     </label>
                     <input type="file" name="bukti_tambahan[]" multiple accept=".pdf,.jpg,.jpeg,.png"
                         class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-control file:border-0 file:text-xs file:font-semibold file:bg-navy-900 file:text-white hover:file:bg-navy-800 cursor-pointer" />
+                    {{-- Pesan untuk setiap berkas (bukti_tambahan.0, .1, ...), cukup tampil sekali per jenis pesan --}}
+                    @foreach(collect($errors->get('bukti_tambahan.*'))->flatten()->unique() as $pesan)
+                        <p class="text-xs text-risk-high mt-1">{{ $pesan }}</p>
+                    @endforeach
                 </div>
             </div>
 
@@ -203,6 +211,9 @@
                             Satreskrim Polres Wilayah Setempat
                         </option>
                     </select>
+                    @error('tujuan_kepolisian')
+                        <p class="text-xs text-risk-high mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
             </div>
 

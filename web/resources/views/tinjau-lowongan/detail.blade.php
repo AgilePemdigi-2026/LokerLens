@@ -270,7 +270,8 @@
                     </a>
                 </div>
             @else
-            <form method="POST" action="{{ route('tinjau-lowongan.simpan', $klasifikasi->id_klasifikasi) }}" class="space-y-5">
+            {{-- novalidate: validasi oleh server supaya pesan bahasa Indonesia tampil di dekat isian, bukan tooltip bawaan browser. --}}
+            <form method="POST" action="{{ route('tinjau-lowongan.simpan', $klasifikasi->id_klasifikasi) }}" class="space-y-5" novalidate>
                 @csrf
 
                 <!-- Catatan Hasil Audit Investigasi (BDD Hook: catatan_tinjauan) -->

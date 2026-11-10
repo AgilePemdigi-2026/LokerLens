@@ -76,7 +76,9 @@
                 </div>
 
                 <!-- Form Register -->
-                <form method="POST" action="{{ route('register') }}" class="space-y-3.5">
+                {{-- novalidate: validasi oleh server supaya pesan bahasa Indonesia tampil di bawah isian,
+                     bukan tooltip bawaan browser. Atribut required tetap dipakai sebagai penanda isian wajib. --}}
+                <form method="POST" action="{{ route('register') }}" class="space-y-3.5" novalidate>
                     @csrf
 
                     <!-- Nama Lengkap -->
@@ -158,6 +160,9 @@
                                 Saya menyetujui <a href="#" class="text-teal-700 font-semibold hover:underline">Kebijakan Privasi</a> dan <a href="#" class="text-teal-700 font-semibold hover:underline">Syarat Layanan</a> LokerLens.
                             </span>
                         </label>
+                        @error('persetujuan')
+                            <p class="text-xs text-risk-high mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <!-- Tombol Buat Akun (dengan panah →) -->

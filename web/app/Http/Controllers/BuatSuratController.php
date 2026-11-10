@@ -73,17 +73,9 @@ class BuatSuratController extends Controller
             return $tolak;
         }
 
-        $request->validate([
-            'kronologi'         => ['required', 'string'],
-            'tujuan_kepolisian' => ['required', 'string', 'max:255'],
-            'pasal'             => ['array'],
-            'pasal.*'           => [Rule::in(array_keys(SuratTeguranLaporanPolisi::DAFTAR_PASAL))],
-        ], [
-            'kronologi.required'         => 'Kronologi kejadian wajib diisi.',
-            'tujuan_kepolisian.required' => 'Tujuan kepolisian wajib dipilih.',
-        ]);
+        $this->validasiIsianSurat($request);
 
-            $this->simpanBuktiTambahan($request, $pengaduan);
+        $this->simpanBuktiTambahan($request, $pengaduan);
 
         SuratTeguranLaporanPolisi::updateOrCreate(
             ['id_tindaklanjut' => $tindakLanjut->id_tindaklanjut],
@@ -115,12 +107,7 @@ class BuatSuratController extends Controller
             return $tolak;
         }
 
-        $request->validate([
-            'kronologi'         => ['required', 'string'],
-            'tujuan_kepolisian' => ['required', 'string', 'max:255'],
-            'pasal'             => ['array'],
-            'pasal.*'           => [Rule::in(array_keys(SuratTeguranLaporanPolisi::DAFTAR_PASAL))],
-        ]);
+        $this->validasiIsianSurat($request);
 
         $this->simpanBuktiTambahan($request, $pengaduan);
 
@@ -188,6 +175,23 @@ class BuatSuratController extends Controller
  * Simpan bukti tambahan yang diunggah Kepala Bidang (NFR-SEC-07: hanya pdf/jpg/png).
  * Dipakai bersama oleh simpanDraft dan terbitkan.
  */
+/**
+ * Aturan isian surat, sama untuk Simpan Draft dan Terbitkan Laporan.
+ * Pesan wajib dari LokerLensCopy; pesan lain dari lang/id/validation.php.
+ */
+private function validasiIsianSurat(Request $request): void
+{
+    $request->validate([
+        'kronologi'         => ['required', 'string'],
+        'tujuan_kepolisian' => ['required', 'string', 'max:255'],
+        'pasal'             => ['array'],
+        'pasal.*'           => [Rule::in(array_keys(SuratTeguranLaporanPolisi::DAFTAR_PASAL))],
+    ], [
+        'kronologi.required'         => LokerLensCopy::SURAT_KRONOLOGI_WAJIB,
+        'tujuan_kepolisian.required' => LokerLensCopy::SURAT_TUJUAN_WAJIB,
+    ]);
+}
+
 private function simpanBuktiTambahan(Request $request, Pengaduan $pengaduan): void
 {
     if (! $request->hasFile('bukti_tambahan')) {
@@ -196,6 +200,9 @@ private function simpanBuktiTambahan(Request $request, Pengaduan $pengaduan): vo
 
     $request->validate([
         'bukti_tambahan.*' => ['mimes:pdf,jpg,jpeg,png', 'max:10240'],
+    ], [
+        'bukti_tambahan.*.mimes' => LokerLensCopy::SURAT_BUKTI_TIPE,
+        'bukti_tambahan.*.max'   => LokerLensCopy::SURAT_BUKTI_UKURAN,
     ]);
 
     foreach ($request->file('bukti_tambahan') as $file) {

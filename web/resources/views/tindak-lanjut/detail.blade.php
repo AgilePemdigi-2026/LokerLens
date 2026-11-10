@@ -279,7 +279,8 @@
                     </p>
                 </div>
 
-                <form method="POST" action="{{ route('tindak-lanjut.keputusan', $pengaduan->id_pengaduan) }}" id="form-keputusan">
+                {{-- novalidate: validasi oleh server supaya pesan bahasa Indonesia tampil di dekat isian, bukan tooltip bawaan browser. --}}
+                <form method="POST" action="{{ route('tindak-lanjut.keputusan', $pengaduan->id_pengaduan) }}" id="form-keputusan" novalidate>
                     @csrf
 
                     <!-- Pilihan Radio Tindaklanjuti / Tidak Ditindaklanjuti (BDD Accessible Names) -->
@@ -308,6 +309,9 @@
                             </div>
                         </label>
                     </div>
+                    @error('keputusan')
+                        <p class="text-xs text-red-400 -mt-4 mb-6">{{ $message }}</p>
+                    @enderror
 
                     <!-- Textarea Catatan Keputusan -->
                     <div class="mb-6">
@@ -317,6 +321,9 @@
                         <textarea id="catatan_keputusan" name="catatan_keputusan" x-model="catatan" rows="3"
                             placeholder="Berikan arahan atau alasan penetapan keputusan ini..."
                             class="w-full px-4 py-3 rounded-control border border-navy-700 bg-navy-800 text-white text-xs sm:text-sm focus:ring-2 focus:ring-teal-500 focus:outline-none placeholder-gray-500"></textarea>
+                        @error('catatan_keputusan')
+                            <p class="text-xs text-red-400 mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <!-- Tombol Aksi: Kembali ke Daftar & Konfirmasi Keputusan (Bagian 6.5.2 & 9) -->

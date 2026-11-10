@@ -120,6 +120,9 @@ class TindakLanjutController extends Controller
         $request->validate([
             'keputusan'         => ['required', 'in:Tindaklanjuti,Tidak Ditindaklanjuti'],
             'catatan_keputusan' => ['nullable', 'string'],
+        ], [
+            'keputusan.required' => LokerLensCopy::KEPUTUSAN_WAJIB,
+            'keputusan.in'       => LokerLensCopy::KEPUTUSAN_WAJIB,
         ]);
 
         $pengaduan = Pengaduan::findOrFail($id);

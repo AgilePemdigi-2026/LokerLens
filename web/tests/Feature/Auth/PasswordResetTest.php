@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Constants\LokerLensCopy;
 use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -44,6 +45,20 @@ class PasswordResetTest extends TestCase
     {
         $this->post('/forgot-password', ['email' => ''])->assertSessionHasErrors('email');
         $this->post('/forgot-password', ['email' => 'bukan-email'])->assertSessionHasErrors('email');
+    }
+
+    /**
+     * Form memakai novalidate supaya browser tidak menahan form kosong dengan tooltip bawaannya
+     * ("Please fill out this field."), sehingga pesan resmi dari server yang tampil.
+     */
+    public function test_form_email_kosong_menampilkan_pesan_resmi_dari_server(): void
+    {
+        $this->get('/forgot-password')->assertOk()
+            ->assertSee('action="' . route('password.email') . '" class="space-y-4" novalidate', false);
+
+        $this->from('/forgot-password')->followingRedirects()
+            ->post('/forgot-password', ['email' => ''])
+            ->assertSee(LokerLensCopy::LUPA_EMAIL_WAJIB);
     }
 
     // ─── Layar 2: konfirmasi netral ─────────────────────────────────────

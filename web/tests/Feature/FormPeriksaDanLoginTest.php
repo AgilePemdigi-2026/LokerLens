@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Constants\LokerLensCopy;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -32,6 +33,24 @@ class FormPeriksaDanLoginTest extends TestCase
         foreach (['nama_perusahaan', 'posisi_lowongan', 'deskripsi_lowongan'] as $wajib) {
             $this->assertMatchesRegularExpression('#name="' . $wajib . '"[^>]*:readonly="submitting"#', $html, "Kolom {$wajib} tidak dikunci dengan readonly");
         }
+    }
+
+    /**
+     * SRS B.2-2: form kosong harus menampilkan "Data belum lengkap, mohon lengkapi terlebih dahulu".
+     * Form memakai novalidate supaya browser tidak menahan form kosong dengan tooltip bawaannya,
+     * sehingga validasi dan pesan resminya datang dari server.
+     */
+    public function test_form_periksa_kosong_menampilkan_pesan_resmi_dari_server(): void
+    {
+        $masyarakat = User::factory()->create(['role' => 'Masyarakat']);
+
+        $html = $this->actingAs($masyarakat)->get('/periksa-lowongan')->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('#<form id="form-periksa"[^>]*\snovalidate[\s>]#', $html);
+
+        $this->actingAs($masyarakat)->from('/periksa-lowongan')->followingRedirects()
+            ->post('/periksa-lowongan', [])
+            ->assertSee(LokerLensCopy::VALIDASI_BELUM_LENGKAP)
+            ->assertDontSee('Hasil Pemeriksaan');
     }
 
     public function test_form_periksa_lengkap_berhasil_diperiksa(): void

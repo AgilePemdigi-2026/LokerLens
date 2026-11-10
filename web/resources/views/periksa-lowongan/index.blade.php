@@ -12,7 +12,7 @@
             const deskripsi = document.getElementById('deskripsi_lowongan').value.trim();
 
             if (!nama || !posisi || deskripsi.length < 50) {
-                // Biarkan HTML5 validation / backend validation menangani atau tampilkan error
+                // Form belum lengkap: kirim saja tanpa animasi proses, server yang menampilkan pesan validasi
                 return true;
             }
 
@@ -106,7 +106,10 @@
             </div>
 
             {{-- Selama memeriksa, isian dikunci dengan readonly (bukan disabled): kolom yang disabled tidak ikut terkirim ke server --}}
-            <form id="form-periksa" method="POST" action="{{ route('periksa-lowongan.store') }}" @submit="handleSubmit($event)" class="space-y-6">
+            {{-- novalidate: validasi oleh server supaya pesan resmi "Data belum lengkap, mohon lengkapi
+                 terlebih dahulu" (SRS B.2) tampil, bukan tooltip bawaan browser. Atribut required tetap
+                 dipakai sebagai penanda isian wajib. --}}
+            <form id="form-periksa" method="POST" action="{{ route('periksa-lowongan.store') }}" @submit="handleSubmit($event)" class="space-y-6" novalidate>
                 @csrf
 
                 <!-- Link Lowongan Kerja (Opsional) -->

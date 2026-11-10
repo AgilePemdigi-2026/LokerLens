@@ -62,7 +62,7 @@ Route::middleware('auth')->group(function () {
             ->whereNumber('id')
             ->name('status-pengaduan.detail');
 
-        // Riwayat Pengaduan — /riwayat-pengaduan (Sprint 2)
+        // Riwayat Pengaduan — /riwayat-pengaduan/ (Sprint 2)
         Route::get('/riwayat-pengaduan', [RiwayatPengaduanController::class, 'index'])
             ->name('riwayat-pengaduan.index');
     });
@@ -90,7 +90,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard-kepala-bidang', [DashboardKepalaBidangController::class, 'index'])
             ->name('dashboard-kepala-bidang.index');
 
-
         // Tindak Lanjut — /tindak-lanjut/ (Sprint 1)
         Route::get('/tindak-lanjut', [TindakLanjutController::class, 'index'])
             ->name('tindak-lanjut.index');
@@ -100,12 +99,6 @@ Route::middleware('auth')->group(function () {
             ->name('tindak-lanjut.keputusan');
         Route::get('/tindak-lanjut/{id}/hasil', [TindakLanjutController::class, 'hasil'])
             ->name('tindak-lanjut.hasil');
-
-        // Arsip Kasus — /arsip-kasus (Sprint 2 - Issue #14)
-        Route::get('/arsip-kasus', [ArsipKasusController::class, 'index'])
-            ->name('arsip-kasus.index');
-        Route::get('/arsip-kasus/{pengaduan}', [ArsipKasusController::class, 'show'])
-            ->name('arsip-kasus.show');
 
         // Buat Surat — /buat-surat/ (Sprint 1) — FR-ST-02: hanya setelah Tindaklanjuti
         // Tanpa nomor kasus: surat selalu dibuat dari laporan tertentu, jadi arahkan ke Daftar Laporan
@@ -118,6 +111,12 @@ Route::middleware('auth')->group(function () {
             ->name('buat-surat.terbitkan');
         Route::get('/buat-surat/{pengaduanId}/terbit/{suratId}', [BuatSuratController::class, 'terbit'])
             ->name('buat-surat.terbit');
+
+        // Arsip Kasus — /arsip-kasus (Sprint 2 - Issue #15)
+        Route::get('/arsip-kasus', [ArsipKasusController::class, 'index'])
+            ->name('arsip-kasus.index');
+        Route::get('/arsip-kasus/{pengaduan}', [ArsipKasusController::class, 'show'])
+            ->name('arsip-kasus.show');
     });
 
     // ── Profil (semua peran) ─────────────────────────────────────────────────

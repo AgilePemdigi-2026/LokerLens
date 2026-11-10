@@ -3,9 +3,9 @@
         <div class="flex justify-between h-16">
             <!-- Left Side: Brand Logo & Navigation Links -->
             <div class="flex items-center space-x-8">
-                <!-- Logo LokerLens (ikon lingkaran lensa sesuai mockup Gambar 2.4 & design.md §6) -->
+                <!-- Logo LokerLens (ikon lensa + wordmark "Loker" tebal + "Lens" aksen teal) -->
                 <a href="{{ Auth::user()->isMasyarakat() ? route('beranda') : (Auth::user()->isAnalis() ? route('tinjau-lowongan.index') : route('tindak-lanjut.index')) }}" class="flex items-center space-x-2 group">
-                    <div class="w-9 h-9 rounded-full bg-teal-600 flex items-center justify-center text-white shadow-inner group-hover:bg-teal-500 transition">
+                    <div class="w-9 h-9 rounded-lg bg-teal-600 flex items-center justify-center text-white shadow-inner group-hover:bg-teal-500 transition">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m-3-3h6"></path>
                         </svg>
@@ -15,19 +15,19 @@
                     </span>
                 </a>
 
-                <!-- Navigation Links per Role (Bagian 5.2 Panduan & design.md §3.2) -->
+                <!-- Navigation Links per Role (Bagian 5.2 Panduan) -->
                 <div class="hidden md:flex items-center space-x-1">
                     @if(Auth::user()->isMasyarakat())
                         {{-- Navbar Masyarakat (Gambar 2.4): Ajukan Pengaduan · Status Pengaduan · Riwayat Pengaduan --}}
                         <a href="{{ route('periksa-lowongan.index') }}" class="px-3 py-2 rounded-md text-sm font-medium transition {{ request()->routeIs('periksa-lowongan.*') ? 'text-teal-700 bg-teal-50 font-semibold' : 'text-gray-600 hover:text-navy-900 hover:bg-gray-100' }}">
-                            {{ \App\Constants\LokerLensCopy::BTN_AJUKAN_PENGADUAN }}
+                            Ajukan Pengaduan
                         </a>
                         <a href="{{ route('status-pengaduan.index') }}" class="px-3 py-2 rounded-md text-sm font-medium transition {{ request()->routeIs('status-pengaduan.*') ? 'text-teal-700 bg-teal-50 font-semibold' : 'text-gray-600 hover:text-navy-900 hover:bg-gray-100' }}">
                             Status Pengaduan
                         </a>
                         <a href="{{ route('riwayat-pengaduan.index') }}"
-                           class="px-3 py-2 rounded-md text-sm font-medium transition {{ request()->routeIs('riwayat-pengaduan.*') ? 'text-teal-700 bg-teal-50 font-semibold' : 'text-gray-600 hover:text-navy-900 hover:bg-gray-100' }}">
-                            Riwayat Pengaduan
+                          class="px-3 py-2 text-sm flex items-center gap-1.5 {{ request()->routeIs('riwayat-pengaduan.*') ? 'text-navy-900 font-semibold' : 'text-gray-600 hover:text-navy-900' }}">
+                                 Riwayat Pengaduan
                         </a>
                     @elseif(Auth::user()->isAnalis())
                         {{-- Analis Navbar (§5.2): Dashboard · Laporan · Pemantauan (aktif) · Arsip Kasus --}}

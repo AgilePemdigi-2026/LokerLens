@@ -4,76 +4,47 @@ namespace App\Http\Controllers;
 
 use App\Enums\StatusKasus;
 use App\Models\Pengaduan;
-use App\Models\SuratTeguranLaporanPolisi;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
-/**
- * Controller untuk Dashboard Kepala Bidang (Sprint 2 - Issue #14).
- * Menyajikan ringkasan eksekutif pengawasan kasus penipuan lowongan kerja:
- * - Metrik kasus per tahap Kepala Bidang (Menunggu Keputusan, Disetujui, Tidak Ditindaklanjuti, Selesai)
- * - Antrean kasus yang memerlukan penetapan keputusan
- * - Dokumen surat / laporan polisi resmi yang telah diterbitkan
- */
 class DashboardKepalaBidangController extends Controller
 {
-    public function index(Request $request): View
+    public function index(): View
     {
-        // 1. Metrik Ringkasan Kasus Tahap Kepala Bidang
-        $jumlahMenunggu = Pengaduan::where('status_pengaduan', StatusKasus::MenungguKeputusan)->count();
-        $jumlahDisetujui = Pengaduan::where('status_pengaduan', StatusKasus::TindakLanjutDisetujui)->count();
-        $jumlahDitolak = Pengaduan::where('status_pengaduan', StatusKasus::TidakDitindaklanjuti)->count();
-        $jumlahSelesai = Pengaduan::where('status_pengaduan', StatusKasus::Selesai)->count();
-        $jumlahSuratTerbit = SuratTeguranLaporanPolisi::where('status_penerbitan', 'Terbit')->count();
+        $tahap = StatusKasus::tahapKepalaBidang();
 
-        // Total keputusan yang sudah diproses (Disetujui + Ditolak + Selesai)
-        $totalKeputusan = $jumlahDisetujui + $jumlahDitolak + $jumlahSelesai;
+        $jumlah = DB::table('pengaduan')
+            ->whereIn('status_pengaduan', array_map(fn (StatusKasus $s) => $s->value, $tahap))
+            ->select('status_pengaduan', DB::raw('COUNT(*) as total'))
+            ->groupBy('status_pengaduan')
+            ->pluck('total', 'status_pengaduan');
 
-        // 2. Antrean Kasus Menunggu Keputusan (5 kasus terbaru yang perlu tindakan)
-        $antreanKeputusan = Pengaduan::with([
-                'lowonganKerja.perusahaan',
-                'hasilKlasifikasi.tinjauanAnalis',
-                'hasilKlasifikasi.indikatorMencurigakan',
-            ])
-            ->where('status_pengaduan', StatusKasus::MenungguKeputusan)
-            ->orderBy('tanggal_pengaduan', 'desc')
+        $ringkasan = collect($tahap)->map(fn (StatusKasus $status) => [
+            'status' => $status,
+            'jumlah' => (int) ($jumlah[$status->value] ?? 0),
+        ]);
+
+        // Skor risiko dimuat bersama (hasilKlasifikasi) supaya bisa ditampilkan per kasus.
+        // Diurutkan dari yang paling lama menunggu agar kasus mendesak ada di atas.
+        $menungguKeputusan = Pengaduan::with(['lowonganKerja.perusahaan', 'hasilKlasifikasi'])
+            ->where('status_pengaduan', StatusKasus::MenungguKeputusan->value)
+            ->orderBy('tanggal_pengaduan')
             ->limit(5)
             ->get();
 
-        // 3. Kasus yang Baru Saja Diputuskan / Ditindaklanjuti (5 kasus terbaru)
-        $riwayatKeputusan = Pengaduan::with([
-                'lowonganKerja.perusahaan',
-                'tindakLanjutKasus.suratTeguranLaporanPolisi',
-            ])
-            ->whereIn('status_pengaduan', [
-                StatusKasus::TindakLanjutDisetujui,
-                StatusKasus::TidakDitindaklanjuti,
-                StatusKasus::Selesai,
-            ])
-            ->orderBy('updated_at', 'desc')
+        // Kasus yang sudah diputuskan Kepala Bidang (status selain "Menunggu Keputusan").
+        $statusDiputuskan = collect($tahap)
+            ->reject(fn (StatusKasus $s) => $s === StatusKasus::MenungguKeputusan)
+            ->map(fn (StatusKasus $s) => $s->value)
+            ->values()
+            ->all();
+
+        $keputusanTerbaru = Pengaduan::with('lowonganKerja.perusahaan')
+            ->whereIn('status_pengaduan', $statusDiputuskan)
+            ->orderByDesc('tanggal_pengaduan')
             ->limit(5)
             ->get();
 
-        // 4. Daftar Dokumen Surat / Laporan Polisi Resmi yang Diterbitkan
-        $suratTerbaru = SuratTeguranLaporanPolisi::with([
-                'tindakLanjutKasus.pengaduan.lowonganKerja.perusahaan',
-            ])
-            ->where('status_penerbitan', 'Terbit')
-            ->orderBy('tanggal_terbit', 'desc')
-            ->limit(5)
-            ->get();
-
-        return view('dashboard-kepala-bidang.index', compact(
-            'jumlahMenunggu',
-            'jumlahDisetujui',
-            'jumlahDitolak',
-            'jumlahSelesai',
-            'jumlahSuratTerbit',
-            'totalKeputusan',
-            'antreanKeputusan',
-            'riwayatKeputusan',
-            'suratTerbaru'
-        ));
+        return view('dashboard-kepala-bidang.index', compact('ringkasan', 'menungguKeputusan', 'keputusanTerbaru'));
     }
 }
-

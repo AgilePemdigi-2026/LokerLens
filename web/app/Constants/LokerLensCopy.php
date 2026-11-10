@@ -298,4 +298,13 @@ final class LokerLensCopy
     public const LABEL_TANGGAL_TERBIT      = 'Tanggal Terbit';
     public const MENUNGGU_KEPUTUSAN_KABID  = 'Menunggu keputusan Kepala Bidang';
     public const KASUS_DITUTUP_TAHAP_ANALIS = 'Kasus ditutup pada tahap tinjauan Analis';
+
+    // ──────────────────────────────────────────────
+    //  Halaman Surat Terbit (issue #25)
+    //  Belum ada di SRS; teks dari rancangan tim.
+    //  Teks tombol "Cetak Tanda Terima" tetap mengikuti Data Mockup Gambar 2.16.
+    // ──────────────────────────────────────────────
+    /** %s = tujuan_instansi dari data surat. */
+    public const KETERANGAN_SURAT_TERBIT   = 'Dokumen resmi telah dibuat dan tercatat di LokerLens. Silakan cetak atau simpan sebagai PDF, lalu kirimkan melalui saluran resmi instansi ke %s.';
+    public const KETERANGAN_TOMBOL_CETAK   = 'Tombol ini membuka jendela cetak browser. Pilih printer untuk mencetak, atau pilih "Simpan sebagai PDF" untuk menyimpan dokumen.';
 }

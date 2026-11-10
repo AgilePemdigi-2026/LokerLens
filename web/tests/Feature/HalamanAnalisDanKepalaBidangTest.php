@@ -374,12 +374,33 @@ class HalamanAnalisDanKepalaBidangTest extends TestCase
             'tanggal_terbit'     => now(),
         ]);
 
-        $this->actingAs($this->kepalaBidang)->get("/buat-surat/{$pengaduan->id_pengaduan}/terbit/{$surat->id_surat}")
+        $response = $this->actingAs($this->kepalaBidang)->get("/buat-surat/{$pengaduan->id_pengaduan}/terbit/{$surat->id_surat}")
             ->assertOk()
             ->assertSee('Laporan Polisi Berhasil Diterbitkan')
             ->assertSee('Cetak Tanda Terima')
             ->assertSee('print-page')
             ->assertSee('no-print');
+
+        // Keterangan langkah berikutnya memuat tujuan dari data surat, dan keterangan tombol cetak (issue #25)
+        $response->assertSee(sprintf(LokerLensCopy::KETERANGAN_SURAT_TERBIT, $surat->tujuan_instansi))
+            ->assertSee(LokerLensCopy::KETERANGAN_TOMBOL_CETAK);
+
+        // Kotak keterangan dan tombol tidak ikut tercetak
+        $this->assertMatchesRegularExpression('/id="keterangan-surat-terbit" class="no-print/', $response->getContent());
+
+        // CSS cetak menyembunyikan navbar, footer, dan .no-print
+        $css = file_get_contents(resource_path('css/app.css'));
+        $this->assertMatchesRegularExpression('/@media print\s*\{\s*nav,\s*footer,\s*\.no-print\s*\{\s*display:\s*none !important;/', $css);
+    }
+
+    public function test_navbar_kepala_bidang_tanpa_menu_pemantauan(): void
+    {
+        $this->actingAs($this->kepalaBidang)->get('/tindak-lanjut')->assertOk()
+            ->assertSeeInOrder(['Dashboard', 'Laporan', 'Arsip Kasus'])
+            ->assertDontSee('Pemantauan')
+            ->assertDontSee('Sprint 2')
+            ->assertSee(route('arsip-kasus.index'), false)
+            ->assertSee(route('dashboard-kepala-bidang.index'), false);
     }
 
     /**

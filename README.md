@@ -222,14 +222,18 @@ Argumen setelah `--` diteruskan ke Behat. **Jalankan lewat `composer test-bdd`, 
 2. Kalau Chrome headless dari Terminal 3 masih menyala, tutup dulu (keduanya memakai port 9222).
 3. Buka Chrome yang **terlihat**, yaitu **tanpa** `--headless`, dengan remote debugging port 9222:
    ```powershell
-   & "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222 --user-data-dir="$env:TEMP\chrome-behat-demo" --no-first-run
+   & "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222 --user-data-dir="$env:TEMP\chrome-behat-demo" --no-first-run --password-store=basic --disable-features=PasswordLeakDetection,PasswordManagerOnboarding,AutofillServerCommunication
    #   Sesuaikan lokasi chrome.exe (kadang di "C:\Program Files\Google\Chrome\Application\chrome.exe").
-   #   macOS: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --remote-debugging-port=9222 --user-data-dir=/tmp/chrome-behat-demo
+   #   macOS: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --remote-debugging-port=9222 --user-data-dir=/tmp/chrome-behat-demo --no-first-run --password-store=basic --disable-features=PasswordLeakDetection,PasswordManagerOnboarding,AutofillServerCommunication
    ```
-   `--user-data-dir` membuat profil Chrome terpisah, jadi Chrome pribadi Anda tidak terganggu.
+   - `--user-data-dir` membuat profil Chrome terpisah, jadi Chrome pribadi Anda tidak terganggu.
+   - `--password-store=basic` dan `--disable-features=...` mematikan pengelola kata sandi Chrome, supaya tidak ada pop-up "Simpan sandi?" atau isian otomatis yang mengganggu form login saat demo.
+   - Kalau ketikan tidak masuk ke isian (bisa terjadi di Chrome yang terlihat), test mengisinya lewat JavaScript lalu memeriksanya lagi. Kalau tetap kosong, langkah gagal dengan pesan *"Isian ... tetap kosong setelah diisi"*.
+   - Biarkan jendela Chrome itu terbuka sampai test selesai. Kalau ditutup, skenario berikutnya gagal dengan pesan *"Connection has unexpectedly closed"*.
 4. Dari `web/bdd/`:
    ```powershell
-   composer test-bdd-demo                                  # semua skenario, jeda 1 detik per langkah
+   composer test-bdd-demo                                  # semua skenario, jeda 1 detik per langkah (±11 menit)
+   $env:BDD_JEDA="0"; composer test-bdd-demo               # tanpa jeda, untuk cek cepat (±7 menit)
    $env:BDD_JEDA="2"; composer test-bdd-demo               # jeda 2 detik (boleh pecahan, mis. 0.5)
    composer test-bdd-demo -- features/beranda.feature      # satu fitur saja
    #   macOS/Linux: BDD_JEDA=2 composer test-bdd-demo

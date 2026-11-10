@@ -11,9 +11,15 @@
  *   php ganti_nama_laporan.php              hanya ganti nama laporan terbaru (tanpa menjalankan Behat)
  *
  * Laporan tetap berada di folder laporan/, jadi CSS di laporan/assets/ tetap terbaca.
+ *
+ * Supaya laporan tidak menumpuk, setelah ganti nama:
+ *   - sisa Twig_*.html lama dihapus;
+ *   - hanya 5 laporan hasil-test-bdd_*.html terbaru yang disimpan. Laporan final yang
+ *     di-track Git (bukti sprint) tidak pernah dihapus.
  */
 
 $folderLaporan = __DIR__ . '/laporan';
+$jumlahLaporanDisimpan = 5;
 $argumen = array_slice($argv, 1);
 $kodeKeluar = 0;
 
@@ -57,5 +63,45 @@ if (!rename($laporanLama, $laporanBaru)) {
 
 echo 'Laporan HTML: ' . realpath($laporanBaru) . PHP_EOL;
 
+bersihkanLaporanLama($folderLaporan, $jumlahLaporanDisimpan);
+
 // Kode keluar mengikuti hasil Behat (bukan 0) supaya kegagalan test tetap terlihat.
 exit($kodeKeluar);
+
+/**
+ * Hapus sisa Twig_*.html, lalu simpan hanya $jumlah laporan hasil-test-bdd_*.html terbaru
+ * yang tidak di-track Git. Laporan yang di-track Git selalu dibiarkan.
+ */
+function bersihkanLaporanLama(string $folder, int $jumlah): void
+{
+    // Sisa laporan Twig yang belum diganti namanya (misalnya dari menjalankan behat langsung)
+    foreach (glob($folder . '/Twig_*.html') ?: [] as $file) {
+        unlink($file);
+    }
+
+    // Daftar laporan yang di-track Git. Kalau Git tidak bisa dipanggil, jangan hapus apa pun.
+    $keluaran = [];
+    $kode = 1;
+    exec('git -C ' . escapeshellarg($folder) . ' ls-files -- ' . escapeshellarg('hasil-test-bdd_*.html') . ' 2>&1', $keluaran, $kode);
+    if ($kode !== 0) {
+        echo 'Git tidak tersedia, laporan lama tidak dibersihkan.' . PHP_EOL;
+        return;
+    }
+    $dilacakGit = array_map('basename', $keluaran);
+
+    // Laporan yang tidak di-track Git, terbaru di depan (nama berisi tanggal-jam)
+    $laporan = array_filter(
+        glob($folder . '/hasil-test-bdd_*.html') ?: [],
+        fn (string $file) => ! in_array(basename($file), $dilacakGit, true)
+    );
+    rsort($laporan);
+
+    $dihapus = array_slice($laporan, $jumlah);
+    foreach ($dihapus as $file) {
+        unlink($file);
+    }
+
+    if ($dihapus !== []) {
+        echo count($dihapus) . " laporan lama dihapus (disimpan {$jumlah} laporan terbaru)." . PHP_EOL;
+    }
+}

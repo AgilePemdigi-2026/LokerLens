@@ -9,7 +9,8 @@
         "dmore/chrome-mink-driver": "^2.11",
         "emuse/behat-html-formatter": "^2.0",
         "friends-of-behat/mink-extension": "^2.7",
-        "symfony/http-client": "^7.4"
+        "symfony/http-client": "^7.4",
+        "symfony/mime": "^7.4"
     },
     "scripts": {
         "test-bdd": "@php ganti_nama_laporan.php --jalankan-behat"

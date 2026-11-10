@@ -39,13 +39,34 @@ body {
     display: none !important;
   }
 
+  /* Margin kertas seragam */
+  @page {
+    margin: 15mm;
+  }
+
   body {
     background: #ffffff !important;
+  }
+
+  /* Hilangkan jarak tambahan dari layout supaya isi mulai di atas kertas */
+  main,
+  main > div {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
   }
 
   .print-page {
     box-shadow: none !important;
     border: 0 !important;
     padding: 0 !important;
+    /* Warna lencana dan kotak ringkasan tetap tercetak */
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Kotak ringkasan dan daftar bukti tidak terpotong di tengah halaman */
+  .print-page > div {
+    break-inside: avoid;
   }
 }

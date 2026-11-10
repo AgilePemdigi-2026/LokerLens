@@ -106,14 +106,25 @@
                 </div>
             </div>
 
+            <!-- Keterangan langkah berikutnya (hanya di layar, tidak ikut tercetak) -->
+            <div id="keterangan-surat-terbit" class="no-print bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg text-xs sm:text-sm text-amber-900 leading-relaxed">
+                {{ sprintf(\App\Constants\LokerLensCopy::KETERANGAN_SURAT_TERBIT, $surat->tujuan_instansi ?: '-') }}
+            </div>
+
             <!-- Tombol Aksi: Cetak Tanda Terima, Kembali ke Laporan, Lihat Arsip Kasus (Bagian 6.6 & 9) -->
             <!-- no-print: tombol tidak ikut tercetak -->
             <div class="no-print flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
-                <button type="button" onclick="window.print()"
-                    class="w-full sm:w-auto px-5 py-2.5 rounded-control border border-gray-300 bg-white text-gray-800 hover:bg-gray-50 text-xs font-semibold shadow transition flex items-center justify-center space-x-1.5">
-                    <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                    <span>Cetak Tanda Terima</span>
-                </button>
+                {{-- Teks tombol tetap "Cetak Tanda Terima" (Data Mockup Gambar 2.16); keterangannya di bawah tombol --}}
+                <div class="w-full sm:w-auto sm:max-w-xs">
+                    <button type="button" onclick="window.print()"
+                        class="w-full sm:w-auto px-5 py-2.5 rounded-control border border-gray-300 bg-white text-gray-800 hover:bg-gray-50 text-xs font-semibold shadow transition flex items-center justify-center space-x-1.5">
+                        <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                        <span>Cetak Tanda Terima</span>
+                    </button>
+                    <p id="keterangan-tombol-cetak" class="text-[11px] text-gray-500 mt-1.5 leading-snug">
+                        {{ \App\Constants\LokerLensCopy::KETERANGAN_TOMBOL_CETAK }}
+                    </p>
+                </div>
 
                 <div class="flex items-center space-x-3 w-full sm:w-auto">
                     <a href="{{ route('tindak-lanjut.index') }}"

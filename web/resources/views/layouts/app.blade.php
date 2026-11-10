@@ -20,14 +20,14 @@
     <!-- Navbar Header -->
     @include('layouts.navigation')
 
-    <!-- Flash Notifications / Alert Banner -->
+    <!-- Flash Notifications / Alert Banner (no-print: tidak ikut tercetak) -->
     @if(session('success'))
-        <div class="bg-teal-700 text-white px-4 py-3 text-center text-sm font-medium shadow-md">
+        <div class="no-print bg-teal-700 text-white px-4 py-3 text-center text-sm font-medium shadow-md">
             {{ session('success') }}
         </div>
     @endif
     @if(session('error'))
-        <div class="bg-risk-high text-white px-4 py-3 text-center text-sm font-medium shadow-md">
+        <div class="no-print bg-risk-high text-white px-4 py-3 text-center text-sm font-medium shadow-md">
             {{ session('error') }}
         </div>
     @endif

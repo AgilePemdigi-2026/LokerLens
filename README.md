@@ -257,7 +257,7 @@ Kalau Chrome di port 9222 ternyata headless, mode demo berhenti dengan pesan yan
 
 ## Deploy ke Server (Coolify + Docker)
 
-Semua berkas deploy sudah ada di repo:
+Semua berkas deploy sudah ada di repo. Untuk mencoba dengan Docker di laptop terlebih dahulu, lihat [docs/deploy.md](docs/deploy.md).
 
 | Berkas | Isi |
 |---|---|

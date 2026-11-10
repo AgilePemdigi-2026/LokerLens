@@ -1,0 +1,30 @@
+# Tambahan KHUSUS LAPTOP untuk mencoba LokerLens dengan Docker. Panduan: docs/deploy.md.
+#
+# Dipakai bersama docker-compose.yml (file utama untuk Coolify):
+#   docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
+#
+# Sengaja TIDAK bernama docker-compose.override.yml, supaya tidak ikut terbaca otomatis di Coolify.
+# Nilai APP_KEY, APP_URL, DB_PASSWORD, dan DB_ROOT_PASSWORD diambil dari file .env di root repo
+# (salin dari .env.docker-lokal.example).
+
+services:
+  web:
+    # Buka aplikasi di http://localhost:8080
+    ports:
+      - "8080:80"
+    environment:
+      # Bukan "production", supaya data demo (DemoSeeder) boleh dijalankan
+      APP_ENV: local
+      # Tampilkan detail error di browser (hanya di laptop)
+      APP_DEBUG: "true"
+      LOG_LEVEL: debug
+      # Laptop memakai http, bukan https. Kalau tetap "true", cookie login tidak tersimpan dan login gagal.
+      SESSION_SECURE_COOKIE: "false"
+      # Di laptop tidak ada proxy di depan aplikasi
+      TRUSTED_PROXIES: ""
+
+  db:
+    # MySQL bisa dibuka dari laptop (mis. HeidiSQL/DBeaver) di localhost:3307.
+    # Bukan 3306 karena port itu sudah dipakai MySQL Laragon.
+    ports:
+      - "3307:3306"

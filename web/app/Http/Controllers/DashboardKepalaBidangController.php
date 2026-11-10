@@ -24,12 +24,27 @@ class DashboardKepalaBidangController extends Controller
             'jumlah' => (int) ($jumlah[$status->value] ?? 0),
         ]);
 
-        $menungguKeputusan = Pengaduan::with('lowonganKerja.perusahaan')
-            ->where('status_pengaduan', 'Menunggu Keputusan')
+        // Skor risiko dimuat bersama (hasilKlasifikasi) supaya bisa ditampilkan per kasus.
+        // Diurutkan dari yang paling lama menunggu agar kasus mendesak ada di atas.
+        $menungguKeputusan = Pengaduan::with(['lowonganKerja.perusahaan', 'hasilKlasifikasi'])
+            ->where('status_pengaduan', StatusKasus::MenungguKeputusan->value)
+            ->orderBy('tanggal_pengaduan')
+            ->limit(5)
+            ->get();
+
+        // Kasus yang sudah diputuskan Kepala Bidang (status selain "Menunggu Keputusan").
+        $statusDiputuskan = collect($tahap)
+            ->reject(fn (StatusKasus $s) => $s === StatusKasus::MenungguKeputusan)
+            ->map(fn (StatusKasus $s) => $s->value)
+            ->values()
+            ->all();
+
+        $keputusanTerbaru = Pengaduan::with('lowonganKerja.perusahaan')
+            ->whereIn('status_pengaduan', $statusDiputuskan)
             ->orderByDesc('tanggal_pengaduan')
             ->limit(5)
             ->get();
 
-        return view('dashboard-kepala-bidang.index', compact('ringkasan', 'menungguKeputusan'));
+        return view('dashboard-kepala-bidang.index', compact('ringkasan', 'menungguKeputusan', 'keputusanTerbaru'));
     }
 }

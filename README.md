@@ -146,7 +146,11 @@ Ambang prioritas tinggi (default 70) diatur di `LOKERLENS_AMBANG_PRIORITAS` (`we
 
 ### Menjalankan Test BDD (Behat)
 
-15 skenario dari SRS Appendix B ada di `web/bdd/features/` (satu file per Table B.2–B.5). Behat dipasang sebagai project Composer terpisah di `web/bdd/`, supaya paket aplikasi Laravel tidak berubah. Perbedaan kalimat skenario dengan SRS dijelaskan di [docs/laporan_kondisi_bdd.md bagian 6](docs/laporan_kondisi_bdd.md).
+47 skenario ada di `web/bdd/features/`, satu file per fitur:
+- **15 skenario Sprint 1** dari SRS Appendix B (Table B.2–B.5);
+- **32 skenario Sprint 2** dari user story baru US-05 s.d. US-12 (Table B.6–B.13), yang perlu ditambahkan ke SRS. Daftarnya ada di [docs/laporan_kondisi_bdd.md bagian 8](docs/laporan_kondisi_bdd.md).
+
+Behat dipasang sebagai project Composer terpisah di `web/bdd/`, supaya paket aplikasi Laravel tidak berubah. Perbedaan kalimat skenario dengan SRS dijelaskan di [docs/laporan_kondisi_bdd.md bagian 6](docs/laporan_kondisi_bdd.md).
 
 **Persiapan (sekali saja):**
 
@@ -192,8 +196,8 @@ uvicorn api.app:app --port 8001
 #   Sesuaikan lokasi chrome.exe. macOS: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" ...
 
 # Terminal 4 (dari web/bdd/): cara yang disarankan
-composer test-bdd                                        # semua 15 skenario + laporan HTML
-composer test-bdd -- --tags="~@javascript&&~@ml"         # 11 skenario: hanya butuh Terminal 1
+composer test-bdd                                        # semua 47 skenario + laporan HTML
+composer test-bdd -- --tags="~@javascript&&~@ml"         # 43 skenario: hanya butuh Terminal 1
 composer test-bdd -- --tags="@javascript"                # 3 skenario: butuh Terminal 1 + 3
 composer test-bdd -- --tags="@ml"                        # 1 skenario: butuh Terminal 1 + 2
 composer test-bdd -- features/buat_surat.feature         # satu fitur saja
@@ -211,6 +215,32 @@ Argumen setelah `--` diteruskan ke Behat. **Jalankan lewat `composer test-bdd`, 
 - Kalau terlanjur menjalankan Behat langsung, laporannya bernama `Twig_<tanggaljam>.html`. Ganti namanya dengan `php ganti_nama_laporan.php` dari `web/bdd/`.
 - Folder `web/bdd/laporan/` tidak ikut di-commit (lihat `.gitignore`), kecuali `assets/` dan laporan final sprint `hasil-test-bdd_2026-10-28_15-38.html`.
 - Pengaturannya ada di bagian `formatters` dan `extensions` di `web/bdd/behat.yml`.
+
+**Mode demo (menonton skenario berjalan).** Untuk presentasi atau mencari penyebab skenario gagal, semua skenario bisa dijalankan di Chrome yang **terlihat**, dengan jeda antar langkah. Profilnya `demo` di `web/bdd/behat.yml`. Profil biasa (`composer test-bdd`) tetap cepat dan tanpa jendela.
+
+1. Nyalakan server test (Terminal 1) dan API ML (Terminal 2) seperti biasa.
+2. Kalau Chrome headless dari Terminal 3 masih menyala, tutup dulu (keduanya memakai port 9222).
+3. Buka Chrome yang **terlihat**, yaitu **tanpa** `--headless`, dengan remote debugging port 9222:
+   ```powershell
+   & "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222 --user-data-dir="$env:TEMP\chrome-behat-demo" --no-first-run
+   #   Sesuaikan lokasi chrome.exe (kadang di "C:\Program Files\Google\Chrome\Application\chrome.exe").
+   #   macOS: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --remote-debugging-port=9222 --user-data-dir=/tmp/chrome-behat-demo
+   ```
+   `--user-data-dir` membuat profil Chrome terpisah, jadi Chrome pribadi Anda tidak terganggu.
+4. Dari `web/bdd/`:
+   ```powershell
+   composer test-bdd-demo                                  # semua skenario, jeda 1 detik per langkah
+   $env:BDD_JEDA="2"; composer test-bdd-demo               # jeda 2 detik (boleh pecahan, mis. 0.5)
+   composer test-bdd-demo -- features/beranda.feature      # satu fitur saja
+   #   macOS/Linux: BDD_JEDA=2 composer test-bdd-demo
+   ```
+   Laporan HTML tetap dibuat dan diganti namanya seperti `composer test-bdd`.
+
+Kalau Chrome di port 9222 ternyata headless, mode demo berhenti dengan pesan yang menjelaskan cara membuka Chrome yang terlihat.
+
+**Screenshot saat gagal.** Kalau ada langkah yang gagal, tampilan halaman disimpan otomatis ke `web/bdd/laporan/screenshot/` (tidak ikut di-commit). Nama filenya berisi tanggal-jam, nama fitur, dan baris langkah, misalnya `2026-11-10_13-37-04_beranda_baris-11.png`.
+- Di mode demo dan skenario `@javascript`, hasilnya gambar `.png`.
+- Di mode biasa (tanpa browser), hasilnya file `.html` yang bisa dibuka di browser.
 
 **Pengaman.** Test berhenti sebelum menyentuh data jika `DB_DATABASE` di `.env.behat` tidak diakhiri `_testing`, atau jika server di port 8010 tidak memakai `.env.behat`. Pengecekannya memakai `APP_KEY`: cookie dari server harus sah menurut `APP_KEY` di `.env.behat`, jadi `APP_KEY` di `.env.behat` wajib berbeda dari `.env` (buat dengan `php artisan key:generate --env=behat`). Skenario `@ml` berhenti dengan pesan jelas jika API ML belum menyala.
 

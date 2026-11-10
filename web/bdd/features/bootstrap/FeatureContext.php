@@ -1,7 +1,10 @@
 <?php
 
+use Behat\Behat\Hook\Scope\AfterStepScope;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
+use Behat\Mink\Driver\BrowserKitDriver;
 use Behat\MinkExtension\Context\MinkContext;
+use Behat\Testwork\Tester\Result\TestResult;
 
 /**
  * Langkah tambahan untuk skenario BDD LokerLens (SRS Appendix B).
@@ -20,8 +23,24 @@ class FeatureContext extends MinkContext
         'Masyarakat'    => 'adelulinn@gmail.com',
         'Analis'        => 'budi.analis@lokerlens.go.id',
         'Kepala Bidang' => 'rizky.kb@lokerlens.go.id',
+        // Masyarakat tanpa pengaduan (seeder), untuk tampilan kosong
+        'Masyarakat Baru' => 'masyarakat.baru@lokerlens.test',
     ];
     private const PASSWORD = 'password123';
+
+    /** Folder screenshot halaman saat langkah gagal (diabaikan git lewat /web/bdd/laporan/*). */
+    private const FOLDER_SCREENSHOT = __DIR__ . '/../../laporan/screenshot';
+
+    /** Sudah dicek bahwa Chrome terlihat (mode demo), cukup sekali per run. */
+    private static bool $chromeTerlihatDicek = false;
+
+    /**
+     * @param bool $modeDemo true pada profil "demo" (behat.yml): semua skenario berjalan
+     *                       di Chrome yang terlihat dan ada jeda antar langkah (BDD_JEDA).
+     */
+    public function __construct(private bool $modeDemo = false)
+    {
+    }
 
     // ─── Persiapan sebelum setiap skenario ────────────────────────────────
 
@@ -59,6 +78,94 @@ class FeatureContext extends MinkContext
         if (@file_get_contents($url, false, stream_context_create(['http' => ['timeout' => 3]])) === false) {
             throw new RuntimeException("API ML tidak menjawab di {$url}.\n"
                 . 'Nyalakan dulu dari folder ml/: uvicorn api.app:app --port 8001');
+        }
+    }
+
+    // ─── Mode demo & screenshot ───────────────────────────────────────────
+
+    /**
+     * Mode demo: pastikan Chrome di port 9222 TERLIHAT (bukan headless), supaya skenario bisa ditonton.
+     *
+     * @BeforeScenario
+     */
+    public function pastikanChromeTerlihat(): void
+    {
+        if (! $this->modeDemo || self::$chromeTerlihatDicek) {
+            return;
+        }
+
+        $versi = @file_get_contents('http://127.0.0.1:9222/json/version', false, stream_context_create(['http' => ['timeout' => 3]]));
+        if ($versi === false) {
+            throw new RuntimeException("Mode demo butuh Chrome yang terlihat di port 9222.\n"
+                . 'Buka dulu (tanpa --headless): & "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" '
+                . '--remote-debugging-port=9222 --user-data-dir="$env:TEMP\chrome-behat-demo"');
+        }
+
+        // Chrome tanpa jendela memuat kata "HeadlessChrome" (di "Browser" untuk --headless lama,
+        // di "User-Agent" untuk --headless=new)
+        $info = json_decode($versi, true) ?? [];
+        if (str_contains(($info['Browser'] ?? '') . ' ' . ($info['User-Agent'] ?? ''), 'Headless')) {
+            throw new RuntimeException("Chrome di port 9222 berjalan headless (tanpa jendela), jadi tidak bisa ditonton.\n"
+                . 'Tutup Chrome itu, lalu buka lagi tanpa --headless (lihat README, bagian "Mode demo").');
+        }
+
+        self::$chromeTerlihatDicek = true;
+    }
+
+    /**
+     * Mode demo: jeda setelah setiap langkah supaya mudah diikuti.
+     * Lama jeda (detik) dari variabel BDD_JEDA, default 1. Contoh: $env:BDD_JEDA="2"
+     *
+     * @AfterStep
+     */
+    public function jedaModeDemo(): void
+    {
+        if (! $this->modeDemo) {
+            return;
+        }
+
+        $jeda = getenv('BDD_JEDA');
+        $detik = is_numeric($jeda) ? max(0, (float) $jeda) : 1.0;
+        usleep((int) ($detik * 1_000_000));
+    }
+
+    /**
+     * Langkah gagal: simpan tampilan halaman ke laporan/screenshot/.
+     * Di Chrome berupa gambar .png. Di mode cepat (tanpa browser) berupa .html,
+     * karena driver browserkit tidak bisa mengambil gambar.
+     *
+     * @AfterStep
+     */
+    public function screenshotJikaGagal(AfterStepScope $scope): void
+    {
+        if ($scope->getTestResult()->getResultCode() !== TestResult::FAILED) {
+            return;
+        }
+
+        try {
+            $sesi = $this->getSession();
+            if (! $sesi->isStarted()) {
+                return;
+            }
+
+            if (! is_dir(self::FOLDER_SCREENSHOT)) {
+                mkdir(self::FOLDER_SCREENSHOT, 0777, true);
+            }
+
+            // Nama file: tanggal-jam, nama fitur, dan baris langkah yang gagal
+            $nama = date('Y-m-d_H-i-s') . '_' . basename($scope->getFeature()->getFile(), '.feature')
+                . '_baris-' . $scope->getStep()->getLine();
+
+            if ($sesi->getDriver() instanceof BrowserKitDriver) {
+                file_put_contents(self::FOLDER_SCREENSHOT . "/{$nama}.html", $sesi->getPage()->getContent());
+                echo "Halaman saat gagal disimpan: laporan/screenshot/{$nama}.html" . PHP_EOL;
+            } else {
+                file_put_contents(self::FOLDER_SCREENSHOT . "/{$nama}.png", $sesi->getScreenshot());
+                echo "Screenshot disimpan: laporan/screenshot/{$nama}.png" . PHP_EOL;
+            }
+        } catch (Throwable $e) {
+            // Screenshot hanya pelengkap; jangan menutupi penyebab gagal yang sebenarnya
+            echo 'Screenshot gagal dibuat: ' . $e->getMessage() . PHP_EOL;
         }
     }
 
@@ -172,6 +279,48 @@ class FeatureContext extends MinkContext
                 END IF;
             END
         ");
+    }
+
+    /**
+     * Klik tautan di baris tabel yang memuat nomor tiket tertentu,
+     * mis. When I follow "Lihat Detail" in the row for ticket "#LKR-2025-0842"
+     *
+     * @When /^I follow "(?P<tautan>[^"]+)" in the row for ticket "(?P<tiket>[^"]+)"$/
+     */
+    public function iFollowInTheRowForTicket(string $tautan, string $tiket): void
+    {
+        foreach ($this->getSession()->getPage()->findAll('css', 'tr') as $baris) {
+            if (str_contains($baris->getText(), $tiket)) {
+                $link = $baris->findLink($tautan);
+                if ($link !== null) {
+                    $link->click();
+                    return;
+                }
+            }
+        }
+
+        throw new RuntimeException("Tautan \"{$tautan}\" untuk tiket {$tiket} tidak ditemukan di tabel.");
+    }
+
+    /**
+     * Membuka halaman atur ulang kata sandi dengan tautan yang sah, tanpa email sungguhan.
+     * Token dibuat langsung di tabel password_reset_tokens database TEST
+     * (cara yang sama dengan Laravel: token disimpan dalam bentuk hash bcrypt).
+     *
+     * @Given /^I am on a valid password reset page for "(?P<email>[^"]+)"$/
+     */
+    public function iAmOnAValidPasswordResetPageFor(string $email): void
+    {
+        $this->pastikanDatabaseTest();
+
+        $token = bin2hex(random_bytes(32));
+        $db = $this->koneksiDatabase();
+        $db->prepare('DELETE FROM password_reset_tokens WHERE email = ?')->execute([$email]);
+        // created_at memakai UTC, sama dengan zona waktu aplikasi (config/app.php)
+        $db->prepare('INSERT INTO password_reset_tokens (email, token, created_at) VALUES (?, ?, ?)')
+            ->execute([$email, password_hash($token, PASSWORD_BCRYPT), gmdate('Y-m-d H:i:s')]);
+
+        $this->visitPath('/reset-password/' . $token . '?email=' . urlencode($email));
     }
 
     // ─── Fungsi bantu ─────────────────────────────────────────────────────

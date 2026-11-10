@@ -233,4 +233,69 @@ final class LokerLensCopy
     // Tampilan kosong
     public const BELUM_ADA_PENGADUAN_SELESAI = 'Belum ada pengaduan yang selesai';
     public const BELUM_ADA_PENGADUAN_SELESAI_KETERANGAN = 'Pengaduan yang sudah selesai ditangani akan tampil di sini. Pengaduan yang masih berjalan dapat dipantau di halaman Status Pengaduan.';
+
+    // ──────────────────────────────────────────────
+    //  Riwayat Tinjauan Analis (issue #25)
+    //  Belum ada di SRS; teks dari rancangan tim.
+    //  Berisi kasus yang sudah punya hasil tinjauan Analis (tabel tinjauan_analis).
+    // ──────────────────────────────────────────────
+    public const NAV_RIWAYAT               = 'Riwayat';
+
+    public const RIWAYAT_TINJAUAN_JUDUL    = 'Riwayat Tinjauan Lowongan';
+    public const RIWAYAT_TINJAUAN_DESKRIPSI = 'Daftar lowongan yang sudah selesai ditinjau Analis beserta hasil tinjauan dan hasil akhir kasusnya.';
+    public const RIWAYAT_TINJAUAN_JUDUL_DAFTAR = 'Daftar Lowongan yang Sudah Ditinjau';
+    public const RIWAYAT_TINJAUAN_KETERANGAN_DAFTAR = 'Hanya berisi kasus dengan hasil tinjauan. Kasus yang belum ditinjau ada di menu Pemantauan.';
+
+    // Kotak angka
+    public const RIWAYAT_TINJAUAN_STAT_TOTAL = 'Total Ditinjau';
+
+    // Filter, pencarian, dan urutan
+    public const RIWAYAT_TINJAUAN_LABEL_CARI = 'Pencarian';
+    public const RIWAYAT_TINJAUAN_PLACEHOLDER_CARI = 'Cari nomor tiket / perusahaan / posisi';
+    public const RIWAYAT_TINJAUAN_LABEL_HASIL = 'Hasil Tinjauan';
+    public const RIWAYAT_TINJAUAN_SEMUA_HASIL = 'Semua Hasil';
+    public const RIWAYAT_TINJAUAN_LABEL_HASIL_AKHIR = 'Hasil Akhir';
+    public const RIWAYAT_TINJAUAN_SEMUA_HASIL_AKHIR = 'Semua';
+    public const RIWAYAT_TINJAUAN_LABEL_URUTAN = 'Urutkan';
+    public const URUTAN_TERBARU            = 'Terbaru';
+    public const URUTAN_SKOR_TERTINGGI     = 'Skor Tertinggi';
+    public const URUTAN_SKOR_TERENDAH      = 'Skor Terendah';
+
+    // Hasil akhir kasus (pengelompokan status yang sudah ada, bukan status baru)
+    public const HASIL_AKHIR_MENUNGGU      = 'Menunggu Keputusan';
+    public const HASIL_AKHIR_DITINDAKLANJUTI = 'Ditindaklanjuti';
+    public const HASIL_AKHIR_TIDAK_DITINDAKLANJUTI = 'Tidak Ditindaklanjuti';
+    public const HASIL_AKHIR_TIDAK_TERBUKTI = 'Tidak Terbukti';
+
+    // Kolom tabel
+    public const KOLOM_NOMOR_TIKET         = 'Nomor Tiket';
+    public const KOLOM_PERUSAHAAN          = 'Perusahaan';
+    public const KOLOM_POSISI              = 'Posisi';
+    public const KOLOM_ANALIS              = 'Analis Peninjau';
+    public const KOLOM_TANGGAL_DITINJAU    = 'Tanggal Ditinjau';
+    public const KOLOM_AKSI                = 'Aksi';
+
+    // Tampilan kosong
+    public const BELUM_ADA_TINJAUAN        = 'Belum ada lowongan yang ditinjau';
+    public const BELUM_ADA_TINJAUAN_KETERANGAN = 'Lowongan yang sudah Anda tinjau di menu Pemantauan akan tampil di sini.';
+    public const TINJAUAN_TIDAK_DITEMUKAN_KETERANGAN = 'Tidak ada lowongan yang cocok dengan kata kunci atau filter yang Anda pilih.';
+    public const BTN_RESET_FILTER          = 'Reset Filter Pencarian';
+
+    // Detail hanya-baca
+    public const BTN_KEMBALI_RIWAYAT_TINJAUAN = '← Kembali ke Riwayat';
+    public const LABEL_MODE_HANYA_BACA     = 'Hanya baca';
+    public const JUDUL_HASIL_TINJAUAN      = 'Hasil Tinjauan Analis';
+    public const LABEL_CATATAN_TINJAUAN    = 'Catatan Tinjauan';
+    public const LABEL_STATUS_KASUS_SEKARANG = 'Status Kasus Saat Ini';
+
+    public const JUDUL_HASIL_AKHIR_KASUS   = 'Hasil Akhir Kasus';
+    public const LABEL_KEPUTUSAN           = 'Keputusan';
+    public const LABEL_KEPALA_BIDANG       = 'Kepala Bidang';
+    public const LABEL_TANGGAL_KEPUTUSAN   = 'Tanggal Keputusan';
+    public const LABEL_CATATAN_KEPUTUSAN   = 'Catatan Keputusan';
+    public const LABEL_JENIS_DOKUMEN       = 'Jenis Dokumen';
+    public const LABEL_NOMOR_SURAT         = 'Nomor Surat';
+    public const LABEL_TANGGAL_TERBIT      = 'Tanggal Terbit';
+    public const MENUNGGU_KEPUTUSAN_KABID  = 'Menunggu keputusan Kepala Bidang';
+    public const KASUS_DITUTUP_TAHAP_ANALIS = 'Kasus ditutup pada tahap tinjauan Analis';
 }

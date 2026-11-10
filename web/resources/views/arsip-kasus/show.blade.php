@@ -230,8 +230,12 @@
                                             </span>
                                             <span class="truncate text-navy-900 font-medium">{{ $bukti->nama_file }}</span>
                                         </div>
-                                        <span class="text-[10px] text-gray-500 shrink-0">
+                                        <span class="flex items-center gap-2 text-[10px] text-gray-500 shrink-0">
                                             {{ round($bukti->ukuran_file / 1024, 1) }} KB
+                                            {{-- Berkas di disk private: dibuka lewat route yang dicek perannya --}}
+                                            <a href="{{ route('bukti.lihat', $bukti) }}" target="_blank" rel="noopener" class="font-semibold text-teal-700 hover:underline">
+                                                {{ \App\Constants\LokerLensCopy::BTN_LIHAT_BUKTI }}
+                                            </a>
                                         </span>
                                     </div>
                                 @endforeach

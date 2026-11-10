@@ -411,7 +411,7 @@ class HalamanAnalisDanKepalaBidangTest extends TestCase
      */
     public function test_kriteria_selesai_srs_tabel_b5_buat_surat(): void
     {
-        Storage::fake('public');
+        Storage::fake('local'); // bukti disimpan di disk private (storage/app/private)
 
         $pengaduan = $this->buatKasusTindaklanjuti('#LKR-UJI-8770', StatusKasus::TindakLanjutDisetujui);
         $urlForm = "/buat-surat/{$pengaduan->id_pengaduan}";

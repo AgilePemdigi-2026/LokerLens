@@ -1,0 +1,86 @@
+# LokerLens untuk server (Coolify, build pack "Docker Compose"). Panduan: README.md bagian "Deploy".
+#
+# Tiga service di satu jaringan internal:
+#   web : Laravel + Apache. Domain https diatur di Coolify untuk service ini (port 80).
+#   ml  : API klasifikasi. HANYA jaringan internal (tidak ada "ports"), dipanggil web lewat http://ml:8001.
+#   db  : MySQL. HANYA jaringan internal.
+#
+# Nilai ${...} diisi di menu Environment Variables Coolify (contoh: web/.env.production.example).
+# Tidak ada "ports:" di file ini: Coolify/Traefik yang menghubungkan domain ke service web.
+
+services:
+  web:
+    build: ./web
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      ml:
+        condition: service_started
+    environment:
+      APP_NAME: LokerLens
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_KEY: ${APP_KEY:?APP_KEY wajib diisi}
+      APP_URL: ${APP_URL:?APP_URL wajib diisi (https://...)}
+      APP_TIMEZONE: Asia/Jakarta
+      APP_LOCALE: id
+      APP_FALLBACK_LOCALE: en
+      TRUSTED_PROXIES: "*"
+      LOG_CHANNEL: stderr
+      LOG_LEVEL: ${LOG_LEVEL:-warning}
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE:-lokerlens}
+      DB_USERNAME: ${DB_USERNAME:-lokerlens}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD wajib diisi}
+      SESSION_DRIVER: database
+      SESSION_ENCRYPT: "true"
+      SESSION_SECURE_COOKIE: "true"
+      CACHE_STORE: database
+      QUEUE_CONNECTION: sync
+      FILESYSTEM_DISK: local
+      # Belum ada SMTP: biarkan "log" (email Lupa Password tidak terkirim, hanya tercatat di log)
+      MAIL_MAILER: ${MAIL_MAILER:-log}
+      MAIL_HOST: ${MAIL_HOST:-}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-noreply@lokerlens.test}
+      MAIL_FROM_NAME: LokerLens
+      LOKERLENS_AMBANG_PRIORITAS: ${LOKERLENS_AMBANG_PRIORITAS:-70}
+      DEV_PREVIEW: "false"
+      ML_API_URL: http://ml:8001
+      ML_API_TIMEOUT: ${ML_API_TIMEOUT:-4}
+    volumes:
+      # Berkas bukti, log, dan cache tidak hilang saat deploy ulang
+      - web-storage:/var/www/html/storage
+
+  ml:
+    build: ./ml
+    restart: unless-stopped
+    # expose = hanya untuk container lain di jaringan ini, TIDAK dibuka ke internet
+    expose:
+      - "8001"
+
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-lokerlens}
+      MYSQL_USER: ${DB_USERNAME:-lokerlens}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD wajib diisi}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?DB_ROOT_PASSWORD wajib diisi}
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  web-storage:
+  db-data:

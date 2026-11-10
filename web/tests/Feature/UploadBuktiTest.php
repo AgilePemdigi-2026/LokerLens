@@ -44,7 +44,7 @@ class UploadBuktiTest extends TestCase
 
     public function test_bukti_jpeg_disimpan_sebagai_jpg(): void
     {
-        Storage::fake('public');
+        Storage::fake('local'); // bukti disimpan di disk private (storage/app/private)
         $kepalaBidang = User::factory()->create(['role' => 'Kepala Bidang']);
         $pengaduan = $this->buatKasusTindaklanjuti($kepalaBidang);
 
@@ -64,7 +64,7 @@ class UploadBuktiTest extends TestCase
 
     public function test_bukti_selain_pdf_jpg_png_ditolak(): void
     {
-        Storage::fake('public');
+        Storage::fake('local'); // bukti disimpan di disk private (storage/app/private)
         $kepalaBidang = User::factory()->create(['role' => 'Kepala Bidang']);
         $pengaduan = $this->buatKasusTindaklanjuti($kepalaBidang);
 

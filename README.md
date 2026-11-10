@@ -55,9 +55,10 @@ LokerLens/
 |---|---|
 | Backend & frontend | Laravel 13 (PHP 8.3+), Blade, Laravel Breeze |
 | Tampilan | Tailwind CSS, Alpine.js, Vite |
-| Basis data | SQLite saat pengembangan (DBMS produksi masih didiskusikan) |
+| Basis data | MySQL (laptop: Laragon/XAMPP; server: container MySQL 8.4). Test PHPUnit memakai SQLite di memori |
 | Machine learning | Python, scikit-learn (TF-IDF; Naive Bayes, Logistic Regression, SVM, Random Forest) |
 | API ML | FastAPI + Uvicorn (`ml/api/app.py`, port 8001) |
+| Server | Docker (`web/Dockerfile`, `ml/Dockerfile`, `docker-compose.yml`), dijalankan dengan Coolify |
 
 ---
 
@@ -65,7 +66,7 @@ LokerLens/
 
 ### Aplikasi web (dari dalam `web/`)
 
-Kebutuhan: PHP 8.3+, Composer, Node.js + npm.
+Kebutuhan: PHP 8.4+, Composer, Node.js + npm, MySQL (Laragon/XAMPP).
 
 ```bash
 cd web
@@ -78,18 +79,20 @@ npm install
 cp .env.example .env
 php artisan key:generate
 
-# 3. Siapkan database SQLite + data contoh
-touch database/database.sqlite          # PowerShell: New-Item database/database.sqlite
-php artisan migrate --seed
+# 3. Siapkan database: buat database kosong "lokerlens" di MySQL (HeidiSQL/phpMyAdmin), lalu
+php artisan migrate
+php artisan db:seed --class=DemoSeeder  # akun demo + kasus contoh (khusus laptop/demo, ditolak di produksi)
 
 # 4. Build tampilan, lalu jalankan
 npm run build                           # atau: npm run dev (mode pengembangan)
 php artisan serve
 ```
 
-Buka `http://localhost:8000`. Akun contoh untuk ketiga peran ada di `web/database/seeders/LokerLensSeeder.php`.
+Buka `http://localhost:8000`. Akun contoh untuk ketiga peran ada di `web/database/seeders/LokerLensSeeder.php` (kata sandi `password123`).
 
-**Mode preview (khusus laptop pengembang).** Untuk mengecek tampilan dengan cepat, tambahkan `DEV_PREVIEW=true` di `web/.env` (pastikan `APP_ENV=local`), jalankan `php artisan migrate:fresh --seed`, lalu buka `http://localhost:8000/dev`. Di sana ada tombol "Masuk sebagai Masyarakat/Analis/Kepala Bidang" (login dengan akun demo seeder) dan daftar tautan ke semua halaman per peran, memakai ID kasus dari seeder untuk setiap status. Aturan login dan hak akses tetap berlaku, jadi halaman peran lain tetap ditolak. Jika `DEV_PREVIEW` bukan `true` atau `APP_ENV` bukan `local`, route `/dev` sama sekali tidak terdaftar. Jangan aktifkan di server sungguhan.
+`php artisan migrate --seed` **tidak lagi** membuat data contoh: `DatabaseSeeder` hanya berisi data yang dibutuhkan server produksi (saat ini kosong). Data contoh selalu lewat `DemoSeeder`. Untuk mengulang database dari awal: `php artisan migrate:fresh --seeder=DemoSeeder`.
+
+**Mode preview (khusus laptop pengembang).** Untuk mengecek tampilan dengan cepat, tambahkan `DEV_PREVIEW=true` di `web/.env` (pastikan `APP_ENV=local`), jalankan `php artisan migrate:fresh --seeder=DemoSeeder`, lalu buka `http://localhost:8000/dev`. Di sana ada tombol "Masuk sebagai Masyarakat/Analis/Kepala Bidang" (login dengan akun demo seeder) dan daftar tautan ke semua halaman per peran, memakai ID kasus dari seeder untuk setiap status. Aturan login dan hak akses tetap berlaku, jadi halaman peran lain tetap ditolak. Jika `DEV_PREVIEW` bukan `true` atau `APP_ENV` bukan `local`, route `/dev` sama sekali tidak terdaftar. Jangan aktifkan di server sungguhan.
 
 Menjalankan test PHPUnit (test BDD ada di bagian [Menjalankan Test BDD](#menjalankan-test-bdd-behat)):
 
@@ -106,8 +109,10 @@ Kebutuhan: Python 3.13.
 cd ml
 python -m venv .venv
 .venv\Scripts\activate                  # macOS/Linux: source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements.txt         # lengkap: latih model, notebook, scraping
 ```
+
+Hanya ingin menjalankan API ML (tanpa paket scraping/OCR seperti `easyocr`)? Pakai `pip install -r requirements-api.txt`. File ini juga dipakai `ml/Dockerfile`.
 
 Model dilatih di `ml/notebooks/LokerLens_Training_Model.ipynb`. Hasilnya `ml/models/model_lokerlens.joblib`. Jangan memasang `Sastrawi`, karena model dilatih tanpa Sastrawi dan API akan menolak menyala kalau Sastrawi terpasang.
 
@@ -250,6 +255,46 @@ Kalau Chrome di port 9222 ternyata headless, mode demo berhenti dengan pesan yan
 
 ---
 
+## Deploy ke Server (Coolify + Docker)
+
+Semua berkas deploy sudah ada di repo:
+
+| Berkas | Isi |
+|---|---|
+| `docker-compose.yml` | Tiga service: `web` (Laravel + Apache), `ml` (API ML), `db` (MySQL 8.4) dalam satu jaringan internal |
+| `web/Dockerfile` | Image web: paket PHP tanpa paket pengembangan, build tampilan (Vite), PHP 8.4 + Apache |
+| `web/docker/entrypoint.sh` | Dijalankan setiap container web mulai: buat folder `storage/`, `storage:link`, `migrate --force` (dicoba ulang sampai database siap), `optimize` |
+| `ml/Dockerfile` | Image API ML: hanya paket di `ml/requirements-api.txt`, uvicorn mendengar di `0.0.0.0:8001` |
+| `web/.env.production.example` | Contoh environment server |
+
+**Langkah di Coolify (sekali saja):**
+
+1. *New Resource* → pilih repo GitHub → build pack **Docker Compose** (file `docker-compose.yml` di root).
+2. Isi **Environment Variables** (contoh nilai di `web/.env.production.example`):
+   - `APP_KEY`: buat di laptop dengan `php artisan key:generate --show` (dari `web/`), salin hasilnya.
+   - `APP_URL`: alamat https, mis. `https://lokerlens.contoh.go.id`.
+   - `DB_PASSWORD` dan `DB_ROOT_PASSWORD`: kata sandi kuat (bebas, tidak perlu dibuat dulu di MySQL).
+   - Opsional: `MAIL_MAILER=smtp` beserta `MAIL_HOST`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM_ADDRESS`. Kalau SMTP belum ada, biarkan kosong: email Lupa Password tidak terkirim (hanya tercatat di log), aplikasi lain tetap jalan.
+3. Atur **domain hanya untuk service `web`** (port 80). Service `ml` dan `db` **jangan** diberi domain atau port: keduanya hanya dihubungi lewat jaringan internal (`http://ml:8001`, host `db`). API ML tidak punya login, jadi tidak boleh terbuka ke internet.
+4. Deploy. Saat container web mulai, migrasi database berjalan otomatis.
+5. Buat akun petugas lewat **Terminal** container `web` di Coolify:
+   ```bash
+   php artisan lokerlens:buat-petugas
+   ```
+   Pilih peran (Analis/Kepala Bidang), lalu ketik nama, email, dan kata sandi (tidak tampil di layar). Akun Masyarakat dibuat sendiri lewat halaman Daftar.
+
+**Hal penting:**
+
+- **Jangan jalankan data demo di server.** `DatabaseSeeder` tidak membuat akun apa pun, dan `DemoSeeder`/`LokerLensSeeder` menolak berjalan jika `APP_ENV=production`. Untuk UAT dengan data contoh, pakai server terpisah dengan `APP_ENV=staging`, lalu `php artisan db:seed --class=DemoSeeder`.
+- **Volume:** `web-storage` (folder `storage/`: berkas bukti, log) dan `db-data` (isi database) tetap ada saat deploy ulang. Jangan dihapus.
+- **Berkas bukti** disimpan di `storage/app/private` dan hanya bisa dibuka Kepala Bidang lewat tombol "Lihat Bukti" (route `/bukti/{id}`), tidak lewat alamat publik.
+- **https:** `TRUSTED_PROXIES=*` membuat Laravel memercayai header dari proxy Coolify, dan `APP_URL` https membuat semua link dan form memakai https.
+- **Kebutuhan RAM (perkiraan):** web ±256 MB, API ML ±150–300 MB, MySQL ±400 MB. Server 2 GB cukup.
+- **Cek kesehatan:** web `GET /up`, API ML `GET /health` (sudah dipakai `HEALTHCHECK` di kedua Dockerfile).
+- Sebelum dipakai, image belum pernah dibangun di laptop tim (Docker belum terpasang). Build pertama di Coolify perlu diperhatikan log-nya.
+
+---
+
 ## Catatan untuk Anggota yang Sudah Clone Sebelumnya
 
 Pada 20 Oktober 2026 (PR #1), aplikasi Laravel dipindah dari root repo ke folder `web/`. Setelah `git pull`:
@@ -257,7 +302,7 @@ Pada 20 Oktober 2026 (PR #1), aplikasi Laravel dipindah dari root repo ke folder
 1. **Pindahkan atau hapus file lokal lama di root.** File-file ini tidak dilacak git, jadi tidak ikut pindah:
    - `vendor/` dan `node_modules/` di root: **hapus**, lalu install ulang di `web/` (`composer install`, `npm install`).
    - `.env` di root: **pindahkan** ke `web/.env`.
-   - `database/database.sqlite` di root: **pindahkan** ke `web/database/` kalau datanya masih dibutuhkan. Kalau tidak, buat baru dengan `php artisan migrate --seed`.
+   - `database/database.sqlite` di root: **pindahkan** ke `web/database/` kalau datanya masih dibutuhkan. Kalau tidak, buat baru dengan `php artisan migrate:fresh --seeder=DemoSeeder`.
 2. **Jangan menjalankan `git add .` di root sebelum langkah 1 selesai.** Aturan `.gitignore` sekarang hanya mengabaikan `web/vendor`, `web/node_modules`, dan `web/.env`, sehingga `vendor/` atau `.env` lama di root bisa ikut ter-commit.
 3. Semua perintah `composer`, `php artisan`, dan `npm` sekarang dijalankan dari dalam `web/`.
 4. Tutup lalu buka ulang folder proyek di VS Code supaya ekstensi PHP mengenali lokasi baru.

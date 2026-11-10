@@ -1,0 +1,31 @@
+# Paket untuk API ML saja (ml/api/app.py), dipakai ml/Dockerfile.
+# Tanpa paket scraping/OCR (easyocr, requests, beautifulsoup4, pillow) dan tanpa pandas.
+# Versi sama dengan ml/requirements.txt, supaya model yang dilatih (scikit-learn 1.8.0)
+# dimuat dengan versi yang sama.
+#
+# Pemakaian lengkap (latih model, notebook, scraping): pip install -r requirements.txt
+
+# Server API
+fastapi==0.143.5
+starlette==1.8.0
+pydantic==2.14.1
+pydantic_core==2.50.1
+annotated-doc==0.0.5
+annotated-types==0.8.0
+typing_extensions==4.16.0
+typing-inspection==0.4.4
+anyio==4.15.1
+idna==3.20
+uvicorn==0.54.0
+h11==0.16.0
+click==8.5.0
+# Dependensi turunan, dikunci supaya image selalu sama
+cloudpickle==3.1.2
+opentelemetry-api==1.45.1
+
+# Model klasifikasi (TF-IDF + Logistic Regression)
+scikit-learn==1.8.0
+scipy==1.18.1
+numpy==2.5.4
+joblib==1.6.0
+threadpoolctl==3.7.0

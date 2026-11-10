@@ -120,6 +120,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/buat-surat/{pengaduanId}/terbit/{suratId}', [BuatSuratController::class, 'terbit'])
             ->name('buat-surat.terbit');
 
+        // Berkas bukti pendukung disimpan di disk private, jadi hanya bisa dibuka lewat route ini
+        Route::get('/bukti/{bukti}', [BuatSuratController::class, 'lihatBukti'])
+            ->name('bukti.lihat');
+
         // Arsip Kasus — /arsip-kasus (Sprint 2 - Issue #15)
         Route::get('/arsip-kasus', [ArsipKasusController::class, 'index'])
             ->name('arsip-kasus.index');

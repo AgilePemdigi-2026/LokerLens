@@ -74,7 +74,7 @@
                                     <span class="block text-[11px] text-mutedtext font-mono">{{ parse_url($item['url'], PHP_URL_PATH) }}</span>
                                 @else
                                     <span class="text-sm text-gray-400">{{ $item['label'] }}</span>
-                                    <span class="block text-[11px] text-risk-mid">Belum ada data. Jalankan <code>php artisan migrate:fresh --seed</code>.</span>
+                                    <span class="block text-[11px] text-risk-mid">Belum ada data. Jalankan <code>php artisan migrate:fresh --seeder=DemoSeeder</code>.</span>
                                 @endif
                                 @if(! empty($item['catatan']))
                                     <span class="block text-[11px] text-risk-mid">{{ $item['catatan'] }}</span>

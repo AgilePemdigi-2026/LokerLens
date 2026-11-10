@@ -21,6 +21,15 @@ return Application::configure(basePath: dirname(__DIR__))
         // halaman awal perannya. Tanpa ini Laravel mengarahkan ke "/" yang kembali
         // ke /login, sehingga pengalihan berputar tanpa henti.
         $middleware->redirectUsersTo(fn (Request $request) => $request->user()->halamanAwal());
+
+        // Server di belakang proxy (Coolify/Traefik): percayai header X-Forwarded-* dari proxy,
+        // supaya Laravel tahu permintaan aslinya https dan membuat link/form dengan https.
+        // TRUSTED_PROXIES: "*" (semua proxy, cocok untuk Coolify) atau daftar IP dipisah koma.
+        // Kosong (laptop pengembang) = tidak ada proxy yang dipercaya.
+        $proxy = env('TRUSTED_PROXIES');
+        if (filled($proxy)) {
+            $middleware->trustProxies(at: $proxy === '*' ? '*' : array_map('trim', explode(',', $proxy)));
+        }
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

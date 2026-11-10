@@ -20,8 +20,12 @@ class HakAksesPeranTest extends TestCase
         return [
             'beranda'         => ['/beranda', 'Masyarakat'],
             'periksa lowongan' => ['/periksa-lowongan', 'Masyarakat'],
+            'riwayat pengaduan' => ['/riwayat-pengaduan', 'Masyarakat'],
+            'dashboard analis'  => ['/dashboard-analis', 'Analis'],
             'tinjau lowongan' => ['/tinjau-lowongan', 'Analis'],
+            'dashboard kepala bidang' => ['/dashboard-kepala-bidang', 'Kepala Bidang'],
             'tindak lanjut'   => ['/tindak-lanjut', 'Kepala Bidang'],
+            'arsip kasus'     => ['/arsip-kasus', 'Kepala Bidang'],
         ];
     }
 

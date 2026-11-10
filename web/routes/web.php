@@ -1,16 +1,17 @@
 <?php
 
+use App\Http\Controllers\ArsipKasusController;
 use App\Http\Controllers\BerandaController;
 use App\Http\Controllers\BuatSuratController;
+use App\Http\Controllers\DashboardAnalisController;
 use App\Http\Controllers\DashboardKepalaBidangController;
 use App\Http\Controllers\PeriksaLowonganController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RiwayatPengaduanController;
 use App\Http\Controllers\StatusPengaduanController;
 use App\Http\Controllers\TindakLanjutController;
 use App\Http\Controllers\TinjauLowonganController;
-use App\Http\Controllers\RiwayatPengaduanController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\DashboardAnalisController;
 
 /*
 |--------------------------------------------------------------------------
@@ -62,7 +63,7 @@ Route::middleware('auth')->group(function () {
             ->name('status-pengaduan.detail');
 
         // Riwayat Pengaduan — /riwayat-pengaduan/ (Sprint 2)
-            Route::get('/riwayat-pengaduan', [RiwayatPengaduanController::class, 'index'])
+        Route::get('/riwayat-pengaduan', [RiwayatPengaduanController::class, 'index'])
             ->name('riwayat-pengaduan.index');
     });
 
@@ -85,10 +86,10 @@ Route::middleware('auth')->group(function () {
     // ── Kepala Bidang ────────────────────────────────────────────────────────
     Route::middleware('role:Kepala Bidang')->group(function () {
 
-            // Dashboard Kepala Bidang — /dashboard-kepala-bidang (Sprint 2, issue #14)
+        // Dashboard Kepala Bidang — /dashboard-kepala-bidang (Sprint 2 - Issue #14)
         Route::get('/dashboard-kepala-bidang', [DashboardKepalaBidangController::class, 'index'])
             ->name('dashboard-kepala-bidang.index');
-            
+
         // Tindak Lanjut — /tindak-lanjut/ (Sprint 1)
         Route::get('/tindak-lanjut', [TindakLanjutController::class, 'index'])
             ->name('tindak-lanjut.index');
@@ -110,6 +111,12 @@ Route::middleware('auth')->group(function () {
             ->name('buat-surat.terbitkan');
         Route::get('/buat-surat/{pengaduanId}/terbit/{suratId}', [BuatSuratController::class, 'terbit'])
             ->name('buat-surat.terbit');
+
+        // Arsip Kasus — /arsip-kasus (Sprint 2 - Issue #15)
+        Route::get('/arsip-kasus', [ArsipKasusController::class, 'index'])
+            ->name('arsip-kasus.index');
+        Route::get('/arsip-kasus/{pengaduan}', [ArsipKasusController::class, 'show'])
+            ->name('arsip-kasus.show');
     });
 
     // ── Profil (semua peran) ─────────────────────────────────────────────────

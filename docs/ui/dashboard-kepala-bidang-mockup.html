@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mockup UI/UX — Dashboard Eksekutif Kepala Bidang (LokerLens)</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'navy-900': '#0b1c2c',
+                        'navy-800': '#1f2d3a',
+                        'teal-600': '#1f8a7a',
+                        'teal-500': '#26a69a',
+                        'teal-400': '#4db6ac',
+                        'teal-300': '#80cbc4',
+                        'steel-600': '#2f5d7c',
+                        'steel-700': '#23465e',
+                        'risk-high': '#c0392b',
+                        'risk-mid': '#d68910',
+                        'ok': '#1e8449',
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+                        serif: ['"Playfair Display"', 'Georgia', 'serif'],
+                    },
+                    borderRadius: {
+                        'card': '12px',
+                        'control': '8px',
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400;1,600;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="font-sans antialiased bg-slate-900 text-gray-100 min-h-screen flex flex-col">
+
+    <!-- Mockup Switcher Bar -->
+    <div class="bg-navy-800 text-xs text-gray-300 py-2 px-4 border-b border-gray-700 flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+            <span class="bg-teal-600 text-white font-bold px-2 py-0.5 rounded text-[10px] uppercase">Mockup UI</span>
+            <span class="font-semibold text-white">Dashboard Eksekutif Kepala Bidang</span>
+            <span class="text-gray-400">| Sesuai Sprint Planning & docs/design.md §3.5</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="text-teal-400">● Role: Kepala Bidang (Rizky Pratama)</span>
+            <span class="text-gray-500">•</span>
+            <span>Target: /dashboard-kepala-bidang</span>
+        </div>
+    </div>
+
+    <!-- Kepala Bidang Navbar -->
+    <nav class="bg-navy-900 border-b border-navy-800 text-white sticky top-0 z-50 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <!-- Brand & Nav Links -->
+                <div class="flex items-center space-x-8">
+                    <a href="#" class="flex items-center space-x-2">
+                        <div class="w-9 h-9 rounded-lg bg-teal-600 flex items-center justify-center text-white shadow-inner">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m-3-3h6"></path>
+                            </svg>
+                        </div>
+                        <span class="text-xl font-bold tracking-tight text-white">
+                            Loker<span class="text-teal-400 font-extrabold">Lens</span>
+                        </span>
+                    </a>
+
+                    <div class="hidden md:flex items-center space-x-1">
+                        <!-- Dashboard Kepala Bidang (ACTIVE) -->
+                        <a href="#" class="px-3 py-2 rounded-md text-sm font-semibold text-teal-400 bg-navy-800 transition">
+                            Dashboard
+                        </a>
+                        <!-- Laporan dengan Badge -->
+                        <a href="#" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-navy-800/60 transition flex items-center gap-2">
+                            <span>Laporan</span>
+                            <span class="bg-risk-high text-white text-xs px-2 py-0.5 rounded-full font-bold">1</span>
+                        </a>
+                        <!-- Pemantauan (Sprint 2) -->
+                        <span class="px-3 py-2 text-sm text-gray-400 cursor-not-allowed flex items-center gap-1.5" title="Fitur Sprint 2">
+                            Pemantauan
+                            <span class="text-[10px] bg-navy-800 border border-gray-700 text-gray-400 px-1.5 py-0.5 rounded">Sprint 2</span>
+                        </span>
+                        <!-- Arsip Kasus (Sprint 2) -->
+                        <span class="px-3 py-2 text-sm text-gray-400 cursor-not-allowed flex items-center gap-1.5" title="Fitur Sprint 2">
+                            Arsip Kasus
+                            <span class="text-[10px] bg-navy-800 border border-gray-700 text-gray-400 px-1.5 py-0.5 rounded">Sprint 2</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- User Profile -->
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-3 p-1.5">
+                        <div class="w-8 h-8 rounded-full bg-teal-600 text-white font-bold flex items-center justify-center text-sm shadow">
+                            R
+                        </div>
+                        <div class="hidden sm:block text-left">
+                            <div class="text-xs uppercase tracking-wider font-semibold text-teal-400 leading-none">Kepala Bidang</div>
+                            <div class="text-sm font-medium text-white">Rizky Pratama</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1 py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-6">
+
+        <!-- 1. HERO BANNER -->
+        <div class="bg-navy-900 border border-navy-800 rounded-2xl p-7 sm:p-10 text-white shadow-2xl relative overflow-hidden">
+            <div class="absolute right-0 top-0 w-80 h-80 bg-teal-600/5 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+                <div>
+                    <p class="text-xs uppercase tracking-widest font-bold text-teal-400 mb-2 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-teal-400 animate-pulse"></span>
+                        PUSAT PENGAMBILAN KEPUTUSAN & PENEGAKAN HUKUM
+                    </p>
+                    <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight leading-tight">
+                        Dashboard <span class="font-serif italic text-teal-300">Kepala Bidang</span>
+                    </h1>
+                    <p class="text-sm text-gray-400 mt-2 max-w-xl leading-relaxed">
+                        Evaluasi laporan terindikasi pidana ketenagakerjaan dari Analis,
+                        tetapkan keputusan tindak lanjut hukum, dan awasi penerbitan laporan kepolisian.
+                    </p>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-3 shrink-0">
+                    <a href="#" class="px-5 py-2.5 bg-teal-600 hover:bg-teal-500 text-white text-sm font-semibold rounded-control shadow transition flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        <span>Buka Antrean Laporan (Keputusan)</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. KARTU STATISTIK UTAMA (4 METRIK TAHAP KEPALA BIDANG) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+            <!-- Card 1: Menunggu Keputusan -->
+            <div class="bg-white rounded-card shadow-md p-5 border-l-4 border-amber-500 text-navy-900 hover:shadow-lg transition">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                        Perlu Keputusan
+                    </span>
+                    <span class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+                        ⚖️
+                    </span>
+                </div>
+                <div class="text-3xl font-black text-navy-900 font-mono">
+                    1
+                </div>
+                <p class="text-xs font-bold text-navy-900 mt-1">Menunggu Keputusan</p>
+                <p class="text-[11px] text-gray-500 mt-0.5">Laporan menunggu evaluasi dan persetujuan</p>
+                <div class="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between text-xs">
+                    <span class="text-gray-400">Prioritas: Tinggi</span>
+                    <a href="#" class="text-teal-600 hover:underline font-semibold">Tindaklanjuti →</a>
+                </div>
+            </div>
+
+            <!-- Card 2: Tindak Lanjut Disetujui -->
+            <div class="bg-white rounded-card shadow-md p-5 border-l-4 border-blue-600 text-navy-900 hover:shadow-lg transition">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                        Eskalasi Hukum
+                    </span>
+                    <span class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+                        📝
+                    </span>
+                </div>
+                <div class="text-3xl font-black text-blue-700 font-mono">
+                    1
+                </div>
+                <p class="text-xs font-bold text-navy-900 mt-1">Tindak Lanjut Disetujui</p>
+                <p class="text-[11px] text-gray-500 mt-0.5">Disetujui untuk pelaporan ke kepolisian</p>
+                <div class="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between text-xs">
+                    <span class="text-gray-400">Tahap: Buat Surat</span>
+                    <a href="#" class="text-teal-600 hover:underline font-semibold">Lihat draf →</a>
+                </div>
+            </div>
+
+            <!-- Card 3: Tidak Ditindaklanjuti -->
+            <div class="bg-white rounded-card shadow-md p-5 border-l-4 border-gray-400 text-navy-900 hover:shadow-lg transition">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-gray-700 bg-gray-100 px-2 py-0.5 rounded border border-gray-200">
+                        Diarsipkan
+                    </span>
+                    <span class="w-8 h-8 rounded-lg bg-gray-100 text-gray-600 flex items-center justify-center font-bold">
+                        📁
+                    </span>
+                </div>
+                <div class="text-3xl font-black text-gray-700 font-mono">
+                    1
+                </div>
+                <p class="text-xs font-bold text-navy-900 mt-1">Tidak Ditindaklanjuti</p>
+                <p class="text-[11px] text-gray-500 mt-0.5">Tidak cukup bukti pidana & diarsipkan</p>
+                <div class="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between text-xs">
+                    <span class="text-gray-400">Status: Ditutup</span>
+                    <span class="text-xs text-gray-500">Arsip</span>
+                </div>
+            </div>
+
+            <!-- Card 4: Selesai / Dokumen Terbit -->
+            <div class="bg-white rounded-card shadow-md p-5 border-l-4 border-ok text-navy-900 hover:shadow-lg transition">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                        Surat Terbit
+                    </span>
+                    <span class="w-8 h-8 rounded-lg bg-emerald-50 text-ok flex items-center justify-center font-bold">
+                        🚔
+                    </span>
+                </div>
+                <div class="text-3xl font-black text-ok font-mono">
+                    1
+                </div>
+                <p class="text-xs font-bold text-navy-900 mt-1">Kasus Selesai</p>
+                <p class="text-[11px] text-gray-500 mt-0.5">Laporan polisi resmi berhasil diterbitkan</p>
+                <div class="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between text-xs">
+                    <span class="text-gray-400">Output: LP Resmi</span>
+                    <span class="text-xs text-gray-500">Selesai</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 3. KONTEN DUA KOLOM -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- Kolom Kiri (2 Kolom): Antrean Keputusan & Kasus Terbaru -->
+            <div class="lg:col-span-2 space-y-6">
+
+                <!-- Kartu Antrean Kasus Menunggu Keputusan -->
+                <div class="bg-white rounded-card shadow-md border border-gray-100 p-6 text-navy-900">
+                    <div class="flex items-center justify-between pb-4 border-b border-gray-100">
+                        <div>
+                            <h2 class="text-lg font-bold text-navy-900 flex items-center gap-2">
+                                <span>Antrean Menunggu Keputusan</span>
+                                <span class="bg-amber-100 text-amber-800 text-xs px-2.5 py-0.5 rounded-full font-bold">
+                                    1 Laporan Mendesak
+                                </span>
+                            </h2>
+                            <p class="text-xs text-gray-500 mt-0.5">
+                                Kasus yang telah diverifikasi Analis dan memerlukan keputusan persetujuan tindak lanjut
+                            </p>
+                        </div>
+                        <a href="#" class="text-xs text-teal-600 font-semibold hover:underline">
+                            Lihat Semua →
+                        </a>
+                    </div>
+
+                    <!-- Item Antrean -->
+                    <div class="divide-y divide-gray-100 mt-2">
+                        <div class="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div class="space-y-1.5 flex-1 min-w-0">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="font-mono text-xs font-bold text-teal-800 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded">
+                                        #LKR-2025-0842
+                                    </span>
+                                    <span class="text-xs text-gray-500">23 Oct 2026</span>
+                                    <span class="bg-amber-50 text-amber-700 border border-amber-200 text-[11px] font-semibold px-2 py-0.5 rounded">
+                                        Menunggu Keputusan
+                                    </span>
+                                </div>
+                                <h3 class="text-sm font-bold text-navy-900">Staff Administrasi Operasional</h3>
+                                <p class="text-xs text-gray-600">PT Maju Sejahtera Energi Nusantara</p>
+                                <p class="text-[11px] text-gray-500 italic bg-gray-50 p-2 rounded border border-gray-200">
+                                    "Berdasarkan investigasi, ditemukan pola permintaan biaya akomodasi interview hotel fiktif. Perlu diteruskan ke Polda."
+                                </p>
+                            </div>
+
+                            <div class="flex items-center justify-between sm:justify-end gap-4 shrink-0">
+                                <div class="text-left sm:text-right">
+                                    <span class="text-xl font-black font-mono text-risk-high">84%</span>
+                                    <span class="block text-[10px] uppercase font-bold text-gray-400">Skor Risiko</span>
+                                </div>
+                                <a href="#" class="px-5 py-2.5 bg-navy-900 hover:bg-navy-800 text-white text-xs font-semibold rounded-control shadow transition whitespace-nowrap">
+                                    Beri Keputusan
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dokumen Surat Resmi yang Diterbitkan -->
+                <div class="bg-white rounded-card shadow-md border border-gray-100 p-6 text-navy-900">
+                    <div class="flex items-center justify-between pb-3 border-b border-gray-100 mb-4">
+                        <h2 class="text-base font-bold text-navy-900">
+                            Dokumen Laporan Kepolisian yang Berhasil Diterbitkan
+                        </h2>
+                        <span class="text-xs text-gray-400 font-medium">1 Surat Terbit</span>
+                    </div>
+
+                    <div class="p-4 bg-emerald-50/50 rounded-control border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2">
+                                <span class="font-mono text-xs font-bold text-emerald-800 bg-white border border-emerald-300 px-2 py-0.5 rounded">
+                                    #LP-2026/POLRI/8770
+                                </span>
+                                <span class="text-xs text-gray-500">•</span>
+                                <span class="text-xs text-gray-500">23 Oct 2026</span>
+                                <span class="bg-emerald-100 text-ok text-[10px] font-bold px-2 py-0.5 rounded uppercase">
+                                    Terbit Resmi
+                                </span>
+                            </div>
+                            <p class="text-xs text-gray-800 font-semibold">
+                                Terlapor: PT Gemilang Karya Persada (Tiket: #LKR-8770)
+                            </p>
+                            <p class="text-[11px] text-gray-600">
+                                Ditujukan ke: Subdit Siber Ditreskrimsus Polda Metro Jaya
+                            </p>
+                        </div>
+                        <span class="text-xs font-bold text-emerald-800 bg-emerald-100 px-3 py-1 rounded-control border border-emerald-300 shrink-0">
+                            Dokumen Sah
+                        </span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Kolom Kanan (1 Kolom): Rasio Keputusan & Panduan Yuridis -->
+            <div class="space-y-6">
+
+                <!-- Distribusi Keputusan Eksekutif -->
+                <div class="bg-white rounded-card shadow-md border border-gray-100 p-6 text-navy-900">
+                    <h2 class="text-base font-bold text-navy-900 pb-3 border-b border-gray-100">
+                        Rasio Keputusan Tindak Lanjut
+                    </h2>
+
+                    <div class="space-y-4 mt-4">
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="font-semibold text-gray-700">Tindak Lanjut Disetujui</span>
+                                <span class="font-bold text-navy-900">67% (2)</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                                <div class="bg-blue-600 h-2.5 rounded-full" style="width: 67%"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="font-semibold text-gray-700">Tidak Ditindaklanjuti</span>
+                                <span class="font-bold text-navy-900">33% (1)</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                                <div class="bg-gray-400 h-2.5 rounded-full" style="width: 33%"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="font-semibold text-gray-700">Surat Polisi Terbit</span>
+                                <span class="font-bold text-navy-900">100% (1 dari 1 disetujui)</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                                <div class="bg-ok h-2.5 rounded-full" style="width: 100%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Prinsip Yuridis Kepala Bidang (docs/design.md §3.5) -->
+                <div class="bg-navy-900 rounded-card shadow-md border border-navy-800 p-6 text-white">
+                    <h2 class="text-base font-bold text-teal-400 mb-2">
+                        Wewenang & Prinsip Keputusan
+                    </h2>
+                    <ul class="text-xs space-y-2.5 text-gray-300">
+                        <li class="flex items-start gap-2">
+                            <span class="w-4 h-4 rounded-full bg-teal-600/30 text-teal-400 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">⚖️</span>
+                            <span><strong>Kewenangan Tunggal:</strong> Penetapan eskalasi pidana ketenagakerjaan hanya berada pada Kepala Bidang (BR-01).</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="w-4 h-4 rounded-full bg-teal-600/30 text-teal-400 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">🔒</span>
+                            <span><strong>Ketegasan Keputusan:</strong> Keputusan yang telah dikonfirmasi bersifat final dan tidak dapat diubah (BR-03).</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="w-4 h-4 rounded-full bg-teal-600/30 text-teal-400 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">📋</span>
+                            <span><strong>Penerbitan Resmi:</strong> Kasus yang disetujui secara otomatis membuka form penerbitan Laporan Polisi (FR-ST-02).</span>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <footer class="bg-navy-900 border-t border-navy-800 text-gray-400 text-xs py-4 text-center mt-auto">
+        LokerLens — Sistem Deteksi Lowongan Kerja Mencurigakan (Pengawasan Pemerintah)
+    </footer>
+
+</body>
+</html>
+

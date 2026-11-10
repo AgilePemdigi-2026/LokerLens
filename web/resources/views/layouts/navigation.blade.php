@@ -48,8 +48,8 @@
                     @elseif(Auth::user()->isKepalaBidang())
                         {{-- Kepala Bidang Navbar (§5.2): Dashboard · Laporan (badge) · Pemantauan · Arsip Kasus --}}
                         <a href="{{ route('dashboard-kepala-bidang.index') }}" class="px-3 py-2 rounded-md text-sm font-medium transition {{ request()->routeIs('dashboard-kepala-bidang.*') ? 'text-teal-400 bg-navy-800 font-semibold' : 'text-gray-300 hover:text-white hover:bg-navy-800/60' }}">
-    Dashboard
-</a>
+                            Dashboard
+                        </a>
                         <a href="{{ route('tindak-lanjut.index') }}" class="px-3 py-2 rounded-md text-sm font-medium transition flex items-center gap-2 {{ request()->routeIs('tindak-lanjut.*') || request()->routeIs('buat-surat.*') ? 'text-teal-400 bg-navy-800 font-semibold' : 'text-gray-300 hover:text-white hover:bg-navy-800/60' }}">
                             <span>Laporan</span>
                             @php
@@ -65,10 +65,9 @@
                             Pemantauan
                             <span class="text-[10px] bg-navy-800 border border-gray-700 text-gray-400 px-1.5 py-0.5 rounded">Sprint 2</span>
                         </span>
-                        <span class="px-3 py-2 text-sm text-gray-400 cursor-not-allowed flex items-center gap-1.5" title="Fitur Sprint 2">
+                        <a href="{{ route('arsip-kasus.index') }}" class="px-3 py-2 rounded-md text-sm font-medium transition {{ request()->routeIs('arsip-kasus.*') ? 'text-teal-400 bg-navy-800 font-semibold' : 'text-gray-300 hover:text-white hover:bg-navy-800/60' }}">
                             Arsip Kasus
-                            <span class="text-[10px] bg-navy-800 border border-gray-700 text-gray-400 px-1.5 py-0.5 rounded">Sprint 2</span>
-                        </span>
+                        </a>
                     @endif
                 </div>
             </div>

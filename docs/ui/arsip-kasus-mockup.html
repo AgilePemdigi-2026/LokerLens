@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mockup UI — Arsip Kasus (Kepala Bidang) — LokerLens</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: {
+                            900: '#0b1c2c',
+                            800: '#1f2d3a',
+                            700: '#2d3f50',
+                        },
+                        teal: {
+                            400: '#2dd4bf',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                        },
+                        risk: {
+                            high: '#c0392b',
+                            mid: '#d97706',
+                            low: '#1e8449',
+                        },
+                        ok: '#1e8449',
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        serif: ['"Playfair Display"', 'serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
+                    borderRadius: {
+                        'card': '12px',
+                        'control': '8px',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans antialiased min-h-screen flex flex-col" x-data="{ view: 'daftar', filterStatus: 'semua', state: 'data' }">
+
+    <!-- Top Bar Mockup Control -->
+    <div class="bg-navy-900 border-b border-navy-800 text-xs text-gray-300 py-2.5 px-4 sm:px-8 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center space-x-2 font-mono">
+            <span class="px-2 py-0.5 rounded bg-teal-500/20 text-teal-300 font-bold">MOCKUP UI</span>
+            <span class="text-white font-semibold">Arsip Kasus — Kepala Bidang</span>
+            <span class="text-gray-400">| Sprint 2</span>
+        </div>
+        <div class="flex items-center gap-3">
+            <span class="text-xs text-gray-400">Tampilan:</span>
+            <button @click="view = 'daftar'" :class="view === 'daftar' ? 'bg-teal-600 text-white' : 'bg-navy-800 text-gray-300 hover:text-white'" class="px-3 py-1 rounded text-xs font-semibold transition">
+                Daftar Arsip
+            </button>
+            <button @click="view = 'detail'" :class="view === 'detail' ? 'bg-teal-600 text-white' : 'bg-navy-800 text-gray-300 hover:text-white'" class="px-3 py-1 rounded text-xs font-semibold transition">
+                Detail Arsip
+            </button>
+            <span class="text-gray-600">|</span>
+            <select x-model="state" class="bg-navy-800 text-teal-300 border border-navy-700 text-xs rounded px-2 py-1">
+                <option value="data">State: Berisi Data</option>
+                <option value="empty">State: Arsip Kosong</option>
+                <option value="filter_nihil">State: Filter Nihil</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Kepala Bidang Navbar -->
+    <nav class="bg-navy-900 border-b border-navy-800 text-white sticky top-0 z-50 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center space-x-8">
+                    <a href="#" class="flex items-center space-x-2">
+                        <div class="w-9 h-9 rounded-lg bg-teal-600 flex items-center justify-center text-white shadow-inner">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m-3-3h6"></path>
+                            </svg>
+                        </div>
+                        <span class="text-xl font-bold tracking-tight text-white">
+                            Loker<span class="text-teal-400 font-extrabold">Lens</span>
+                        </span>
+                    </a>
+
+                    <div class="hidden md:flex items-center space-x-1">
+                        <a href="#" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-navy-800/60 transition">
+                            Dashboard
+                        </a>
+                        <a href="#" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-navy-800/60 transition flex items-center gap-2">
+                            <span>Laporan</span>
+                        </a>
+                        <span class="px-3 py-2 text-sm text-gray-400 cursor-not-allowed flex items-center gap-1.5" title="Fitur Sprint 2">
+                            Pemantauan
+                            <span class="text-[10px] bg-navy-800 border border-gray-700 text-gray-400 px-1.5 py-0.5 rounded">Sprint 2</span>
+                        </span>
+                        <!-- Arsip Kasus ACTIVE -->
+                        <a href="#" class="px-3 py-2 rounded-md text-sm font-semibold text-teal-400 bg-navy-800 transition">
+                            Arsip Kasus
+                        </a>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 rounded-full bg-teal-600 text-white font-bold flex items-center justify-center text-sm shadow">
+                        R
+                    </div>
+                    <div class="hidden sm:block text-left text-xs">
+                        <div class="text-[10px] uppercase tracking-wider font-semibold text-teal-400 leading-none">Kepala Bidang</div>
+                        <div class="text-sm font-medium text-white">Rizky Pratama</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-6">
+
+        <!-- ============================================================== -->
+        <!-- VIEW 1: DAFTAR ARSIP KASUS                                     -->
+        <!-- ============================================================== -->
+        <div x-show="view === 'daftar'" class="space-y-6">
+
+            <!-- 1. Hero Header -->
+            <div class="bg-navy-900 border border-navy-800 rounded-2xl p-7 sm:p-9 text-white shadow-2xl relative overflow-hidden">
+                <div class="absolute right-0 top-0 w-80 h-80 bg-teal-600/5 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+                    <div>
+                        <p class="text-xs uppercase tracking-widest font-bold text-teal-400 mb-2 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-teal-400 animate-pulse"></span>
+                            REPOSITORI PENGAWASAN KETENAGAKERJAAN
+                        </p>
+                        <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight leading-tight">
+                            Arsip <span class="font-serif italic text-teal-300">Kasus Pengawasan</span>
+                        </h1>
+                        <p class="text-sm text-gray-400 mt-2 max-w-xl leading-relaxed">
+                            Dokumentasi permanen seluruh kasus penipuan lowongan kerja yang telah diproses hingga tahap akhir,
+                            termasuk berkas penetapan hukum dan surat laporan kepolisian.
+                        </p>
+                    </div>
+
+                    <!-- Mini Stat Summary Chips -->
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 shrink-0 text-xs">
+                        <div class="p-3 bg-navy-800/80 rounded-xl border border-navy-700">
+                            <span class="text-gray-400 block text-[11px]">Total Kasus</span>
+                            <span class="text-lg font-bold font-mono text-white">3 Kasus</span>
+                        </div>
+                        <div class="p-3 bg-navy-800/80 rounded-xl border border-navy-700">
+                            <span class="text-gray-400 block text-[11px]">Surat Terbit</span>
+                            <span class="text-lg font-bold font-mono text-emerald-400">1 Dokumen</span>
+                        </div>
+                        <div class="p-3 bg-navy-800/80 rounded-xl border border-navy-700 col-span-2 sm:col-span-1">
+                            <span class="text-gray-400 block text-[11px]">Tidak Ditindaklanjuti</span>
+                            <span class="text-lg font-bold font-mono text-amber-400">1 Kasus</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Filter & Pencarian Bar -->
+            <div class="bg-white rounded-card shadow-sm p-4 border border-gray-200 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                    <button class="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-navy-900 text-white shadow-xs">
+                        Semua Status (3)
+                    </button>
+                    <button class="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200 transition">
+                        Selesai (1)
+                    </button>
+                    <button class="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200 transition">
+                        Tidak Ditindaklanjuti (1)
+                    </button>
+                    <button class="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200 transition">
+                        Tidak Terbukti (1)
+                    </button>
+                </div>
+
+                <div class="w-full md:w-80">
+                    <div class="relative">
+                        <input type="text" placeholder="Cari tiket, lowongan, perusahaan, nomor surat..."
+                               class="w-full pl-9 pr-4 py-2 rounded-control border border-gray-300 text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none">
+                        <svg class="w-4 h-4 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Tabel / Daftar Kasus (State: Data) -->
+            <template x-if="state === 'data'">
+                <div class="bg-white rounded-card shadow-md border border-gray-200 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-gray-50 text-gray-500 uppercase tracking-wider font-semibold border-b border-gray-200">
+                                <tr>
+                                    <th class="py-3.5 px-4">Kasus / ID Tiket</th>
+                                    <th class="py-3.5 px-4">Lowongan & Perusahaan</th>
+                                    <th class="py-3.5 px-4">Status Akhir</th>
+                                    <th class="py-3.5 px-4">Dokumen Resmi Terbit</th>
+                                    <th class="py-3.5 px-4">Tanggal Arsip</th>
+                                    <th class="py-3.5 px-4 text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                <!-- Baris 1: Selesai dengan Surat Terbit -->
+                                <tr class="hover:bg-gray-50/80 transition">
+                                    <td class="py-4 px-4">
+                                        <span class="font-mono font-bold text-navy-900 block text-xs">#LKR-8798</span>
+                                        <span class="text-[11px] text-gray-500">Skor Risiko: 95%</span>
+                                    </td>
+                                    <td class="py-4 px-4">
+                                        <span class="font-bold text-navy-900 block">Customer Service</span>
+                                        <span class="text-gray-600">PT Nusantara Cipta Mandiri</span>
+                                    </td>
+                                    <td class="py-4 px-4">
+                                        <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 inline-flex items-center gap-1.5">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                                            Selesai
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-4">
+                                        <span class="font-mono text-teal-800 font-bold block text-xs">#LP-2026/POLRI/8798</span>
+                                        <span class="text-[10px] text-gray-500">Subdit Siber Polda Metro</span>
+                                    </td>
+                                    <td class="py-4 px-4 text-gray-600">
+                                        10 Nov 2026
+                                    </td>
+                                    <td class="py-4 px-4 text-right">
+                                        <button @click="view = 'detail'" class="px-3 py-1.5 rounded bg-navy-900 hover:bg-navy-800 text-white font-semibold transition text-xs shadow-xs">
+                                            Buka Detail →
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <!-- Baris 2: Tidak Ditindaklanjuti -->
+                                <tr class="hover:bg-gray-50/80 transition">
+                                    <td class="py-4 px-4">
+                                        <span class="font-mono font-bold text-navy-900 block text-xs">#LKR-8781</span>
+                                        <span class="text-[11px] text-gray-500">Skor Risiko: 76%</span>
+                                    </td>
+                                    <td class="py-4 px-4">
+                                        <span class="font-bold text-navy-900 block">Operator Produksi</span>
+                                        <span class="text-gray-600">PT Sinar Harapan Jaya</span>
+                                    </td>
+                                    <td class="py-4 px-4">
+                                        <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-gray-100 text-gray-700 border border-gray-300 inline-flex items-center gap-1.5">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-gray-500"></span>
+                                            Tidak Ditindaklanjuti
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-4 text-gray-400 italic">
+                                        - (Tidak Ada Surat)
+                                    </td>
+                                    <td class="py-4 px-4 text-gray-600">
+                                        08 Nov 2026
+                                    </td>
+                                    <td class="py-4 px-4 text-right">
+                                        <button @click="view = 'detail'" class="px-3 py-1.5 rounded bg-navy-900 hover:bg-navy-800 text-white font-semibold transition text-xs shadow-xs">
+                                            Buka Detail →
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <!-- Baris 3: Tidak Terbukti (Ditutup Analis) -->
+                                <tr class="hover:bg-gray-50/80 transition">
+                                    <td class="py-4 px-4">
+                                        <span class="font-mono font-bold text-navy-900 block text-xs">#LKR-8752</span>
+                                        <span class="text-[11px] text-gray-500">Skor Risiko: 73%</span>
+                                    </td>
+                                    <td class="py-4 px-4">
+                                        <span class="font-bold text-navy-900 block">Sales Lapangan</span>
+                                        <span class="text-gray-600">CV Berkah Mitra Niaga</span>
+                                    </td>
+                                    <td class="py-4 px-4">
+                                        <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-300 inline-flex items-center gap-1.5">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                                            Tidak Terbukti
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-4 text-gray-400 italic">
+                                        - (Ditutup Analis)
+                                    </td>
+                                    <td class="py-4 px-4 text-gray-600">
+                                        05 Nov 2026
+                                    </td>
+                                    <td class="py-4 px-4 text-right">
+                                        <button @click="view = 'detail'" class="px-3 py-1.5 rounded bg-navy-900 hover:bg-navy-800 text-white font-semibold transition text-xs shadow-xs">
+                                            Buka Detail →
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="p-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between text-xs text-gray-500">
+                        <span>Menampilkan 1 - 3 dari 3 Kasus Arsip</span>
+                        <div class="flex items-center gap-1">
+                            <button class="px-3 py-1 rounded border border-gray-300 bg-white text-gray-600 font-semibold" disabled>← Sebelumnya</button>
+                            <button class="px-3 py-1 rounded border border-teal-600 bg-teal-600 text-white font-semibold">1</button>
+                            <button class="px-3 py-1 rounded border border-gray-300 bg-white text-gray-600 font-semibold" disabled>Berikutnya →</button>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <!-- State: Kosong (Empty) -->
+            <template x-if="state === 'empty'">
+                <div class="bg-white rounded-card shadow-md border border-gray-200 p-12 text-center text-navy-900 space-y-3">
+                    <div class="w-14 h-14 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center mx-auto text-2xl">
+                        📁
+                    </div>
+                    <h3 class="text-base font-bold text-navy-900">Belum Ada Kasus yang Diarsipkan</h3>
+                    <p class="text-xs text-gray-500 max-w-md mx-auto">
+                        Seluruh laporan yang telah diselesaikan (Selesai, Tidak Ditindaklanjuti, atau Tidak Terbukti) akan disimpan di repositori arsip ini secara otomatis.
+                    </p>
+                </div>
+            </template>
+
+            <!-- State: Filter Nihil -->
+            <template x-if="state === 'filter_nihil'">
+                <div class="bg-white rounded-card shadow-md border border-gray-200 p-12 text-center text-navy-900 space-y-3">
+                    <div class="w-14 h-14 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center mx-auto text-2xl">
+                        🔍
+                    </div>
+                    <h3 class="text-base font-bold text-navy-900">Tidak Ada Kasus Sesuai Pencarian</h3>
+                    <p class="text-xs text-gray-500 max-w-md mx-auto">
+                        Tidak ditemukan kasus arsip yang cocok dengan kata kunci atau filter status yang dipilih.
+                    </p>
+                    <button @click="state = 'data'" class="px-4 py-2 rounded bg-teal-600 text-white font-semibold text-xs transition hover:bg-teal-500">
+                        Reset Filter & Pencarian
+                    </button>
+                </div>
+            </template>
+
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- VIEW 2: DETAIL ARSIP KASUS                                     -->
+        <!-- ============================================================== -->
+        <div x-show="view === 'detail'" class="space-y-6">
+
+            <!-- Breadcrumb -->
+            <div class="flex items-center justify-between text-xs text-gray-500">
+                <div class="flex items-center space-x-2">
+                    <button @click="view = 'daftar'" class="text-teal-700 hover:underline font-bold flex items-center gap-1">
+                        ← Kembali ke Daftar Arsip
+                    </button>
+                    <span>/</span>
+                    <span>Detail Arsip Kasus #LKR-8798</span>
+                </div>
+                <span class="px-2.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[11px] font-bold">
+                    Kasus Ditutup Permanen
+                </span>
+            </div>
+
+            <!-- Header Kasus -->
+            <div class="bg-navy-900 rounded-2xl p-6 sm:p-8 text-white border border-navy-800 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-widest text-teal-400">
+                        REKAM ARSIP PENGAWASAN RESMI
+                    </span>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold mt-1">
+                        Customer Service
+                    </h1>
+                    <p class="text-xs sm:text-sm text-gray-300 mt-1">
+                        Perusahaan Terlapor: <strong class="text-white">PT Nusantara Cipta Mandiri</strong> • ID Kasus: <span class="font-mono text-teal-300">#LKR-8798</span>
+                    </p>
+                </div>
+                <div class="shrink-0 text-left md:text-right">
+                    <span class="text-xs text-gray-400 block mb-1">Status Akhir</span>
+                    <span class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 inline-block">
+                        Selesai — Surat Polisi Terbit
+                    </span>
+                </div>
+            </div>
+
+            <!-- Grid 2 Kolom: Rekapitulasi Hukum & Riwayat Perjalanan Kasus -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                <!-- Kolom Kiri (2 Kolom): Penetapan Keputusan & Surat Terbit -->
+                <div class="lg:col-span-2 space-y-6">
+
+                    <!-- Dokumen Surat Resmi Terbit -->
+                    <div class="bg-white rounded-card shadow-md border border-gray-200 p-6 text-navy-900 space-y-4">
+                        <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+                            <h2 class="text-base font-bold text-navy-900 flex items-center gap-2">
+                                <span class="text-lg">🚔</span>
+                                <span>Dokumen Surat Resmi yang Diterbitkan</span>
+                            </h2>
+                            <span class="text-xs bg-emerald-50 text-emerald-700 px-2.5 py-0.5 rounded font-bold border border-emerald-200">
+                                Terbit Resmi
+                            </span>
+                        </div>
+
+                        <div class="p-4 bg-teal-50/50 rounded-xl border border-teal-200 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                            <div>
+                                <span class="text-gray-500 block">Nomor Surat:</span>
+                                <strong class="font-mono text-teal-900 text-sm">#LP-2026/POLRI/8798</strong>
+                            </div>
+                            <div>
+                                <span class="text-gray-500 block">Jenis Dokumen:</span>
+                                <strong class="text-navy-900">Laporan Polisi (Eskalasi Pidana)</strong>
+                            </div>
+                            <div>
+                                <span class="text-gray-500 block">Instansi Tujuan:</span>
+                                <span class="text-navy-900 font-medium">Subdit Siber Ditreskrimsus Polda Metro Jaya</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-500 block">Tanggal Terbit:</span>
+                                <span class="text-navy-900 font-medium">10 November 2026, 14:30 WIB</span>
+                            </div>
+                            <div class="sm:col-span-2 pt-2 border-t border-teal-200">
+                                <span class="text-gray-500 block mb-1">Kronologi Kejadian Resmi:</span>
+                                <p class="text-gray-800 leading-relaxed italic bg-white p-3 rounded border border-teal-100 text-xs">
+                                    "Pelapor diminta membayar biaya seragam sebesar Rp300.000 dan diundang interview di hotel fiktif tanpa proses seleksi resmi."
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-end">
+                            <a href="#" class="px-4 py-2 bg-navy-900 hover:bg-navy-800 text-white text-xs font-bold rounded-control transition flex items-center gap-1.5 shadow-sm">
+                                <span>Buka Lembar Surat Resmi</span>
+                                <span>↗</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Ringkasan Penetapan Eksekutif -->
+                    <div class="bg-white rounded-card shadow-md border border-gray-200 p-6 text-navy-900 space-y-4">
+                        <h2 class="text-base font-bold text-navy-900 border-b border-gray-100 pb-3">
+                            Penetapan Keputusan Eksekutif
+                        </h2>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                            <div>
+                                <span class="text-gray-500 block">Keputusan Kepala Bidang:</span>
+                                <span class="font-bold text-teal-700 text-sm">Tindaklanjuti</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-500 block">Pejabat Pengambil Keputusan:</span>
+                                <span class="font-semibold text-navy-900">Rizky Pratama (Kepala Bidang)</span>
+                            </div>
+                            <div class="sm:col-span-2">
+                                <span class="text-gray-500 block mb-1">Catatan Keputusan:</span>
+                                <p class="text-gray-700 bg-gray-50 p-3 rounded border border-gray-200 leading-relaxed italic">
+                                    "Terindikasi kuat tindak pidana penipuan rekrutmen tenaga kerja. Disetujui pembuatan Laporan Polisi ke Korwas PPNS Kepolisian RI."
+                                </p>
+                            </div>
+                            <div class="sm:col-span-2">
+                                <span class="text-gray-500 block mb-1">Catatan Hasil Audit Analis:</span>
+                                <p class="text-gray-700 bg-gray-50 p-3 rounded border border-gray-200 leading-relaxed italic">
+                                    "Permintaan biaya seragam dan lokasi interview di hotel. Perusahaan tidak terdaftar di database AHU Kemenkumham."
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Kutipan Deskripsi Lowongan -->
+                    <div class="bg-white rounded-card shadow-md border border-gray-200 p-6 text-navy-900 space-y-3">
+                        <h2 class="text-base font-bold text-navy-900 border-b border-gray-100 pb-3">
+                            Informasi Lowongan yang Dilaporkan
+                        </h2>
+                        <div class="text-xs space-y-2">
+                            <div>
+                                <span class="text-gray-500 block">Kutipan Deskripsi Lowongan:</span>
+                                <div class="bg-gray-50 p-3 rounded border border-gray-200 text-gray-800 leading-relaxed font-sans max-h-40 overflow-y-auto mt-1">
+                                    Customer service dengan gaji Rp10 juta tanpa pengalaman. Wajib membayar biaya seragam Rp300.000 dan interview di hotel.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Kolom Kanan (1 Kolom): Garis Waktu Riwayat Kasus (BR-11) -->
+                <div class="space-y-6">
+
+                    <div class="bg-white rounded-card shadow-md border border-gray-200 p-6 text-navy-900 space-y-4">
+                        <div class="border-b border-gray-100 pb-3">
+                            <h2 class="text-sm font-bold text-navy-900">
+                                Garis Waktu Riwayat Kasus
+                            </h2>
+                            <p class="text-[11px] text-gray-500 mt-0.5">
+                                Jejak audit kronologis perubahan status (BR-11)
+                            </p>
+                        </div>
+
+                        <!-- Vertical Timeline -->
+                        <div class="relative pl-6 space-y-6 before:content-[''] before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-200">
+
+                            <!-- Step 5: Selesai -->
+                            <div class="relative">
+                                <div class="absolute -left-6 top-0 w-4 h-4 rounded-full bg-emerald-600 border-2 border-white shadow"></div>
+                                <span class="text-[10px] text-gray-400 block font-mono">10 Nov 2026, 14:30 WIB</span>
+                                <strong class="text-xs text-navy-900 block font-bold">Kasus Selesai</strong>
+                                <p class="text-[11px] text-gray-600 mt-0.5">Laporan Polisi berhasil diterbitkan. Kasus terdokumentasi otomatis ke arsip.</p>
+                            </div>
+
+                            <!-- Step 4: Tindak Lanjut Disetujui -->
+                            <div class="relative">
+                                <div class="absolute -left-6 top-0 w-4 h-4 rounded-full bg-teal-500 border-2 border-white shadow"></div>
+                                <span class="text-[10px] text-gray-400 block font-mono">10 Nov 2026, 11:00 WIB</span>
+                                <strong class="text-xs text-navy-900 block font-bold">Tindak Lanjut Disetujui</strong>
+                                <p class="text-[11px] text-gray-600 mt-0.5">Keputusan Kepala Bidang: Tindaklanjuti. Kasus dilanjutkan ke tahap pembuatan surat.</p>
+                            </div>
+
+                            <!-- Step 3: Menunggu Keputusan -->
+                            <div class="relative">
+                                <div class="absolute -left-6 top-0 w-4 h-4 rounded-full bg-amber-500 border-2 border-white shadow"></div>
+                                <span class="text-[10px] text-gray-400 block font-mono">09 Nov 2026, 16:20 WIB</span>
+                                <strong class="text-xs text-navy-900 block font-bold">Menunggu Keputusan</strong>
+                                <p class="text-[11px] text-gray-600 mt-0.5">Tinjauan Analis selesai: Terkonfirmasi Mencurigakan. Diteruskan ke Kepala Bidang.</p>
+                            </div>
+
+                            <!-- Step 2: Sedang Ditinjau -->
+                            <div class="relative">
+                                <div class="absolute -left-6 top-0 w-4 h-4 rounded-full bg-blue-500 border-2 border-white shadow"></div>
+                                <span class="text-[10px] text-gray-400 block font-mono">08 Nov 2026, 09:15 WIB</span>
+                                <strong class="text-xs text-navy-900 block font-bold">Sedang Ditinjau</strong>
+                                <p class="text-[11px] text-gray-600 mt-0.5">Analis mulai meninjau dan memverifikasi indikator kecurangan.</p>
+                            </div>
+
+                            <!-- Step 1: Perlu Tinjauan -->
+                            <div class="relative">
+                                <div class="absolute -left-6 top-0 w-4 h-4 rounded-full bg-gray-400 border-2 border-white shadow"></div>
+                                <span class="text-[10px] text-gray-400 block font-mono">07 Nov 2026, 10:00 WIB</span>
+                                <strong class="text-xs text-navy-900 block font-bold">Perlu Tinjauan</strong>
+                                <p class="text-[11px] text-gray-600 mt-0.5">Tiket diterima sistem dari pemeriksaan masyarakat dengan probabilitas tinggi (95%).</p>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Metadata Arsip -->
+                    <div class="bg-gray-50 rounded-card p-4 border border-gray-200 text-xs text-gray-600 space-y-2">
+                        <div class="font-bold text-navy-900">Integritas Data Arsip</div>
+                        <p class="text-[11px] text-gray-500 leading-relaxed">
+                            Data arsip ini bersifat <em>read-only</em> dan dilindungi integritasnya sesuai prinsip BR-11 (riwayat kasus tidak dapat dihapus atau diubah setelah kasus ditutup).
+                        </p>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-navy-900 border-t border-navy-800 py-4 px-6 text-xs text-gray-400 mt-auto">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
+            <div>&copy; 2026 LokerLens &bull; Repositori Arsip Pengawasan Ketenagakerjaan</div>
+            <div class="text-teal-400">Pusat Rekam Mediasi &amp; Penegakan Hukum</div>
+        </div>
+    </footer>
+
+</body>
+</html>

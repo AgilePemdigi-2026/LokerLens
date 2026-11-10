@@ -28,3 +28,24 @@ body {
 .font-serif-display {
   font-family: 'Playfair Display', serif;
 }
+
+/* Tampilan cetak "Cetak Tanda Terima" (Data Mockup Gambar 2.16).
+   Saat dicetak: navbar, footer, dan tombol (.no-print) disembunyikan,
+   halaman (.print-page) dicetak polos di kertas putih. */
+@media print {
+  nav,
+  footer,
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: #ffffff !important;
+  }
+
+  .print-page {
+    box-shadow: none !important;
+    border: 0 !important;
+    padding: 0 !important;
+  }
+}

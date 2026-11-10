@@ -6,7 +6,8 @@
             $tindakLanjut = $pengaduan->tindakLanjutKasus;
         @endphp
 
-        <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-10 text-navy-900 border border-gray-100 animate-fadeIn space-y-8">
+        {{-- print-page: area yang dicetak saat menekan "Cetak Tanda Terima" (lihat resources/css/app.css) --}}
+        <div class="print-page bg-white rounded-2xl shadow-2xl p-6 sm:p-10 text-navy-900 border border-gray-100 animate-fadeIn space-y-8">
             <!-- Icon Sukses Besar -->
             <div class="text-center">
                 <div class="w-16 h-16 rounded-full bg-emerald-100 text-risk-low flex items-center justify-center mx-auto mb-4 shadow">
@@ -106,7 +107,8 @@
             </div>
 
             <!-- Tombol Aksi: Cetak Tanda Terima, Kembali ke Laporan, Lihat Arsip Kasus (Bagian 6.6 & 9) -->
-            <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+            <!-- no-print: tombol tidak ikut tercetak -->
+            <div class="no-print flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
                 <button type="button" onclick="window.print()"
                     class="w-full sm:w-auto px-5 py-2.5 rounded-control border border-gray-300 bg-white text-gray-800 hover:bg-gray-50 text-xs font-semibold shadow transition flex items-center justify-center space-x-1.5">
                     <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>

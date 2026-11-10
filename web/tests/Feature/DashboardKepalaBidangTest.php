@@ -155,7 +155,10 @@ class DashboardKepalaBidangTest extends TestCase
         $this->assertTrue(
             $daftar->every(fn ($p) => $p->status_pengaduan->value === 'Menunggu Keputusan')
         );
-        $response->assertDontSee('#DAFTAR-SELESAI');
+        $this->assertNotContains('#DAFTAR-SELESAI', $daftar->pluck('nomor_tiket'));
+
+        // Kasus Selesai boleh tampil di halaman, tapi hanya di panel "Keputusan terbaru" (PR #58)
+        $this->assertContains('#DAFTAR-SELESAI', $response->viewData('keputusanTerbaru')->pluck('nomor_tiket'));
     }
 
     public function test_daftar_menunggu_keputusan_kosong_menampilkan_pesan(): void

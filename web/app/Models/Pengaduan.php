@@ -109,6 +109,17 @@ class Pengaduan extends Model
     }
 
     /**
+     * Kebalikan scopeAktif: pengaduan yang statusnya sudah akhir.
+     * Dipakai di Riwayat Pengaduan (#25).
+     */
+    public function scopeSudahSelesai($query)
+    {
+        $statusAkhir = array_filter(StatusKasus::cases(), fn (StatusKasus $status) => $status->isAkhir());
+
+        return $query->whereIn('status_pengaduan', array_map(fn (StatusKasus $status) => $status->value, $statusAkhir));
+    }
+
+    /**
      * Progres 5 tahap penanganan untuk ditampilkan ke Masyarakat (lihat App\Support\ProgresPengaduan).
      */
     public function progres(): ProgresPengaduan

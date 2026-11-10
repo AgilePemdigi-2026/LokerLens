@@ -9,8 +9,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 /**
- * Controller Riwayat Pengaduan (SRS 3.1.3, Appendix C no. 7).
+ * Controller Riwayat Pengaduan (SRS 3.1.3, Appendix C no. 7, revisi issue #25).
  * Khusus Masyarakat — menampilkan riwayat pengaduan milik sendiri (NFR-SEC-05).
+ * Hanya pengaduan yang statusnya sudah akhir (StatusKasus::isAkhir). Pengaduan yang
+ * masih berjalan, termasuk "Menunggu klasifikasi", dipantau di Status Pengaduan.
  */
 class RiwayatPengaduanController extends Controller
 {
@@ -18,9 +20,13 @@ class RiwayatPengaduanController extends Controller
     {
         $userId = Auth::id();
 
-        // Query dasar pengaduan milik pengguna yang sedang login
+        // Pilihan filter status = status akhir saja (Selesai - Risiko Rendah, Tidak Terbukti, Tidak Ditindaklanjuti, Selesai)
+        $pilihanStatus = array_values(array_filter(StatusKasus::cases(), fn (StatusKasus $status) => $status->isAkhir()));
+
+        // Query dasar pengaduan selesai milik pengguna yang sedang login
         $query = Pengaduan::with(['lowonganKerja.perusahaan', 'hasilKlasifikasi'])
-            ->where('id_pengguna', $userId);
+            ->where('id_pengguna', $userId)
+            ->sudahSelesai();
 
         // Filter pencarian: nomor tiket, posisi lowongan, atau nama perusahaan
         if ($cari = $request->filled('cari') ? trim($request->query('cari')) : null) {
@@ -35,9 +41,10 @@ class RiwayatPengaduanController extends Controller
             });
         }
 
-        // Filter status pengaduan
-        if ($status = $request->filled('status') ? $request->query('status') : null) {
-            $query->where('status_pengaduan', $status);
+        // Filter status: hanya status akhir yang diterima, nilai lain diabaikan
+        $status = StatusKasus::tryFrom((string) $request->query('status'));
+        if ($status && $status->isAkhir()) {
+            $query->where('status_pengaduan', $status->value);
         }
 
         // Urutkan dari yang terbaru dan paginasi 10 per halaman
@@ -45,30 +52,15 @@ class RiwayatPengaduanController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        // Hitung statistik untuk banner ringkasan (dari semua pengaduan milik pengguna)
-        $statusSelesai = [
-            StatusKasus::Selesai->value,
-            StatusKasus::SelesaiRisikoRendah->value,
-            StatusKasus::TidakTerbukti->value,
-            StatusKasus::TidakDitindaklanjuti->value,
-        ];
-
-        $statusSedangBerjalan = [
-            StatusKasus::PerluTinjauan->value,
-            StatusKasus::SedangDitinjau->value,
-            StatusKasus::MenungguKeputusan->value,
-            StatusKasus::TindakLanjutDisetujui->value,
-        ];
-
-        $sedangBerjalan = Pengaduan::where('id_pengguna', $userId)
-            ->whereIn('status_pengaduan', $statusSedangBerjalan)
+        // Statistik banner (dari semua pengaduan selesai milik pengguna, tanpa filter):
+        //   Ditindaklanjuti = status Selesai (surat resmi terbit)
+        //   Ditutup         = status akhir lainnya
+        $totalSelesai = Pengaduan::where('id_pengguna', $userId)->sudahSelesai()->count();
+        $ditindaklanjuti = Pengaduan::where('id_pengguna', $userId)
+            ->where('status_pengaduan', StatusKasus::Selesai->value)
             ->count();
+        $ditutup = $totalSelesai - $ditindaklanjuti;
 
-        $selesai = Pengaduan::where('id_pengguna', $userId)
-            ->whereIn('status_pengaduan', $statusSelesai)
-            ->count();
-
-        return view('riwayat-pengaduan.index', compact('pengaduan', 'sedangBerjalan', 'selesai'));
+        return view('riwayat-pengaduan.index', compact('pengaduan', 'pilihanStatus', 'totalSelesai', 'ditindaklanjuti', 'ditutup'));
     }
 }
-

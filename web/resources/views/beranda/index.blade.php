@@ -88,7 +88,7 @@
                             <span class="text-xs font-mono font-bold text-teal-600 bg-teal-50 px-2.5 py-1 rounded">03</span>
                             <h3 class="text-lg font-bold text-navy-900 mt-3">Riwayat Pengaduan</h3>
                             <p class="text-xs text-gray-600 mt-1.5 leading-relaxed">
-                                Melihat kembali rekam jejak laporan yang pernah Anda ajukan dan hasil verifikasi dokumen resminya.
+                                {{ \App\Constants\LokerLensCopy::BERANDA_KARTU_RIWAYAT }}
                             </p>
                         </div>
                         <a href="{{ route('riwayat-pengaduan.index') }}" class="mt-6 inline-flex items-center text-xs font-bold text-teal-600 hover:text-teal-700 gap-1">
@@ -171,42 +171,6 @@
                     @endforeach
                 </div>
             @endif
-        </div>
-
-        <!-- 4. Empat Tahap Penanganan (Bagian 7.1) -->
-        <div class="bg-navy-900 border border-navy-800 rounded-2xl p-8 sm:p-10 text-white shadow-xl">
-            <div class="mb-8">
-                <p class="text-xs uppercase tracking-widest font-bold text-teal-400 mb-1">
-                    ALUR PROSES PENGADUAN
-                </p>
-                <h2 class="text-2xl font-bold tracking-tight">
-                    Dari laporan masuk hingga hasil penanganan.
-                </h2>
-                <p class="text-xs text-gray-400 mt-1">Setiap laporan memiliki rekam jejak digital yang transparan dan dapat dipertanggungjawabkan.</p>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                <div class="bg-navy-800/60 p-4 rounded-xl border border-navy-700">
-                    <span class="text-xs font-mono font-bold text-teal-400 block mb-2">01</span>
-                    <h4 class="text-sm font-bold text-white">Ajukan Pengaduan</h4>
-                    <p class="text-xs text-gray-400 mt-1 leading-relaxed">Masyarakat mengisi informasi lowongan dan mengunggah bukti pendukung.</p>
-                </div>
-                <div class="bg-navy-800/60 p-4 rounded-xl border border-navy-700">
-                    <span class="text-xs font-mono font-bold text-teal-400 block mb-2">02</span>
-                    <h4 class="text-sm font-bold text-white">Pemeriksaan Laporan</h4>
-                    <p class="text-xs text-gray-400 mt-1 leading-relaxed">Sistem AI memindai anomali dan analis melakukan audit investigasi manual.</p>
-                </div>
-                <div class="bg-navy-800/60 p-4 rounded-xl border border-navy-700">
-                    <span class="text-xs font-mono font-bold text-teal-400 block mb-2">03</span>
-                    <h4 class="text-sm font-bold text-white">Pemantauan Status</h4>
-                    <p class="text-xs text-gray-400 mt-1 leading-relaxed">Pelapor dapat memantau posisi alur kasus secara real-time di sistem.</p>
-                </div>
-                <div class="bg-navy-800/60 p-4 rounded-xl border border-navy-700">
-                    <span class="text-xs font-mono font-bold text-teal-400 block mb-2">04</span>
-                    <h4 class="text-sm font-bold text-white">Hasil Penanganan</h4>
-                    <p class="text-xs text-gray-400 mt-1 leading-relaxed">Kepala Bidang menetapkan disposisi atau menerbitkan laporan polisi resmi.</p>
-                </div>
-            </div>
         </div>
     </div>
 </x-app-layout>

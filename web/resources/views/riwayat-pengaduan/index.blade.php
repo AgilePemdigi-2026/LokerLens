@@ -1,3 +1,6 @@
+@use('App\Constants\LokerLensCopy')
+
+{{-- Riwayat Pengaduan — hanya pengaduan yang statusnya sudah akhir (issue #25). --}}
 <x-app-layout>
     <div class="space-y-6 py-2">
 
@@ -19,30 +22,29 @@
                         Riwayat <span class="font-serif italic text-teal-300">Pengaduan</span>
                     </h1>
                     <p class="text-sm text-gray-400 mt-2 max-w-lg leading-relaxed">
-                        Daftar seluruh pengaduan lowongan kerja mencurigakan yang pernah Anda ajukan
-                        beserta hasil pemeriksaan dan status akhirnya.
+                        {{ LokerLensCopy::RIWAYAT_HERO_DESKRIPSI }}
                     </p>
                 </div>
 
-                {{-- Kartu Statistik Ringkasan (3 metrik) --}}
+                {{-- Kartu Statistik Ringkasan: Total Selesai = Ditindaklanjuti (Selesai) + Ditutup (status akhir lain) --}}
                 <div class="grid grid-cols-3 gap-3 shrink-0">
                     <div class="bg-navy-800/80 border border-navy-700 rounded-xl p-4 text-center min-w-[90px]">
                         <p class="text-2xl font-extrabold text-white">
-                            {{ $pengaduan->total() }}
+                            {{ $totalSelesai }}
                         </p>
-                        <p class="text-[10px] text-gray-400 uppercase tracking-wider mt-1 leading-tight">Total Laporan</p>
-                    </div>
-                    <div class="bg-navy-800/80 border border-navy-700 rounded-xl p-4 text-center min-w-[90px]">
-                        <p class="text-2xl font-extrabold text-teal-300">
-                            {{ $sedangBerjalan }}
-                        </p>
-                        <p class="text-[10px] text-gray-400 uppercase tracking-wider mt-1 leading-tight">Sedang Berjalan</p>
+                        <p class="text-[10px] text-gray-400 uppercase tracking-wider mt-1 leading-tight">{{ LokerLensCopy::RIWAYAT_STAT_TOTAL }}</p>
                     </div>
                     <div class="bg-navy-800/80 border border-navy-700 rounded-xl p-4 text-center min-w-[90px]">
                         <p class="text-2xl font-extrabold text-emerald-400">
-                            {{ $selesai }}
+                            {{ $ditindaklanjuti }}
                         </p>
-                        <p class="text-[10px] text-gray-400 uppercase tracking-wider mt-1 leading-tight">Selesai</p>
+                        <p class="text-[10px] text-gray-400 uppercase tracking-wider mt-1 leading-tight">{{ LokerLensCopy::RIWAYAT_STAT_DITINDAKLANJUTI }}</p>
+                    </div>
+                    <div class="bg-navy-800/80 border border-navy-700 rounded-xl p-4 text-center min-w-[90px]">
+                        <p class="text-2xl font-extrabold text-gray-300">
+                            {{ $ditutup }}
+                        </p>
+                        <p class="text-[10px] text-gray-400 uppercase tracking-wider mt-1 leading-tight">{{ LokerLensCopy::RIWAYAT_STAT_DITUTUP }}</p>
                     </div>
                 </div>
             </div>
@@ -72,12 +74,12 @@
                                   placeholder:text-gray-400 text-navy-900 bg-gray-50 transition">
                 </div>
 
-                {{-- Filter Status --}}
+                {{-- Filter Status: hanya 4 status akhir (disiapkan controller) --}}
                 <select name="status"
                         class="text-sm border border-gray-200 rounded-lg px-3 py-2.5 text-navy-900 bg-gray-50
                                focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-200 transition">
-                    <option value="">Semua Status</option>
-                    @foreach(\App\Enums\StatusKasus::cases() as $status)
+                    <option value="">{{ LokerLensCopy::RIWAYAT_SEMUA_STATUS }}</option>
+                    @foreach($pilihanStatus as $status)
                         <option value="{{ $status->value }}"
                                 {{ request('status') === $status->value ? 'selected' : '' }}>
                             {{ $status->value }}
@@ -119,23 +121,23 @@
              DAFTAR PENGADUAN — Daftar kartu responsif / kondisi kosong
         ============================================================ --}}
         <div>
-            {{-- Label jumlah hasil --}}
+            {{-- Label jumlah hasil. Angka berwarna terang karena latar halaman gelap
+                 (sebelumnya navy sehingga angkanya tidak terlihat). --}}
             @if(request('cari') || request('status'))
-                <p class="text-xs text-gray-500 mb-3 px-1">
-                    Menampilkan <strong class="text-navy-900">{{ $pengaduan->total() }}</strong>
+                <p id="label-jumlah-riwayat" class="text-xs text-gray-400 mb-3 px-1">
+                    Menampilkan <strong class="text-white">{{ $pengaduan->total() }}</strong>
                     hasil
-                    @if(request('cari')) untuk "<strong class="text-navy-900">{{ request('cari') }}</strong>"@endif
-                    @if(request('status')) dengan status <strong class="text-navy-900">{{ request('status') }}</strong>@endif
+                    @if(request('cari')) untuk "<strong class="text-white">{{ request('cari') }}</strong>"@endif
+                    @if(request('status')) dengan status <strong class="text-white">{{ request('status') }}</strong>@endif
                 </p>
             @else
-                <p class="text-xs text-gray-500 mb-3 px-1">
-                    Menampilkan semua pengaduan · <strong class="text-navy-900">{{ $pengaduan->total() }}</strong> total laporan
+                <p id="label-jumlah-riwayat" class="text-xs text-gray-400 mb-3 px-1">
+                    {{ LokerLensCopy::RIWAYAT_MENAMPILKAN_SEMUA }} · <strong class="text-white">{{ $pengaduan->total() }}</strong> {{ LokerLensCopy::RIWAYAT_SATUAN_PENGADUAN }}
                 </p>
             @endif
 
             {{-- ======================================================
-                 KONDISI KOSONG — Teks Wajib SRS: "Belum ada pengaduan yang diajukan"
-                 (LokerLensCopy::BELUM_ADA_PENGADUAN)
+                 KONDISI KOSONG — belum ada pengaduan selesai, atau pencarian tidak cocok
             ====================================================== --}}
             @if($pengaduan->isEmpty())
                 <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-12 sm:p-16 text-center">
@@ -160,18 +162,17 @@
                             ← Lihat Semua Pengaduan
                         </a>
                     @else
-                        {{-- Teks wajib BDD — LokerLensCopy::BELUM_ADA_PENGADUAN --}}
+                        {{-- Belum ada pengaduan selesai: arahkan ke Status Pengaduan --}}
                         <h2 class="text-base font-bold text-navy-900">
-                            {{ \App\Constants\LokerLensCopy::BELUM_ADA_PENGADUAN }}
+                            {{ LokerLensCopy::BELUM_ADA_PENGADUAN_SELESAI }}
                         </h2>
-                        <p class="text-sm text-gray-500 mt-1.5 mb-6 max-w-xs mx-auto leading-relaxed">
-                            Anda belum memiliki riwayat pengaduan lowongan kerja mencurigakan.
-                            Mulai laporan pertama Anda sekarang.
+                        <p class="text-sm text-gray-500 mt-1.5 mb-6 max-w-sm mx-auto leading-relaxed">
+                            {{ LokerLensCopy::BELUM_ADA_PENGADUAN_SELESAI_KETERANGAN }}
                         </p>
-                        <a href="{{ route('periksa-lowongan.index') }}"
+                        <a href="{{ route('status-pengaduan.index') }}"
                            class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-navy-900
                                   hover:bg-navy-800 text-white text-sm font-semibold shadow transition">
-                            <span>Ajukan Pengaduan Sekarang</span>
+                            <span>{{ LokerLensCopy::BTN_PANTAU_STATUS }}</span>
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                       d="M14 5l7 7m0 0l-7 7m7-7H3"/>
@@ -253,12 +254,12 @@
                                     </span>
                                 </div>
 
-                                {{-- Kolom Kanan: Skor & Tombol Lihat Hasil --}}
+                                {{-- Kolom Kanan: Skor & Tombol Lihat Detail / Lihat Hasil --}}
                                 <div class="flex flex-row sm:flex-col items-center sm:items-end gap-3 sm:gap-2 shrink-0">
                                     @if($score !== null)
                                         <div class="text-right">
                                             <p class="text-[10px] uppercase tracking-widest font-semibold text-gray-400 leading-none">
-                                                KEYAKINAN SISTEM
+                                                {{ LokerLensCopy::LABEL_SKOR_RISIKO }}
                                             </p>
                                             <p class="text-2xl font-extrabold text-navy-900 leading-tight mt-0.5">
                                                 {{ $score }}<span class="text-sm font-bold text-gray-500">%</span>
@@ -271,16 +272,24 @@
                                         <span class="text-xs text-gray-400 italic">Belum diproses</span>
                                     @endif
 
-                                    <a href="{{ route('periksa-lowongan.hasil', $item->id_pengaduan) }}"
-                                       class="mt-auto inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-gray-200
-                                              hover:border-teal-400 hover:text-teal-700 hover:bg-teal-50 text-xs font-semibold
-                                              text-gray-700 transition group-hover:border-teal-300 whitespace-nowrap">
-                                        <span>Lihat Hasil</span>
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                  d="M14 5l7 7m0 0l-7 7m7-7H3"/>
-                                        </svg>
-                                    </a>
+                                    <div class="mt-auto flex items-center gap-2">
+                                        {{-- Detail progres penanganan (halaman Status Pengaduan) --}}
+                                        <a href="{{ route('status-pengaduan.detail', $item->id_pengaduan) }}"
+                                           class="inline-flex items-center px-4 py-2 rounded-lg bg-navy-900 hover:bg-navy-800
+                                                  text-white text-xs font-semibold transition whitespace-nowrap">
+                                            {{ LokerLensCopy::BTN_LIHAT_DETAIL }}
+                                        </a>
+                                        <a href="{{ route('periksa-lowongan.hasil', $item->id_pengaduan) }}"
+                                           class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-gray-200
+                                                  hover:border-teal-400 hover:text-teal-700 hover:bg-teal-50 text-xs font-semibold
+                                                  text-gray-700 transition group-hover:border-teal-300 whitespace-nowrap">
+                                            <span>Lihat Hasil</span>
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                      d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                                            </svg>
+                                        </a>
+                                    </div>
                                 </div>
 
                             </div>

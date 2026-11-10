@@ -85,6 +85,16 @@ class FormPeriksaDanLoginTest extends TestCase
         $this->get('/login')->assertOk();
     }
 
+    public function test_login_tidak_menampilkan_kotak_akun_demo(): void
+    {
+        // Dulu kotak ini hanya muncul di env local, jadi uji di local juga (issue #25)
+        $this->app['env'] = 'local';
+
+        $this->get('/login')->assertOk()
+            ->assertDontSee('Akun Uji Coba Demo')
+            ->assertDontSee('password123');
+    }
+
     public function test_buat_surat_tanpa_nomor_kasus_diarahkan_ke_daftar_laporan(): void
     {
         $this->actingAs(User::factory()->create(['role' => 'Kepala Bidang']))

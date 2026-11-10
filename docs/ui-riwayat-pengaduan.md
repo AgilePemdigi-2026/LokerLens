@@ -69,19 +69,21 @@
 | Deskripsi | 13px, `text-gray-400`, max-width 420px |
 | Dekorasi | Bulatan `teal-600/5` blur-3xl di sudut kanan atas |
 
-**Kartu Statistik** (3 buah, grid horizontal):
+> **Revisi issue #25:** Riwayat hanya berisi pengaduan dengan **status akhir** (`StatusKasus::isAkhir()`, scope `Pengaduan::sudahSelesai()`): Selesai, Selesai - Risiko Rendah, Tidak Terbukti, Tidak Ditindaklanjuti. Pengaduan berjalan (termasuk *Menunggu klasifikasi*) dipantau di Status Pengaduan. Teks halaman ada di `LokerLensCopy` (bagian "Beranda & Riwayat Pengaduan").
+
+**Kartu Statistik** (3 buah, grid horizontal, dari semua pengaduan selesai tanpa filter):
 | Metrik | Warna angka | Sumber data |
 |---|---|---|
-| Total Laporan | putih | `$pengaduan->total()` |
-| Sedang Berjalan | `teal-300` | `$sedangBerjalan` |
-| Selesai | `emerald-400` | `$selesai` |
+| Total Selesai | putih | `$totalSelesai` |
+| Ditindaklanjuti (status Selesai) | `emerald-400` | `$ditindaklanjuti` |
+| Ditutup (Selesai - Risiko Rendah, Tidak Terbukti, Tidak Ditindaklanjuti) | `gray-300` | `$ditutup` |
 
 ### 2.2 Bilah Pencarian & Filter
 
 | Elemen | Deskripsi |
 |---|---|
 | Input pencarian | Placeholder: "Cari nomor tiket, posisi, atau nama perusahaan..." — ikon 🔍 kiri |
-| Dropdown status | Semua nilai dari `StatusKasus::cases()` |
+| Dropdown status | "Semua Status" + 4 status akhir (`$pilihanStatus`); status lain di URL diabaikan |
 | Tombol Cari | `btn-navy` |
 | Tombol Reset | `btn-outline`, **muncul hanya jika** `request('cari')` atau `request('status')` |
 | Divider | Garis vertikal 1px abu |
@@ -95,8 +97,8 @@ Layout horizontal 4 kolom:
 |---|---|---|
 | **Tiket & Tanggal** | 140px fixed | Badge nomor tiket (font-mono, `teal-50/teal-800`), tanggal + jam WIB |
 | **Info Lowongan** | flex-1 | Posisi (bold), Perusahaan • Lokasi, Badge status |
-| **Skor** | 100px fixed | Label "KEYAKINAN SISTEM", angka besar `XX%`, badge risiko |
-| **Aksi** | shrink | Tombol "Lihat Hasil →" (outline, hover teal) |
+| **Skor** | 100px fixed | Label "Skor Risiko" (`LABEL_SKOR_RISIKO`), angka besar `XX%`, badge risiko |
+| **Aksi** | shrink | Tombol "Lihat Detail" (navy, ke `/status-pengaduan/{id}`) dan "Lihat Hasil →" (outline, hover teal) |
 
 **Warna badge status:**
 
@@ -129,11 +131,11 @@ Muncul hanya jika `$pengaduan->hasPages()`.
 ### State A: Ada Data (Default)
 - Menampilkan kartu statistik terisi, daftar kartu pengaduan, pagination.
 
-### State B: Data Kosong (Akun Baru)
+### State B: Belum Ada Pengaduan Selesai
 - Statistik semua `0`.
-- Teks wajib BDD: **"Belum ada pengaduan yang diajukan"** (`LokerLensCopy::BELUM_ADA_PENGADUAN`).
-- Sub-teks: "Anda belum memiliki riwayat pengaduan lowongan kerja mencurigakan. Mulai laporan pertama Anda sekarang."
-- Tombol: **"Ajukan Pengaduan Sekarang →"** → `periksa-lowongan.index`
+- Teks: **"Belum ada pengaduan yang selesai"** (`LokerLensCopy::BELUM_ADA_PENGADUAN_SELESAI`).
+- Sub-teks: `LokerLensCopy::BELUM_ADA_PENGADUAN_SELESAI_KETERANGAN`.
+- Tombol: **"Pantau Status Pengaduan →"** → `status-pengaduan.index`
 
 ### State C: Pencarian Tidak Cocok
 - Teks: **"Data Lowongan Tidak Ditemukan"** (`LokerLensCopy::DATA_LOWONGAN_TIDAK_DITEMUKAN`)
@@ -150,7 +152,9 @@ flowchart LR
     HP[Hasil Pemeriksaan] -- "Tombol: Lihat Riwayat" --> RP
     NAV[Navbar: Riwayat Pengaduan] --> RP
     RP -- "Lihat Hasil →" --> HP
-    RP -- "Ajukan Pengaduan Baru / Sekarang" --> PL[Periksa Lowongan]
+    RP -- "Lihat Detail" --> SD[Detail Status Pengaduan]
+    RP -- "Pantau Status Pengaduan (kosong)" --> SP[Status Pengaduan]
+    RP -- "Ajukan Pengaduan Baru" --> PL[Periksa Lowongan]
 ```
 
 ---
@@ -165,8 +169,8 @@ flowchart LR
 | Warna aksen | teal-600 `#1f8a7a` | ✅ Tombol, badge |
 | Latar halaman | Gelap `bg-slate-900` | ✅ Sesuai `layouts/app.blade.php` |
 | Border-radius kartu | 12px | ✅ `rounded-2xl` (16px, sedikit lebih besar tapi konsisten antar halaman) |
-| Teks wajib BDD | `LokerLensCopy::BELUM_ADA_PENGADUAN` | ✅ Digunakan di empty state |
-| Status dari enum | `StatusKasus::cases()` | ✅ Dropdown filter + badge |
+| Teks kosong | `LokerLensCopy::BELUM_ADA_PENGADUAN_SELESAI` | ✅ Digunakan di empty state |
+| Status dari enum | `StatusKasus::isAkhir()` | ✅ Dropdown filter + badge |
 
 ---
 

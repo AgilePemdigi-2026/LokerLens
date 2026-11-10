@@ -211,4 +211,26 @@ final class LokerLensCopy
     public const BTN_SIMPAN_SANDI_BARU     = 'Simpan Kata Sandi Baru';
     public const BTN_KEMBALI_LOGIN         = 'Kembali ke Login';
     public const BTN_MINTA_TAUTAN_BARU     = 'Minta Tautan Baru';
+
+    // ──────────────────────────────────────────────
+    //  Beranda & Riwayat Pengaduan (issue #25)
+    //  Belum ada di SRS; teks dari rancangan tim.
+    //  Riwayat hanya berisi pengaduan dengan status akhir (StatusKasus::isAkhir).
+    // ──────────────────────────────────────────────
+    public const BERANDA_KARTU_RIWAYAT     = 'Melihat kembali pengaduan yang sudah selesai beserta hasil pemeriksaan dan keputusan akhirnya.';
+
+    public const RIWAYAT_HERO_DESKRIPSI    = 'Daftar pengaduan lowongan kerja mencurigakan yang sudah selesai ditangani, beserta hasil pemeriksaan dan keputusan akhirnya.';
+
+    // Kotak angka di banner
+    public const RIWAYAT_STAT_TOTAL        = 'Total Selesai';
+    public const RIWAYAT_STAT_DITINDAKLANJUTI = 'Ditindaklanjuti';
+    public const RIWAYAT_STAT_DITUTUP      = 'Ditutup';
+
+    public const RIWAYAT_SEMUA_STATUS      = 'Semua Status';
+    public const RIWAYAT_MENAMPILKAN_SEMUA = 'Menampilkan semua pengaduan selesai';
+    public const RIWAYAT_SATUAN_PENGADUAN  = 'pengaduan';
+
+    // Tampilan kosong
+    public const BELUM_ADA_PENGADUAN_SELESAI = 'Belum ada pengaduan yang selesai';
+    public const BELUM_ADA_PENGADUAN_SELESAI_KETERANGAN = 'Pengaduan yang sudah selesai ditangani akan tampil di sini. Pengaduan yang masih berjalan dapat dipantau di halaman Status Pengaduan.';
 }

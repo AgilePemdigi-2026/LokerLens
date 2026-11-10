@@ -81,7 +81,7 @@
                 @endforeach
             </div>
         </div>
-        {{-- Daftar Menunggu Keputusan --}}
+                {{-- Daftar Menunggu Keputusan --}}
         <div class="bg-white rounded-card border border-gray-100 shadow-sm p-6 sm:p-8">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-lg font-bold text-navy-900">
@@ -95,6 +95,15 @@
             </div>
 
             @forelse($menungguKeputusan as $pengaduan)
+                @php
+                    $skor = $pengaduan->hasilKlasifikasi?->confidence_score;
+                    $warnaSkor = $skor === null
+                        ? 'bg-gray-100 text-gray-600'
+                        : ($skor >= 80 ? 'bg-red-100 text-red-700' : ($skor >= 50 ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-700'));
+                    $hariMenunggu = $pengaduan->tanggal_pengaduan
+                        ? (int) $pengaduan->tanggal_pengaduan->diffInDays(now())
+                        : null;
+                @endphp
                 <div class="flex items-center justify-between gap-4 py-3 {{ ! $loop->last ? 'border-b border-gray-100' : '' }}">
                     <div class="min-w-0">
                         <p class="text-sm font-semibold text-navy-900 truncate">
@@ -106,6 +115,17 @@
                             &middot; {{ $pengaduan->tanggal_pengaduan?->format('d M Y') }}
                         </p>
                     </div>
+
+                    <div class="flex items-center gap-2 shrink-0">
+                        @if($hariMenunggu !== null)
+                            <span class="text-xs text-gray-500">
+                                Menunggu {{ $hariMenunggu }} hari
+                            </span>
+                        @endif
+                        <span class="px-2 py-0.5 rounded text-xs font-semibold {{ $warnaSkor }}">
+                            {{ $skor !== null ? 'Skor ' . number_format((float) $skor, 0) . '%' : 'Skor -' }}
+                        </span>
+                    </div>
                 </div>
             @empty
                 <p class="text-sm text-gray-500 py-4">
@@ -114,6 +134,42 @@
             @endforelse
         </div>
 
+        {{-- Keputusan Terbaru --}}
+        <div class="bg-white rounded-card border border-gray-100 shadow-sm p-6 sm:p-8">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-bold text-navy-900">
+                    Keputusan terbaru
+                </h2>
+            </div>
+
+            @forelse($keputusanTerbaru as $pengaduan)
+                <div class="flex items-center justify-between gap-4 py-3 {{ ! $loop->last ? 'border-b border-gray-100' : '' }}">
+                    <div class="min-w-0">
+                        <p class="text-sm font-semibold text-navy-900 truncate">
+                            {{ $pengaduan->lowonganKerja->posisi_lowongan ?? '-' }}
+                        </p>
+                        <p class="text-xs text-gray-500 mt-0.5 truncate">
+                            {{ $pengaduan->lowonganKerja->perusahaan->nama_perusahaan ?? '-' }}
+                            &middot; {{ $pengaduan->nomor_tiket }}
+                            &middot; {{ $pengaduan->tanggal_pengaduan?->format('d M Y') }}
+                        </p>
+                    </div>
+
+                                        @php
+                        $statusKasus = $pengaduan->status_pengaduan instanceof \App\Enums\StatusKasus
+                            ? $pengaduan->status_pengaduan
+                            : \App\Enums\StatusKasus::tryFrom((string) $pengaduan->status_pengaduan);
+                    @endphp
+                    <span class="px-2.5 py-1 rounded-md text-xs font-semibold shrink-0 {{ $statusKasus?->warnaBadge() ?? 'bg-gray-100 text-gray-600' }}">
+                        {{ $statusKasus?->value ?? '-' }}
+                    </span>
+                </div>
+            @empty
+                <p class="text-sm text-gray-500 py-4">
+                    Belum ada keputusan yang ditetapkan.
+                </p>
+            @endforelse
         </div>
+
     </div>
 </x-app-layout>

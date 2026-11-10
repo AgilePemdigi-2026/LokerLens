@@ -3,7 +3,8 @@
         {{ __('This is a secure area of the application. Please confirm your password before continuing.') }}
     </div>
 
-    <form method="POST" action="{{ route('password.confirm') }}">
+    {{-- novalidate: validasi oleh server supaya pesan bahasa Indonesia tampil di dekat isian, bukan tooltip bawaan browser. --}}
+    <form method="POST" action="{{ route('password.confirm') }}" novalidate>
         @csrf
 
         <!-- Password -->

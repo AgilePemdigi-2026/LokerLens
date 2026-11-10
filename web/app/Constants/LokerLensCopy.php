@@ -307,4 +307,28 @@ final class LokerLensCopy
     /** %s = tujuan_instansi dari data surat. */
     public const KETERANGAN_SURAT_TERBIT   = 'Dokumen resmi telah dibuat dan tercatat di LokerLens. Silakan cetak atau simpan sebagai PDF, lalu kirimkan melalui saluran resmi instansi ke %s.';
     public const KETERANGAN_TOMBOL_CETAK   = 'Tombol ini membuka jendela cetak browser. Pilih printer untuk mencetak, atau pilih "Simpan sebagai PDF" untuk menyimpan dokumen.';
+
+    // ──────────────────────────────────────────────
+    //  Navbar & pesan validasi form (issue #25)
+    //  Belum ada di SRS; teks dari rancangan tim.
+    //  Pesan bawaan Laravel lainnya ada di lang/id/validation.php.
+    // ──────────────────────────────────────────────
+    public const NAV_KELUAR                = 'Keluar';
+
+    // Form Masuk
+    public const LOGIN_EMAIL_WAJIB         = 'Email wajib diisi.';
+    public const LOGIN_EMAIL_TIDAK_VALID   = 'Format email tidak valid. Silakan periksa kembali alamat email Anda.';
+    public const LOGIN_SANDI_WAJIB         = 'Kata sandi wajib diisi.';
+
+    // Form Buat Surat
+    public const SURAT_KRONOLOGI_WAJIB     = 'Kronologi kejadian wajib diisi.';
+    public const SURAT_TUJUAN_WAJIB        = 'Tujuan kepolisian wajib dipilih.';
+    public const SURAT_BUKTI_TIPE          = 'Berkas bukti harus berformat PDF, JPG, atau PNG.';
+    public const SURAT_BUKTI_UKURAN        = 'Ukuran berkas bukti maksimal 10 MB.';
+
+    // Form Keputusan Kepala Bidang
+    public const KEPUTUSAN_WAJIB           = 'Keputusan wajib dipilih.';
+
+    // Filter periode kustom Dashboard Analis
+    public const PERIODE_KUSTOM_TIDAK_VALID = 'Tanggal awal dan tanggal akhir wajib diisi. Tanggal awal tidak boleh setelah tanggal akhir, dan rentangnya maksimal 366 hari. Data di bawah memakai 7 hari terakhir.';
 }

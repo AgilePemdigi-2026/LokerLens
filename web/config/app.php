@@ -65,7 +65,8 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    // LokerLens: semua jam di tampilan berlabel WIB, jadi zona waktu aplikasi Asia/Jakarta.
+    'timezone' => env('APP_TIMEZONE', 'Asia/Jakarta'),
 
     /*
     |--------------------------------------------------------------------------
@@ -78,7 +79,8 @@ return [
     |
     */
 
-    'locale' => env('APP_LOCALE', 'en'),
+    // LokerLens: bahasa Indonesia (pesan validasi di lang/id, nama bulan/hari lewat Carbon).
+    'locale' => env('APP_LOCALE', 'id'),
 
     'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
 

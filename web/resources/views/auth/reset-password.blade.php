@@ -79,8 +79,8 @@
                     </p>
                 </div>
 
-                <!-- Banner Error Validasi -->
-                @if ($errors->any())
+                <!-- Banner Error: hanya untuk token (isian tersembunyi). Pesan isian lain tampil di bawah isiannya. -->
+                @if ($errors->has('token'))
                     <div class="mb-5 bg-red-50 border-l-4 border-risk-high p-4 rounded-r-lg">
                         <div class="flex">
                             <div class="shrink-0 text-risk-high">
@@ -89,18 +89,18 @@
                                 </svg>
                             </div>
                             <div class="ml-3">
-                                <ul class="text-xs sm:text-sm text-red-800 font-medium list-disc list-inside space-y-0.5">
-                                    @foreach ($errors->all() as $error)
-                                        <li>{{ $error }}</li>
-                                    @endforeach
-                                </ul>
+                                <p class="text-xs sm:text-sm text-red-800 font-medium">
+                                    {{ \App\Constants\LokerLensCopy::TAUTAN_RESET_TIDAK_VALID }}
+                                </p>
                             </div>
                         </div>
                     </div>
                 @endif
 
                 <!-- Form Reset Password -->
-                <form method="POST" action="{{ route('password.store') }}" class="space-y-4">
+                {{-- novalidate: validasi oleh server supaya pesan bahasa Indonesia tampil di bawah isian,
+                     bukan tooltip bawaan browser. Atribut required tetap dipakai sebagai penanda isian wajib. --}}
+                <form method="POST" action="{{ route('password.store') }}" class="space-y-4" novalidate>
                     @csrf
 
                     <!-- Token -->
@@ -114,6 +114,9 @@
                         <input id="email" type="email" name="email" value="{{ old('email', $request->email) }}" required autofocus autocomplete="username"
                             placeholder="nama@email.com"
                             class="w-full px-3.5 py-2.5 rounded-lg border text-sm text-navy-900 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-600 transition {{ $errors->has('email') ? 'border-risk-high' : 'border-gray-300' }}" />
+                        @error('email')
+                            <p class="text-xs text-risk-high mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <!-- Kata Sandi Baru dengan Toggle Mata + Indikator Kekuatan -->
@@ -161,6 +164,10 @@
                                 Kekuatan sandi: <span class="font-semibold" x-text="label"></span>
                             </p>
                         </div>
+                        {{-- Termasuk pesan "Konfirmasi Kata Sandi tidak cocok" (aturan confirmed melekat pada password) --}}
+                        @error('password')
+                            <p class="text-xs text-risk-high mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <!-- Konfirmasi Kata Sandi Baru -->

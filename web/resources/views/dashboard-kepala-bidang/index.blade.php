@@ -112,7 +112,7 @@
                         <p class="text-xs text-gray-500 mt-0.5 truncate">
                             {{ $pengaduan->lowonganKerja->perusahaan->nama_perusahaan ?? '-' }}
                             &middot; {{ $pengaduan->nomor_tiket }}
-                            &middot; {{ $pengaduan->tanggal_pengaduan?->format('d M Y') }}
+                            &middot; {{ $pengaduan->tanggal_pengaduan?->translatedFormat('d M Y') }}
                         </p>
                     </div>
 
@@ -151,7 +151,7 @@
                         <p class="text-xs text-gray-500 mt-0.5 truncate">
                             {{ $pengaduan->lowonganKerja->perusahaan->nama_perusahaan ?? '-' }}
                             &middot; {{ $pengaduan->nomor_tiket }}
-                            &middot; {{ $pengaduan->tanggal_pengaduan?->format('d M Y') }}
+                            &middot; {{ $pengaduan->tanggal_pengaduan?->translatedFormat('d M Y') }}
                         </p>
                     </div>
 

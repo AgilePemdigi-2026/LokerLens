@@ -194,7 +194,8 @@
                                         @endif
                                     </td>
                                     <td class="py-4 px-4 text-gray-600">
-                                        {{ $item->updated_at ? $item->updated_at->translatedFormat('d M Y') : '-' }}
+                                        {{-- Tanggal kasus diselesaikan (Riwayat Kasus), bukan updated_at --}}
+                                        {{ $item->tanggalSelesai()?->translatedFormat('d M Y') ?? '-' }}
                                     </td>
                                     <td class="py-4 px-4 text-right">
                                         <a href="{{ route('arsip-kasus.show', $item->id_pengaduan) }}"

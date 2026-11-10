@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\LokerLensCopy;
 use App\Enums\StatusKasus;
 use App\Models\HasilKlasifikasi;
 use App\Models\Pengaduan;
@@ -32,6 +33,11 @@ class DashboardAnalisController extends Controller
     public function index(Request $request): View
     {
         [$periode, $dari, $sampai] = $this->tentukanPeriode($request);
+
+        // Periode kustom diminta tapi tanggalnya kosong/tidak valid: tampilkan pesan di dekat isian tanggal
+        $pesanPeriode = $request->query('periode') === 'kustom' && $periode !== 'kustom'
+            ? LokerLensCopy::PERIODE_KUSTOM_TIDAK_VALID
+            : null;
 
         $ambang = (float) config('lokerlens.ambang_prioritas');
         $tahapAnalis = array_map(fn (StatusKasus $s) => $s->value, StatusKasus::tahapAnalis());
@@ -99,7 +105,7 @@ class DashboardAnalisController extends Controller
         $terakhirDiperbarui = now();
 
         return view('dashboard-analis.index', compact(
-            'periode', 'dari', 'sampai', 'ringkasan', 'distribusi', 'totalSkor',
+            'periode', 'pesanPeriode', 'dari', 'sampai', 'ringkasan', 'distribusi', 'totalSkor',
             'tren', 'antrean', 'totalAntrean', 'terakhirDiperbarui'
         ));
     }

@@ -56,8 +56,11 @@ class ArsipKasusController extends Controller
             });
         }
 
-        // Paginasi 10 kasus per halaman dengan retensi query string
-        $arsip = $query->orderBy('updated_at', 'desc')
+        // Paginasi 10 kasus per halaman dengan retensi query string.
+        // Urut dari kasus yang paling baru diselesaikan (tanggal dari Riwayat Kasus, bukan updated_at).
+        $arsip = $query->denganTanggalSelesai()
+            ->orderByDesc('tanggal_selesai')
+            ->orderByDesc('id_pengaduan')
             ->paginate(10)
             ->withQueryString();
 

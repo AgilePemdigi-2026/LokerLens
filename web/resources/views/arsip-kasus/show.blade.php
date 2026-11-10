@@ -302,7 +302,8 @@
                         <div class="flex justify-between">
                             <span class="text-gray-500">Tanggal Arsip:</span>
                             <span class="text-navy-900 font-medium">
-                                {{ $pengaduan->updated_at ? $pengaduan->updated_at->translatedFormat('d M Y') : '-' }}
+                                {{-- Tanggal kasus diselesaikan (Riwayat Kasus), bukan updated_at --}}
+                                {{ $pengaduan->tanggalSelesai()?->translatedFormat('d M Y') ?? '-' }}
                             </span>
                         </div>
                         @if($klasifikasi)

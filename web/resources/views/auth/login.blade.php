@@ -82,8 +82,19 @@
                     </p>
                 </div>
 
+                @php
+                    // Pesan isian kosong/format salah tampil di bawah isian.
+                    // Pesan lain di "email" (gagal login NFR-SEC-03, terlalu sering mencoba) tampil di banner.
+                    $pesanEmail = $errors->first('email');
+                    $pesanIsianEmail = in_array($pesanEmail, [
+                        \App\Constants\LokerLensCopy::LOGIN_EMAIL_WAJIB,
+                        \App\Constants\LokerLensCopy::LOGIN_EMAIL_TIDAK_VALID,
+                    ], true) ? $pesanEmail : null;
+                    $pesanBanner = ($pesanEmail && ! $pesanIsianEmail) ? $pesanEmail : null;
+                @endphp
+
                 <!-- Banner Error Login Gagal (Bagian 6.2 & NFR-SEC-03) -->
-                @if ($errors->any())
+                @if ($pesanBanner)
                     <div class="mb-5 bg-red-50 border-l-4 border-risk-high p-4 rounded-r-lg">
                         <div class="flex">
                             <div class="shrink-0 text-risk-high">
@@ -93,7 +104,7 @@
                             </div>
                             <div class="ml-3">
                                 <p class="text-xs sm:text-sm text-red-800 font-medium">
-                                    <strong>Gagal masuk.</strong> Email atau kata sandi yang Anda masukkan tidak sesuai. Silakan periksa kembali dan coba lagi.
+                                    {{ $pesanBanner }}
                                 </p>
                             </div>
                         </div>
@@ -105,7 +116,9 @@
                     </div>
                 @endif
                 <!-- Form Login -->
-                <form method="POST" action="{{ route('login') }}" class="space-y-4">
+                {{-- novalidate: validasi oleh server supaya pesan bahasa Indonesia tampil di bawah isian,
+                     bukan tooltip bawaan browser. Atribut required tetap dipakai sebagai penanda isian wajib. --}}
+                <form method="POST" action="{{ route('login') }}" class="space-y-4" novalidate>
                     @csrf
 
                     <!-- Email Field -->
@@ -116,6 +129,9 @@
                         <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username"
                             placeholder="nama@email.com"
                             class="w-full px-3.5 py-2.5 rounded-lg border text-sm text-navy-900 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-600 transition {{ $errors->any() ? 'border-risk-high' : 'border-gray-300' }}" />
+                        @if ($pesanIsianEmail)
+                            <p class="text-xs text-risk-high mt-1">{{ $pesanIsianEmail }}</p>
+                        @endif
                     </div>
 
                     <!-- Password Field dengan Toggle Mata -->
@@ -144,6 +160,9 @@
                                 </svg>
                             </button>
                         </div>
+                        @error('password')
+                            <p class="text-xs text-risk-high mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <!-- Ingat Saya -->

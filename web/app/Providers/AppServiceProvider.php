@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Carbon\Carbon;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\ServiceProvider;
@@ -21,6 +22,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Nama bulan/hari dari translatedFormat() mengikuti bahasa aplikasi (id: "Okt", "Senin").
+        Carbon::setLocale(config('app.locale'));
+
         ResetPassword::toMailUsing(function ($notifiable, string $token) {
             $url = url(route('password.reset', [
                 'token' => $token,

@@ -13,7 +13,8 @@
         @csrf
     </form>
 
-    <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-6">
+    {{-- novalidate: validasi oleh server supaya pesan bahasa Indonesia tampil di dekat isian, bukan tooltip bawaan browser. --}}
+    <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-6" novalidate>
         @csrf
         @method('patch')
 

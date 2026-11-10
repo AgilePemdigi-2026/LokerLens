@@ -159,6 +159,14 @@ Ambang prioritas tinggi (default 70) diatur di `LOKERLENS_AMBANG_PRIORITAS` (`we
    ```
    Kalau user/password MySQL Anda bukan `root`/kosong, ubah di `web/.env.behat`.
 
+**Setelah `git pull`:** paket BDD bisa bertambah (misalnya `symfony/mime`, dibutuhkan saat Behat mengirim form). Jalankan lagi dari dalam `web/`:
+
+```bash
+composer install --working-dir=bdd
+```
+
+Kalau langkah ini terlewat, skenario yang login atau mengirim form gagal dengan pesan *"Mime component is not installed"*.
+
 **Catatan untuk pengguna XAMPP (phpMyAdmin):**
 
 - *Membuat database:* buka XAMPP Control Panel, tekan **Start** pada Apache dan MySQL, lalu buka `http://localhost/phpmyadmin`. Klik **New** (Baru) di panel kiri, isi nama database `lokerlens_testing`, pilih collation **`utf8mb4_unicode_ci`**, lalu klik **Create** (Buat). Database cukup dibuat kosong. Tabel dan datanya diisi otomatis oleh test.
@@ -183,26 +191,24 @@ uvicorn api.app:app --port 8001
 & "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" --headless=new --remote-debugging-port=9222 --user-data-dir="$env:TEMP\chrome-behat"
 #   Sesuaikan lokasi chrome.exe. macOS: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" ...
 
-# Terminal 4 (dari web/)
-bdd\vendor\bin\behat --config bdd\behat.yml --tags="~@javascript&&~@ml"   # 11 skenario: hanya butuh Terminal 1
-bdd\vendor\bin\behat --config bdd\behat.yml --tags="@javascript"          # 3 skenario: butuh Terminal 1 + 3
-bdd\vendor\bin\behat --config bdd\behat.yml --tags="@ml"                  # 1 skenario: butuh Terminal 1 + 2
-bdd\vendor\bin\behat --config bdd\behat.yml                               # semua 15 skenario
-bdd\vendor\bin\behat --config bdd\behat.yml bdd\features\buat_surat.feature   # satu fitur saja
+# Terminal 4 (dari web/bdd/): cara yang disarankan
+composer test-bdd                                        # semua 15 skenario + laporan HTML
+composer test-bdd -- --tags="~@javascript&&~@ml"         # 11 skenario: hanya butuh Terminal 1
+composer test-bdd -- --tags="@javascript"                # 3 skenario: butuh Terminal 1 + 3
+composer test-bdd -- --tags="@ml"                        # 1 skenario: butuh Terminal 1 + 2
+composer test-bdd -- features/buat_surat.feature         # satu fitur saja
 ```
 
-**Laporan HTML.** Selain hasil di terminal, setiap run Behat juga membuat laporan HTML (paket `emuse/behat-html-formatter`, sudah ikut terpasang lewat `composer install --working-dir=bdd`). Supaya nama filenya mudah dipahami, jalankan test lewat perintah ini (layanan di Terminal 1–3 tetap harus menyala):
+Argumen setelah `--` diteruskan ke Behat. **Jalankan lewat `composer test-bdd`, jangan memanggil `behat` langsung**, supaya laporan HTML diberi nama yang jelas dan laporan lama dibersihkan otomatis.
 
-```powershell
-# Terminal 4 (dari web/bdd/)
-composer test-bdd                           # semua 15 skenario + laporan HTML
-composer test-bdd -- --tags="@javascript"   # argumen setelah "--" diteruskan ke Behat
-```
+**Laporan HTML.** Selain hasil di terminal, setiap run membuat laporan HTML (paket `emuse/behat-html-formatter`, sudah ikut terpasang lewat `composer install --working-dir=bdd`).
 
 - Lokasi: `web/bdd/laporan/hasil-test-bdd_<tanggal>_<jam>.html`, misalnya `hasil-test-bdd_2026-10-28_15-38.html`. Setiap run membuat file baru. Kalau ada dua run di menit yang sama, detiknya ikut ditambahkan ke nama file.
 - Isi: ringkasan jumlah Feature, skenario, dan langkah yang lulus/gagal (dengan grafik), lalu daftar per Feature dan per skenario beserta langkah-langkahnya.
 - Buka file tersebut di browser (klik dua kali di File Explorer). Tampilan laporan memuat Bootstrap dan Chart.js dari internet, jadi butuh koneksi supaya rapi.
-- `composer test-bdd` menjalankan `web/bdd/ganti_nama_laporan.php`, yang menjalankan Behat lalu mengganti nama laporan terbaru. Laporan tetap diganti nama walaupun ada skenario yang gagal. Kalau Behat dijalankan langsung (`bdd\vendor\bin\behat ...`), laporannya bernama `Twig_<tanggaljam>.html`. Ganti namanya dengan `php ganti_nama_laporan.php` dari `web/bdd/`.
+- `composer test-bdd` menjalankan `web/bdd/ganti_nama_laporan.php`, yang menjalankan Behat lalu mengganti nama laporan terbaru. Laporan tetap diganti nama walaupun ada skenario yang gagal.
+- **Laporan tidak menumpuk:** setelah ganti nama, hanya **5 laporan terbaru** yang disimpan. Laporan yang lebih lama dan sisa file `Twig_*.html` dihapus otomatis. Laporan final yang di-track Git tidak pernah dihapus.
+- Kalau terlanjur menjalankan Behat langsung, laporannya bernama `Twig_<tanggaljam>.html`. Ganti namanya dengan `php ganti_nama_laporan.php` dari `web/bdd/`.
 - Folder `web/bdd/laporan/` tidak ikut di-commit (lihat `.gitignore`), kecuali `assets/` dan laporan final sprint `hasil-test-bdd_2026-10-28_15-38.html`.
 - Pengaturannya ada di bagian `formatters` dan `extensions` di `web/bdd/behat.yml`.
 

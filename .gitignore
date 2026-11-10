@@ -8,6 +8,10 @@ Thumbs.db
 /.vscode
 /.zed
 
+# ─── Docker di laptop ─────────────────────────────────
+# Pengaturan docker compose di laptop (salinan .env.docker-lokal.example), berisi kata sandi
+/.env
+
 # ─── Laravel (web/) ───────────────────────────────────
 /web/vendor/
 /web/node_modules/

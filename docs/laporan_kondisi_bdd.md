@@ -338,26 +338,33 @@ Skenario kosong untuk Dashboard Kepala Bidang ("Tidak ada laporan yang menunggu 
 | `When I follow "<tautan>" in the row for ticket "<tiket>"` | Klik tautan di baris tabel yang memuat nomor tiket tertentu |
 | Profil `demo` (parameter `modeDemo`) | Semua skenario di Chrome yang terlihat, jeda antar langkah dari `BDD_JEDA` (default 1 detik), dan berhenti dengan pesan jelas kalau Chrome di port 9222 ternyata headless |
 | Screenshot saat gagal | Halaman disimpan ke `web/bdd/laporan/screenshot/`: `.png` di Chrome, `.html` di mode tanpa browser |
+| Menunggu halaman setelah klik (`tungguSetelah`) | Dipakai `I press`, `I follow`, tombol di pop-up, dan klik tautan baris tabel. Di Chrome, setelah klik langkah berikutnya baru jalan jika halaman baru selesai dimuat (maks. 15 detik). Sebelumnya driver Chrome hanya menunggu `document.readyState`, yang masih "complete" di halaman lama selama form dikirim, sehingga login di mode demo sering dianggap gagal karena URL masih `/login`. Tombol yang tidak berpindah halaman (membuka pop-up, Reset Form) hanya menunggu 0,5 detik |
+| Menunggu halaman tenang setelah dibuka (`visitPath`) | Di Chrome, setelah membuka alamat, tunggu `document.readyState` "complete" lalu jeda 0,5 detik sebelum langkah berikutnya mengisi form |
+| Isian diperiksa setelah diisi (`fillField`, dipakai `I fill in` dan login) | Di Chrome, nilai isian diperiksa setelah diisi. Di mode demo, ketikan driver kadang tidak masuk sama sekali ke Chrome yang terlihat (isian tetap kosong, form terkirim kosong: "Email wajib diisi."). Jika kosong, isian diisi lewat JavaScript beserta event `input`/`change`, lalu diperiksa lagi; jika tetap kosong, langkah gagal dengan pesan jelas. Form tetap dikirim oleh browser seperti biasa |
+| Login menunggu halaman `/login` (`isiFormLogin`) | Sebelum mengisi, pastikan yang tampil benar-benar halaman `/login`, bukan halaman skenario sebelumnya |
+| Token reset kata sandi memakai zona waktu aplikasi | `created_at` di `password_reset_tokens` memakai `APP_TIMEZONE` (Asia/Jakarta), bukan UTC. Sejak aplikasi memakai WIB (PR #66), token UTC terlihat 7 jam lebih tua dan dianggap kedaluwarsa |
 
 ### 8.5 Hasil test
 
-Dijalankan di Windows 11, PHP 8.5.4, MySQL (Laragon), dan Chrome 157, dengan server test port 8010 dan API ML menyala.
+Dijalankan 10 November 2026 di Windows 11, PHP 8.5.4, MySQL (Laragon), dan Chrome 157, dengan server test port 8010 dan API ML menyala. Kode sudah memuat perubahan PR #66 (zona waktu WIB, bahasa Indonesia, validasi form) dan PR #68 (menu HP, halaman awal Analis, Profil).
 
 | Perintah (dari `web/bdd/`) | Skenario | Hasil | Waktu |
 |---|---|---|---|
-| `composer test-bdd` (Chrome headless untuk `@javascript`) | 47 (15 lama + 32 baru) | **47 lulus (235 langkah)** | ±4 menit |
-| `composer test-bdd-demo` (Chrome terlihat, `BDD_JEDA` = 1 detik) | 47 (15 lama + 32 baru) | HASIL_DEMO | WAKTU_DEMO |
+| `composer test-bdd` (Chrome headless untuk `@javascript`) | 47 (15 lama + 32 baru) | **47 lulus (235 langkah)** | 5 menit 1 detik |
+| `BDD_JEDA=0 composer test-bdd-demo` (semua skenario di Chrome terlihat, tanpa jeda) | 47 (15 lama + 32 baru) | **47 lulus (235 langkah)** | 6 menit 36 detik |
 
-Test PHPUnit (`php artisan test`): **233 lulus, 0 gagal** (1587 assertion).
+Dengan jeda bawaan (`BDD_JEDA` = 1 detik), mode demo lebih lama sekitar 4 menit (235 langkah × 1 detik).
 
-Tidak ada skenario yang gagal karena bug aplikasi.
+Test PHPUnit (`php artisan test`): **270 lulus, 0 gagal** (1767 assertion).
+
+Tidak ada skenario yang gagal karena bug aplikasi. Kegagalan yang ditemukan selama pengujian berasal dari test BDD sendiri dan sudah diperbaiki di `FeatureContext` (lihat 8.4):
+- **Mode demo, login dianggap gagal:** langkah berikutnya memeriksa halaman lama sebelum halaman baru selesai dimuat.
+- **Mode demo, form terkirim kosong:** ketikan driver tidak masuk ke Chrome yang terlihat.
+- **Skenario B.6-4 (atur ulang kata sandi), kedua mode:** token reset dibuat dengan jam UTC, sedangkan aplikasi sejak PR #66 memakai WIB, sehingga token dianggap kedaluwarsa.
+
+Skenario Sprint 2 tidak perlu diubah karena perubahan PR #66 dan #68: semua langkahnya tetap lulus.
 
 ### 8.6 Catatan untuk ditindaklanjuti (tidak diubah di branch ini)
 
 1. **Teks Lupa Password ditulis langsung di Blade**, bukan dari `LokerLensCopy`. Contohnya view menampilkan "Periksa Email Anda" dan "Kata Sandi Berhasil Diubah", sedangkan `LokerLensCopy::LUPA_TERKIRIM_JUDUL` dan `SANDI_BERHASIL_JUDUL` berisi "Periksa email Anda" dan "Kata sandi berhasil diubah". Skenario tetap lulus karena `I should see` di Mink tidak peka huruf besar, tetapi sumber teksnya sebaiknya disatukan ke `LokerLensCopy`.
-2. **Halaman awal setelah login tidak konsisten:**
-   - Analis masuk ke `/tinjau-lowongan` (Pemantauan), bukan Dashboard Analis;
-   - Kepala Bidang masuk ke `/dashboard-kepala-bidang`;
-   - aturannya ada di `User::halamanAwal()`.
-
-   Karena itu skenario B.10-1 membuka Dashboard Analis lewat menu, sedangkan B.12-1 memeriksa dashboard langsung setelah login.
+2. ~~**Halaman awal setelah login tidak konsisten**~~ **Sudah diperbaiki (PR #68):** Analis kini masuk ke Dashboard Analis, sama seperti Kepala Bidang ke Dashboard Kepala Bidang (`User::halamanAwal()`). Skenario B.10-1 tetap membuka Dashboard Analis lewat menu "Dashboard" dan tetap lulus, jadi tidak diubah.

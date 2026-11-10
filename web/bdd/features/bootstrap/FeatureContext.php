@@ -98,7 +98,8 @@ class FeatureContext extends MinkContext
         if ($versi === false) {
             throw new RuntimeException("Mode demo butuh Chrome yang terlihat di port 9222.\n"
                 . 'Buka dulu (tanpa --headless): & "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" '
-                . '--remote-debugging-port=9222 --user-data-dir="$env:TEMP\chrome-behat-demo"');
+                . '--remote-debugging-port=9222 --user-data-dir="$env:TEMP\chrome-behat-demo" --no-first-run '
+                . '--password-store=basic --disable-features=PasswordLeakDetection,PasswordManagerOnboarding,AutofillServerCommunication');
         }
 
         // Chrome tanpa jendela memuat kata "HeadlessChrome" (di "Browser" untuk --headless lama,
@@ -183,14 +184,31 @@ class FeatureContext extends MinkContext
         }
 
         $this->visitPath('/login');
-        $this->fillField('email', self::AKUN[$peran]);
-        $this->fillField('password', self::PASSWORD);
-        $this->pressButton('Masuk');
+        $this->isiFormLogin(self::AKUN[$peran]);
+        $this->pressButton('Masuk'); // menunggu halaman tujuan selesai dimuat (lihat pressButton)
 
         // Masih di halaman login berarti login gagal
         if (str_contains($this->getSession()->getCurrentUrl(), '/login')) {
             throw new RuntimeException("Login sebagai {$peran} gagal.");
         }
+    }
+
+    /**
+     * Langkah "I press ..." (anotasi tetap dari MinkContext; jangan disalin, nanti terdaftar dua kali).
+     * Bedanya: di Chrome menunggu halaman berikutnya selesai dimuat.
+     */
+    public function pressButton($button)
+    {
+        $this->tungguSetelah(fn () => parent::pressButton($button));
+    }
+
+    /**
+     * Langkah "I follow ..." (anotasi tetap dari MinkContext).
+     * Bedanya: di Chrome menunggu halaman berikutnya selesai dimuat.
+     */
+    public function clickLink($link)
+    {
+        $this->tungguSetelah(fn () => parent::clickLink($link));
     }
 
     /**
@@ -249,7 +267,7 @@ class FeatureContext extends MinkContext
         for ($i = 0; $i < 50; $i++) {
             $button = $halaman->findButton($tombol);
             if ($button !== null && $button->isVisible()) {
-                $button->press();
+                $this->tungguSetelah(fn () => $button->press());
                 return;
             }
             usleep(100_000);
@@ -293,7 +311,7 @@ class FeatureContext extends MinkContext
             if (str_contains($baris->getText(), $tiket)) {
                 $link = $baris->findLink($tautan);
                 if ($link !== null) {
-                    $link->click();
+                    $this->tungguSetelah(fn () => $link->click());
                     return;
                 }
             }
@@ -328,12 +346,165 @@ class FeatureContext extends MinkContext
 
     // ─── Fungsi bantu ─────────────────────────────────────────────────────
 
+    /**
+     * Isi email dan kata sandi di halaman login.
+     * Di Chrome, tunggu dulu sampai yang tampil benar-benar halaman /login (bukan halaman
+     * skenario sebelumnya). Setiap isian diperiksa di fillField() di bawah.
+     */
+    private function isiFormLogin(string $email): void
+    {
+        $sesi = $this->getSession();
+
+        if (! $sesi->getDriver() instanceof BrowserKitDriver) {
+            $sesi->wait(5000, "location.pathname === '/login' && document.readyState === 'complete'"
+                . " && document.querySelector('#email') !== null");
+        }
+
+        $this->fillField('email', $email);
+        $this->fillField('password', self::PASSWORD);
+    }
+
+    /** Jeda setelah halaman selesai dimuat di Chrome, sebelum langkah berikutnya mengisi form (mikrodetik). */
+    private const JEDA_HALAMAN_TENANG = 500_000;
+
+    /** Jeda sebelum memeriksa apakah isian form masih ada (mikrodetik). */
+    private const JEDA_CEK_ISIAN = 300_000;
+
+    /**
+     * Sama dengan visitPath bawaan, tetapi di Chrome menunggu halaman selesai dimuat lalu jeda singkat.
+     *
+     * Temuan saat mode demo dengan BDD_JEDA=0: isian yang diisi tepat setelah halaman terbuka
+     * (halaman dengan isian autofocus seperti /login dan /forgot-password) kadang terhapus lagi,
+     * sehingga form terkirim kosong. Dengan jeda >= 0,2 detik setelah halaman terbuka, masalah ini
+     * tidak muncul (47/47 lulus). Jeda ini hanya berlaku di Chrome, tidak di mode cepat (browserkit).
+     */
+    public function visitPath($path, $sessionName = null)
+    {
+        parent::visitPath($path, $sessionName);
+
+        $sesi = $this->getSession($sessionName);
+        if (! $sesi->getDriver() instanceof BrowserKitDriver) {
+            $sesi->wait(5000, "document.readyState === 'complete'");
+            usleep(self::JEDA_HALAMAN_TENANG);
+        }
+    }
+
+    /**
+     * Langkah "I fill in ..." (anotasi tetap dari MinkContext).
+     * Bedanya, di Chrome nilai isian diperiksa setelah diisi:
+     * 1. Isi seperti biasa (driver Chrome mengetik ke isian).
+     * 2. Jika nilainya tidak ada, isi lewat JavaScript lalu kirim event input/change seperti
+     *    ketikan pengguna. Temuan di mode demo: ketikan driver kadang tidak masuk sama sekali ke
+     *    Chrome yang terlihat (isian tetap kosong), sedangkan di Chrome headless selalu masuk.
+     * 3. Jika tetap kosong, langkah gagal dengan pesan jelas, bukan form terkirim kosong.
+     */
+    public function fillField($field, $value)
+    {
+        parent::fillField($field, $value);
+
+        $sesi = $this->getSession();
+        if ($sesi->getDriver() instanceof BrowserKitDriver) {
+            return;
+        }
+
+        $nilai = $this->fixStepArgument($value);
+        $elemen = $sesi->getPage()->findField($this->fixStepArgument($field));
+        usleep(self::JEDA_CEK_ISIAN);
+        if ($elemen === null || $elemen->getValue() === $nilai) {
+            return;
+        }
+
+        // Cadangan: isi lewat JavaScript, lalu periksa lagi
+        $sesi->executeScript(sprintf(
+            '(function () {'
+            . ' var el = document.evaluate(%s, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;'
+            . ' if (!el) { return; }'
+            . ' el.focus(); el.value = %s;'
+            . " el.dispatchEvent(new Event('input', { bubbles: true }));"
+            . " el.dispatchEvent(new Event('change', { bubbles: true }));"
+            . ' })()',
+            json_encode($elemen->getXpath()),
+            json_encode($nilai)
+        ));
+        usleep(self::JEDA_CEK_ISIAN);
+
+        if ($elemen->getValue() !== $nilai) {
+            throw new RuntimeException("Isian \"{$field}\" tetap kosong setelah diisi (juga lewat JavaScript).");
+        }
+    }
+
+    /** Batas waktu menunggu halaman berikutnya selesai dimuat (detik). */
+    private const BATAS_TUNGGU_HALAMAN = 15;
+
+    /**
+     * Jalankan aksi (klik tombol/tautan), lalu tunggu sampai halaman berikutnya selesai dimuat.
+     *
+     * Kenapa perlu: setelah klik, driver Chrome hanya menunggu document.readyState "complete".
+     * Saat form baru dikirim, halaman LAMA masih "complete", sehingga langkah berikutnya
+     * memeriksa halaman lama (mis. login dianggap gagal karena URL masih /login).
+     *
+     * Caranya: sebelum klik, halaman lama diberi penanda. Halaman dianggap sudah berganti
+     * jika penanda hilang (dokumen baru) dan dokumen baru selesai dimuat.
+     * Aksi yang tidak berpindah halaman (membuka pop-up, Reset Form) hanya menunggu sebentar.
+     * Tanpa browser (browserkit) aksi sudah selesai saat klik, jadi tidak perlu menunggu.
+     */
+    private function tungguSetelah(callable $aksi): void
+    {
+        $sesi = $this->getSession();
+        if ($sesi->getDriver() instanceof BrowserKitDriver) {
+            $aksi();
+            return;
+        }
+
+        $penanda = bin2hex(random_bytes(8));
+        // beforeunload terpanggil begitu halaman mulai berpindah (termasuk saat form dikirim)
+        $sesi->executeScript("window.__behatPenanda = '{$penanda}'; window.__behatPergi = false;"
+            . " window.addEventListener('beforeunload', function () { window.__behatPergi = true; });");
+
+        $aksi();
+
+        // 1. Apakah aksi ini berpindah halaman? Cek selama 0,5 detik.
+        $pindah = false;
+        for ($i = 0; $i < 5 && ! $pindah; $i++) {
+            usleep(100_000);
+            $pindah = $this->cekScript("window.__behatPergi === true || window.__behatPenanda !== '{$penanda}'", true);
+        }
+        if (! $pindah) {
+            return; // tidak berpindah halaman, mis. tombol yang membuka pop-up
+        }
+
+        // 2. Tunggu dokumen baru (tanpa penanda) selesai dimuat
+        $batas = microtime(true) + self::BATAS_TUNGGU_HALAMAN;
+        while (microtime(true) < $batas) {
+            if ($this->cekScript("window.__behatPenanda === undefined && document.readyState === 'complete'", false)) {
+                return;
+            }
+            usleep(100_000);
+        }
+
+        throw new RuntimeException('Halaman berikutnya tidak selesai dimuat dalam ' . self::BATAS_TUNGGU_HALAMAN
+            . ' detik (URL sekarang: ' . $sesi->getCurrentUrl() . ').');
+    }
+
+    /**
+     * Jalankan ekspresi JavaScript yang menghasilkan true/false.
+     * Saat halaman sedang berganti, Chrome bisa menolak menjalankan script; hasilnya $jikaGagal.
+     */
+    private function cekScript(string $ekspresi, bool $jikaGagal): bool
+    {
+        try {
+            return (bool) $this->getSession()->evaluateScript($ekspresi);
+        } catch (Throwable) {
+            return $jikaGagal;
+        }
+    }
+
     /** Klik tautan pertama yang alamatnya cocok dengan pola (regex). */
     private function klikTautanYangCocok(string $pola, string $tiket): void
     {
         foreach ($this->getSession()->getPage()->findAll('css', 'a[href]') as $tautan) {
             if (preg_match($pola, parse_url($tautan->getAttribute('href'), PHP_URL_PATH) ?? '')) {
-                $tautan->click();
+                $this->tungguSetelah(fn () => $tautan->click());
                 return;
             }
         }

@@ -1,0 +1,27 @@
+# Tidak ikut ke image web (dipasang ulang di Dockerfile atau tidak dibutuhkan di server)
+vendor/
+node_modules/
+public/build/
+public/hot
+public/storage
+
+# Rahasia dan pengaturan laptop: env server diisi lewat Coolify, bukan file
+.env
+.env.*
+!.env.example
+
+# Isi storage (log, cache, berkas unggahan laptop). Strukturnya dibuat docker/entrypoint.sh
+storage/app/private/*
+storage/app/public/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/logs/*
+bootstrap/cache/*.php
+
+# Test dan alat pengembangan
+tests/
+bdd/
+database/database.sqlite
+.phpunit.result.cache
+.phpunit.cache

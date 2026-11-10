@@ -121,7 +121,7 @@ Ada, di `database/seeders/LokerLensSeeder.php` (dipanggil `DatabaseSeeder`). Sem
 | Analis | `budi.analis@lokerlens.go.id` |
 | Kepala Bidang | `rizky.kb@lokerlens.go.id` |
 
-Seeder juga membuat kasus contoh untuk setiap status. Cara memakainya: `php artisan migrate:fresh --seed`. Mode `/dev` (`DEV_PREVIEW=true`) menyediakan tombol login cepat untuk ketiga akun.
+Seeder juga membuat kasus contoh untuk setiap status. Cara memakainya: `php artisan migrate:fresh --seeder=DemoSeeder` (sejak persiapan deploy, `DatabaseSeeder` tidak lagi memanggil data demo). Mode `/dev` (`DEV_PREVIEW=true`) menyediakan tombol login cepat untuk ketiga akun.
 
 `database/factories/UserFactory.php` ada, tapi tidak mengisi `role`. Di test, peran diisi manual: `User::factory()->create(['role' => 'Analis'])`.
 

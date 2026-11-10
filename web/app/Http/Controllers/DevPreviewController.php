@@ -34,7 +34,7 @@ class DevPreviewController extends Controller
         $user = User::where('email', $email)->where('role', $peran)->first();
         if (! $user) {
             return redirect()->route('dev.index')
-                ->with('error', "Akun demo {$peran} ({$email}) belum ada. Jalankan php artisan migrate:fresh --seed dari dalam web/.");
+                ->with('error', "Akun demo {$peran} ({$email}) belum ada. Jalankan php artisan migrate:fresh --seeder=DemoSeeder dari dalam web/.");
         }
 
         Auth::login($user);

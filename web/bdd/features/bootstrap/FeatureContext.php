@@ -58,7 +58,7 @@ class FeatureContext extends MinkContext
         // Jalankan artisan dari folder web/ dengan --env=behat (membaca .env.behat)
         $folderAwal = getcwd();
         chdir(realpath(self::FOLDER_WEB));
-        exec(escapeshellarg(PHP_BINARY) . ' artisan migrate:fresh --seed --force --env=behat 2>&1', $keluaran, $kode);
+        exec(escapeshellarg(PHP_BINARY) . ' artisan migrate:fresh --seeder=DemoSeeder --force --env=behat 2>&1', $keluaran, $kode);
         chdir($folderAwal);
 
         if ($kode !== 0) {

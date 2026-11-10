@@ -5,6 +5,7 @@ namespace App\Providers;
 use Carbon\Carbon;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -24,6 +25,12 @@ class AppServiceProvider extends ServiceProvider
     {
         // Nama bulan/hari dari translatedFormat() mengikuti bahasa aplikasi (id: "Okt", "Senin").
         Carbon::setLocale(config('app.locale'));
+
+        // Jika APP_URL memakai https (server produksi), semua link dan form dibuat https,
+        // walaupun proxy meneruskan permintaan ke container lewat http. Pelengkap TRUSTED_PROXIES.
+        if (str_starts_with((string) config('app.url'), 'https://')) {
+            URL::forceScheme('https');
+        }
 
         ResetPassword::toMailUsing(function ($notifiable, string $token) {
             $url = url(route('password.reset', [

@@ -10,8 +10,10 @@ use App\Models\SuratTeguranLaporanPolisi;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Fitur Buat Surat Teguran/Laporan Polisi (F-04 / UC-04 / US-04).
@@ -176,6 +178,22 @@ class BuatSuratController extends Controller
  * Dipakai bersama oleh simpanDraft dan terbitkan.
  */
 /**
+ * Buka berkas bukti pendukung (hanya Kepala Bidang, lihat routes/web.php).
+ * Berkas lama yang diunggah sebelum pindah ke disk private masih dicari di disk "public".
+ */
+public function lihatBukti(BuktiPendukung $bukti): StreamedResponse
+{
+    foreach (['local', 'public'] as $disk) {
+        if (Storage::disk($disk)->exists($bukti->path_file)) {
+            // Ditampilkan di browser (PDF/gambar) dengan nama berkas aslinya
+            return Storage::disk($disk)->response($bukti->path_file, $bukti->nama_file);
+        }
+    }
+
+    abort(404, 'Berkas bukti tidak ditemukan.');
+}
+
+/**
  * Aturan isian surat, sama untuk Simpan Draft dan Terbitkan Laporan.
  * Pesan wajib dari LokerLensCopy; pesan lain dari lang/id/validation.php.
  */
@@ -212,7 +230,9 @@ private function simpanBuktiTambahan(Request $request, Pengaduan $pengaduan): vo
             $tipeFile = 'jpg';
         }
 
-        $path = $file->store('bukti', 'public');
+        // Disk "local" = storage/app/private: tidak bisa dibuka lewat alamat publik.
+        // Berkas dibuka lewat route bukti.lihat yang dicek perannya (lihatBukti()).
+        $path = $file->store('bukti', 'local');
         BuktiPendukung::create([
             'id_pengaduan' => $pengaduan->id_pengaduan,
             'nama_file'    => $file->getClientOriginalName(),

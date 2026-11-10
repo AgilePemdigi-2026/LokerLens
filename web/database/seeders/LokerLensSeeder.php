@@ -22,6 +22,9 @@ use Illuminate\Support\Facades\Hash;
  * Seeder data mock LokerLens sesuai Bagian 11 panduan.
  * Semua data FIKTIF untuk keperluan pengembangan dan demo.
  * Master Mock Data masih ❓ TBD (Appendix C no. 20).
+ *
+ * Tidak dipanggil DatabaseSeeder. Jalankan lewat DemoSeeder:
+ * php artisan db:seed --class=DemoSeeder
  */
 class LokerLensSeeder extends Seeder
 {
@@ -34,6 +37,12 @@ class LokerLensSeeder extends Seeder
 
     public function run(): void
     {
+        // Pengaman: akun demo (kata sandi password123) dan kasus fiktif tidak boleh masuk server produksi
+        if (app()->environment('production')) {
+            throw new \RuntimeException('Data demo tidak boleh dijalankan di produksi (APP_ENV=production). '
+                . 'Buat akun petugas dengan: php artisan lokerlens:buat-petugas');
+        }
+
         // ─── Pengguna ─────────────────────────────────────────────────────
         $masyarakat = User::create([
             'name'     => 'Adela Ulin Nadhroh',

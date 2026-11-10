@@ -165,7 +165,13 @@
                                 <span class="px-2 py-0.5 bg-red-100 text-risk-high rounded font-mono font-bold text-[10px]">{{ strtoupper($bukti->tipe_file) }}</span>
                                 <span class="font-medium text-navy-900">{{ $bukti->nama_file }} ({{ number_format($bukti->ukuran_file / 1048576, 1) }} MB)</span>
                             </div>
-                            <span class="text-[11px] font-semibold text-risk-low bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Terlampir</span>
+                            <div class="flex items-center gap-2 shrink-0">
+                                <span class="text-[11px] font-semibold text-risk-low bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Terlampir</span>
+                                {{-- Berkas di disk private: dibuka lewat route yang dicek perannya --}}
+                                <a href="{{ route('bukti.lihat', $bukti) }}" target="_blank" rel="noopener" class="text-[11px] font-semibold text-teal-700 hover:underline">
+                                    {{ \App\Constants\LokerLensCopy::BTN_LIHAT_BUKTI }}
+                                </a>
+                            </div>
                         </div>
                     @empty
                         <p class="text-xs text-gray-500">Belum ada berkas bukti.</p>

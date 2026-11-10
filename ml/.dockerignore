@@ -1,0 +1,8 @@
+# Hanya api/, src/, models/, dan requirements-api.txt yang dibutuhkan image API ML
+.venv/
+__pycache__/
+*.py[cod]
+data/
+notebooks/
+scraping/
+*.pkl

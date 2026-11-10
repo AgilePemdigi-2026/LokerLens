@@ -156,8 +156,10 @@
                     <div class="pt-1">
                         <label class="flex items-start">
                             <input type="checkbox" name="persetujuan" required class="w-4 h-4 mt-0.5 text-teal-600 rounded border-gray-300 focus:ring-teal-500">
+                            {{-- Teks biasa tanpa tautan: halaman Kebijakan Privasi & Syarat Layanan belum ada.
+                                 Centang tetap wajib (aturan "persetujuan" di RegisteredUserController). --}}
                             <span class="ml-2 text-xs text-gray-600">
-                                Saya menyetujui <a href="#" class="text-teal-700 font-semibold hover:underline">Kebijakan Privasi</a> dan <a href="#" class="text-teal-700 font-semibold hover:underline">Syarat Layanan</a> LokerLens.
+                                {{ \App\Constants\LokerLensCopy::DAFTAR_PERSETUJUAN }}
                             </span>
                         </label>
                         @error('persetujuan')

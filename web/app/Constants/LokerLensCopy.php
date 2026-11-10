@@ -331,4 +331,42 @@ final class LokerLensCopy
 
     // Filter periode kustom Dashboard Analis
     public const PERIODE_KUSTOM_TIDAK_VALID = 'Tanggal awal dan tanggal akhir wajib diisi. Tanggal awal tidak boleh setelah tanggal akhir, dan rentangnya maksimal 366 hari. Data di bawah memakai 7 hari terakhir.';
+
+    // ──────────────────────────────────────────────
+    //  Menu navbar (desktop & HP) dan halaman Profil (issue #25)
+    //  Belum ada di SRS; teks dari rancangan tim.
+    //  Label menu dipakai BDD ("Dashboard", "Pemantauan", "Riwayat", "Arsip Kasus"): jangan diubah.
+    // ──────────────────────────────────────────────
+    public const NAV_DASHBOARD             = 'Dashboard';
+    public const NAV_PEMANTAUAN            = 'Pemantauan';
+    public const NAV_STATUS_PENGADUAN      = 'Status Pengaduan';
+    public const NAV_LAPORAN               = 'Laporan';
+    public const NAV_ARSIP_KASUS           = 'Arsip Kasus';
+    public const NAV_PROFIL                = 'Profil Saya';
+    public const NAV_BUKA_MENU             = 'Buka menu';
+    public const NAV_TUTUP_MENU            = 'Tutup menu';
+
+    // Halaman Profil
+    public const PROFIL_JUDUL              = 'Profil Saya';
+    public const PROFIL_DESKRIPSI          = 'Kelola nama, email, dan kata sandi akun LokerLens Anda.';
+    public const PROFIL_INFO_JUDUL         = 'Informasi Akun';
+    public const PROFIL_INFO_DESKRIPSI     = 'Perbarui nama lengkap dan alamat email akun Anda.';
+    public const PROFIL_LABEL_NAMA         = 'Nama Lengkap';
+    public const PROFIL_LABEL_EMAIL        = 'Email';
+    public const PROFIL_LABEL_PERAN        = 'Peran';
+    public const PROFIL_BTN_SIMPAN         = 'Simpan Perubahan';
+    public const PROFIL_TERSIMPAN          = 'Profil berhasil disimpan.';
+
+    public const PROFIL_SANDI_JUDUL        = 'Ubah Kata Sandi';
+    public const PROFIL_SANDI_DESKRIPSI    = 'Gunakan kata sandi minimal 8 karakter yang sulit ditebak.';
+    public const PROFIL_LABEL_SANDI_LAMA   = 'Kata Sandi Saat Ini';
+    public const PROFIL_LABEL_SANDI_BARU   = 'Kata Sandi Baru';
+    public const PROFIL_LABEL_SANDI_ULANG  = 'Konfirmasi Kata Sandi Baru';
+    public const PROFIL_BTN_SIMPAN_SANDI   = 'Simpan Kata Sandi';
+    public const PROFIL_SANDI_TERSIMPAN    = 'Kata sandi berhasil diubah.';
+    public const PROFIL_SANDI_LAMA_WAJIB   = 'Kata sandi saat ini wajib diisi.';
+    public const PROFIL_SANDI_LAMA_SALAH   = 'Kata sandi saat ini salah.';
+
+    // Halaman Daftar: kebijakan belum punya halaman sendiri, jadi ditulis sebagai teks biasa
+    public const DAFTAR_PERSETUJUAN        = 'Saya menyetujui Kebijakan Privasi dan Syarat Layanan LokerLens.';
 }

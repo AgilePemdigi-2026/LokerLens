@@ -72,7 +72,8 @@ class FormPeriksaDanLoginTest extends TestCase
     {
         return [
             'Masyarakat'    => ['Masyarakat', '/beranda'],
-            'Analis'        => ['Analis', '/tinjau-lowongan'],
+            // Issue #25: Analis diarahkan ke Dashboard Analis
+            'Analis'        => ['Analis', '/dashboard-analis'],
             // Sejak PR #47: Kepala Bidang diarahkan ke Dashboard
             'Kepala Bidang' => ['Kepala Bidang', '/dashboard-kepala-bidang'],
         ];

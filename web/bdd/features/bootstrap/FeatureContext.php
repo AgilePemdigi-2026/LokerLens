@@ -316,9 +316,12 @@ class FeatureContext extends MinkContext
         $token = bin2hex(random_bytes(32));
         $db = $this->koneksiDatabase();
         $db->prepare('DELETE FROM password_reset_tokens WHERE email = ?')->execute([$email]);
-        // created_at memakai UTC, sama dengan zona waktu aplikasi (config/app.php)
+        // created_at harus memakai zona waktu aplikasi (APP_TIMEZONE, bawaan Asia/Jakarta di config/app.php).
+        // Kalau memakai UTC, token terlihat 7 jam lebih tua dan dianggap kedaluwarsa (batas 60 menit).
+        $zonaWaktu = new DateTimeZone($this->env('APP_TIMEZONE') ?: 'Asia/Jakarta');
+        $sekarang  = (new DateTimeImmutable('now', $zonaWaktu))->format('Y-m-d H:i:s');
         $db->prepare('INSERT INTO password_reset_tokens (email, token, created_at) VALUES (?, ?, ?)')
-            ->execute([$email, password_hash($token, PASSWORD_BCRYPT), gmdate('Y-m-d H:i:s')]);
+            ->execute([$email, password_hash($token, PASSWORD_BCRYPT), $sekarang]);
 
         $this->visitPath('/reset-password/' . $token . '?email=' . urlencode($email));
     }

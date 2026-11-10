@@ -37,11 +37,11 @@
         {{ $slot }}
     </main>
 
-    <!-- Footer (Gambar 2.4 §3.2): Layanan & Bantuan untuk Masyarakat; minimalis untuk peran lain -->
+    <!-- Footer (Gambar 2.4 §3.2): Layanan untuk Masyarakat; minimalis untuk peran lain -->
     @if(Auth::user()->isMasyarakat())
         <footer class="bg-navy-900 border-t border-navy-800 text-white mt-auto">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-8">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
                     <!-- Brand -->
                     <div>
                         <div class="flex items-center space-x-2 mb-3">
@@ -58,48 +58,20 @@
                         <p class="text-xs text-gray-500 mt-4">© 2026 LokerLens</p>
                     </div>
 
-                    <!-- Layanan -->
+                    {{-- Layanan: tautan sama dengan menu navbar Masyarakat.
+                         Kolom "Bantuan" (Panduan Pengaduan, Cara Kerja, Pusat Bantuan) dihapus karena halamannya belum ada. --}}
                     <div>
                         <h4 class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Layanan</h4>
                         <ul class="space-y-2.5">
-                            <li>
-                                <a href="{{ route('periksa-lowongan.index') }}" class="text-sm text-gray-300 hover:text-teal-400 transition">
-                                    Ajukan Pengaduan
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ route('status-pengaduan.index') }}" class="text-sm text-gray-300 hover:text-teal-400 transition">
-                                    Status Pengaduan
-                                </a>
-                            </li>
-                            <li>
-                                 <a href="{{ route('riwayat-pengaduan.index') }}"
-                                class="px-3 py-2 text-sm flex items-center gap-1.5 {{ request()->routeIs('riwayat-pengaduan.*') ? 'text-navy-900 font-semibold' : 'text-gray-600 hover:text-navy-900' }}">
-                                    Riwayat Pengaduan
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <!-- Bantuan -->
-                    <div>
-                        <h4 class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Bantuan</h4>
-                        <ul class="space-y-2.5">
-                            <li>
-                                <span class="text-sm text-gray-500 cursor-not-allowed" title="Fitur Sprint 2">
-                                    Panduan Pengaduan
-                                </span>
-                            </li>
-                            <li>
-                                <span class="text-sm text-gray-500 cursor-not-allowed" title="Fitur Sprint 2">
-                                    Cara Kerja
-                                </span>
-                            </li>
-                            <li>
-                                <span class="text-sm text-gray-500 cursor-not-allowed" title="Fitur Sprint 2">
-                                    Pusat Bantuan
-                                </span>
-                            </li>
+                            @foreach([
+                                [\App\Constants\LokerLensCopy::BTN_AJUKAN_PENGADUAN, route('periksa-lowongan.index')],
+                                [\App\Constants\LokerLensCopy::NAV_STATUS_PENGADUAN, route('status-pengaduan.index')],
+                                [\App\Constants\LokerLensCopy::BTN_RIWAYAT_PENGADUAN, route('riwayat-pengaduan.index')],
+                            ] as [$label, $url])
+                                <li>
+                                    <a href="{{ $url }}" class="text-sm text-gray-300 hover:text-teal-400 transition">{{ $label }}</a>
+                                </li>
+                            @endforeach
                         </ul>
                     </div>
                 </div>

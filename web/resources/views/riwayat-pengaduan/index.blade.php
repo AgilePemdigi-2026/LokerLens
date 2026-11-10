@@ -1,4 +1,4 @@
-<x-app-layout>
+﻿<x-app-layout>
     <div class="space-y-6 py-2">
 
         {{-- ============================================================
@@ -121,15 +121,15 @@
         <div>
             {{-- Label jumlah hasil --}}
             @if(request('cari') || request('status'))
-                <p class="text-xs text-gray-400 mb-3 px-1">
-                    Menampilkan <strong class="text-white">{{ $pengaduan->total() }}</strong>
+                <p class="text-xs text-gray-500 mb-3 px-1">
+                    Menampilkan <strong class="text-navy-900">{{ $pengaduan->total() }}</strong>
                     hasil
-                    @if(request('cari')) untuk "<strong class="text-teal-300">{{ request('cari') }}</strong>"@endif
-                    @if(request('status')) dengan status <strong class="text-teal-300">{{ request('status') }}</strong>@endif
+                    @if(request('cari')) untuk "<strong class="text-navy-900">{{ request('cari') }}</strong>"@endif
+                    @if(request('status')) dengan status <strong class="text-navy-900">{{ request('status') }}</strong>@endif
                 </p>
             @else
-                <p class="text-xs text-gray-400 mb-3 px-1">
-                    Menampilkan semua pengaduan · <strong class="text-white">{{ $pengaduan->total() }}</strong> total laporan
+                <p class="text-xs text-gray-500 mb-3 px-1">
+                    Menampilkan semua pengaduan · <strong class="text-navy-900">{{ $pengaduan->total() }}</strong> total laporan
                 </p>
             @endif
 
@@ -138,7 +138,7 @@
                  (LokerLensCopy::BELUM_ADA_PENGADUAN)
             ====================================================== --}}
             @if($pengaduan->isEmpty())
-                <div class="bg-white rounded-card shadow-lg border border-gray-100 p-12 sm:p-16 text-center">
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-12 sm:p-16 text-center">
                     {{-- Ikon dokumen kosong --}}
                     <div class="w-16 h-16 rounded-2xl bg-gray-50 border border-gray-200 flex items-center
                                 justify-center mx-auto mb-5">
@@ -155,7 +155,7 @@
                             Tidak ada pengaduan yang sesuai dengan kata kunci atau filter yang dipilih.
                         </p>
                         <a href="{{ route('riwayat-pengaduan.index') }}"
-                           class="inline-flex items-center px-5 py-2.5 rounded-control border border-gray-200
+                           class="inline-flex items-center px-5 py-2.5 rounded-lg border border-gray-200
                                   text-sm text-gray-700 hover:bg-gray-50 font-medium transition">
                             ← Lihat Semua Pengaduan
                         </a>
@@ -169,7 +169,7 @@
                             Mulai laporan pertama Anda sekarang.
                         </p>
                         <a href="{{ route('periksa-lowongan.index') }}"
-                           class="inline-flex items-center gap-2 px-6 py-3 rounded-control bg-navy-900
+                           class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-navy-900
                                   hover:bg-navy-800 text-white text-sm font-semibold shadow transition">
                             <span>Ajukan Pengaduan Sekarang</span>
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -184,7 +184,7 @@
                 {{-- ======================================================
                      DAFTAR KARTU PENGADUAN — Satu kartu per pengaduan
                 ====================================================== --}}
-                <div class="space-y-4">
+                <div class="space-y-3">
                     @foreach($pengaduan as $item)
                         @php
                             $low   = $item->lowonganKerja;
@@ -219,65 +219,71 @@
                             };
                         @endphp
 
-                        <div class="bg-white rounded-card shadow-md p-5 sm:p-6 border border-gray-100 hover:shadow-lg
-                                    transition-all duration-200 flex flex-col md:flex-row md:items-center justify-between gap-5">
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-md hover:border-gray-200
+                                    transition-all duration-200 group">
+                            <div class="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center gap-4">
 
-                            {{-- Bagian Kiri: Info Tiket, Tanggal, Posisi, Perusahaan & Status --}}
-                            <div class="flex-1 space-y-2">
-                                <div class="flex flex-wrap items-center gap-2">
+                                {{-- Kolom Kiri: Nomor Tiket & Tanggal --}}
+                                <div class="shrink-0 w-full sm:w-40">
                                     <span class="font-mono text-xs font-bold text-teal-800 bg-teal-50
-                                                 border border-teal-200 px-2.5 py-1 rounded">
+                                                 border border-teal-200 px-2.5 py-1 rounded block w-fit">
                                         {{ $item->nomor_tiket }}
                                     </span>
-                                    <span class="text-xs text-gray-500">
-                                        {{ $item->tanggal_pengaduan->translatedFormat('d M Y, H:i') }} WIB
-                                    </span>
-                                    <span class="inline-flex px-2.5 py-0.5 rounded text-xs font-semibold {{ $statusColor }}">
+                                    <p class="text-[11px] text-gray-400 mt-1.5 leading-tight">
+                                        {{ $item->tanggal_pengaduan->translatedFormat('d M Y') }}<br>
+                                        {{ $item->tanggal_pengaduan->format('H:i') }} WIB
+                                    </p>
+                                </div>
+
+                                {{-- Kolom Tengah: Info Lowongan --}}
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-sm font-bold text-navy-900 truncate">
+                                        {{ $low->posisi_lowongan ?? '-' }}
+                                    </h3>
+                                    <p class="text-xs text-gray-500 mt-0.5 truncate">
+                                        {{ $per->nama_perusahaan ?? '-' }}
+                                        @if($low->lokasi ?? null)
+                                            <span class="text-gray-300 mx-1">•</span>
+                                            {{ $low->lokasi }}
+                                        @endif
+                                    </p>
+                                    {{-- Status --}}
+                                    <span class="inline-flex mt-2 px-2.5 py-0.5 rounded text-[11px] font-semibold {{ $statusColor }}">
                                         {{ $status->value ?? $status }}
                                     </span>
                                 </div>
 
-                                <h3 class="text-base sm:text-lg font-bold text-navy-900 leading-snug">
-                                    {{ $low->posisi_lowongan ?? '-' }}
-                                </h3>
-
-                                <div class="text-xs text-gray-600 flex items-center gap-2">
-                                    <strong class="text-navy-900">{{ $per->nama_perusahaan ?? '-' }}</strong>
-                                    @if($low->lokasi ?? null)
-                                        <span>•</span>
-                                        <span>{{ $low->lokasi }}</span>
-                                    @endif
-                                </div>
-                            </div>
-
-                            {{-- Bagian Kanan: Keyakinan Sistem & Tombol Lihat Hasil --}}
-                            <div class="flex sm:flex-col md:items-end justify-between items-center gap-3 shrink-0 pt-3 md:pt-0 border-t md:border-t-0 border-gray-100">
-                                @if($score !== null)
-                                    <div class="text-left md:text-right">
-                                        <span class="text-[10px] uppercase font-bold tracking-wider text-gray-400 block">
-                                            Keyakinan Sistem
-                                        </span>
-                                        <div class="text-2xl font-black font-mono text-navy-900 leading-tight">
-                                            {{ $score }}<span class="text-sm font-bold text-gray-500">%</span>
+                                {{-- Kolom Kanan: Skor & Tombol Lihat Hasil --}}
+                                <div class="flex flex-row sm:flex-col items-center sm:items-end gap-3 sm:gap-2 shrink-0">
+                                    @if($score !== null)
+                                        <div class="text-right">
+                                            <p class="text-[10px] uppercase tracking-widest font-semibold text-gray-400 leading-none">
+                                                KEYAKINAN SISTEM
+                                            </p>
+                                            <p class="text-2xl font-extrabold text-navy-900 leading-tight mt-0.5">
+                                                {{ $score }}<span class="text-sm font-bold text-gray-500">%</span>
+                                            </p>
+                                            <span class="inline-flex px-2 py-0.5 rounded text-[10px] font-semibold {{ $scoreColor }}">
+                                                {{ $risikoLabel }}
+                                            </span>
                                         </div>
-                                        <span class="inline-flex px-2 py-0.5 rounded text-[10px] font-semibold {{ $scoreColor }}">
-                                            {{ $risikoLabel }}
-                                        </span>
-                                    </div>
-                                @else
-                                    <div class="text-left md:text-right text-xs text-gray-400 italic">Belum diproses</div>
-                                @endif
+                                    @else
+                                        <span class="text-xs text-gray-400 italic">Belum diproses</span>
+                                    @endif
 
-                                <a href="{{ route('periksa-lowongan.hasil', $item->id_pengaduan) }}"
-                                   class="inline-flex items-center px-4 py-2 rounded-control bg-navy-900 hover:bg-navy-800
-                                          text-white font-semibold text-xs shadow transition">
-                                    <span>Lihat Hasil</span>
-                                    <svg class="w-3.5 h-3.5 ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
-                                    </svg>
-                                </a>
+                                    <a href="{{ route('periksa-lowongan.hasil', $item->id_pengaduan) }}"
+                                       class="mt-auto inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-gray-200
+                                              hover:border-teal-400 hover:text-teal-700 hover:bg-teal-50 text-xs font-semibold
+                                              text-gray-700 transition group-hover:border-teal-300 whitespace-nowrap">
+                                        <span>Lihat Hasil</span>
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                  d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                                        </svg>
+                                    </a>
+                                </div>
+
                             </div>
-
                         </div>
                     @endforeach
                 </div>

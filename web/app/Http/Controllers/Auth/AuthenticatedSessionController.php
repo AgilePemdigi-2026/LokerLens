@@ -27,7 +27,7 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         // Redirect berdasarkan peran
-        return redirect()->intended($this->redirectByRole($request->user()->role));
+        return redirect()->intended($request->user()->halamanAwal());
     }
 
     public function destroy(Request $request): RedirectResponse
@@ -37,18 +37,5 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('login');
-    }
-
-    /**
-     * Tentukan halaman tujuan setelah login berdasarkan peran.
-     * Masyarakat → Beranda; Analis → Tinjau Lowongan; Kepala Bidang → Tindak Lanjut.
-     */
-    private function redirectByRole(string $role): string
-    {
-        return match ($role) {
-            'Analis'          => route('tinjau-lowongan.index'),
-            'Kepala Bidang'   => route('tindak-lanjut.index'),
-            default           => route('beranda'), // Masyarakat
-        };
     }
 }

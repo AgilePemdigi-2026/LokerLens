@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 
 class HasilKlasifikasi extends Model
 {
@@ -40,24 +41,69 @@ class HasilKlasifikasi extends Model
     }
 
     /**
-     * Label risiko berdasarkan confidence_score.
-     * 92% = Risiko Tinggi (makin tinggi = makin berbahaya)
+     * Indikator tanpa duplikat: jika setelah dirapikan namanya sama, cukup tampil sekali
+     * (yang pertama disimpan). Dipakai di Hasil Pemeriksaan, Tinjau Lowongan, dan Tindak Lanjut.
      */
-    public function getLabelRisikoAttribute(): string
+    public function getIndikatorUnikAttribute(): Collection
+    {
+        return $this->indikatorMencurigakan
+            ->unique(fn (IndikatorMencurigakan $indikator) => mb_strtolower($indikator->nama_tampil))
+            ->values();
+    }
+
+    /**
+     * Daftar kata pemicu unik untuk chip, mis. ['biaya pendaftaran', 'nominal Rp'].
+     *
+     * @return array<int, string>
+     */
+    public function getKataPemicuUnikAttribute(): array
+    {
+        return $this->indikatorMencurigakan
+            ->map(fn (IndikatorMencurigakan $indikator) => $indikator->kata_pemicu)
+            ->unique(fn (string $kata) => mb_strtolower($kata))
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Tingkat risiko berdasarkan confidence_score (0–100, makin tinggi makin berbahaya):
+     *   rendah : di bawah 50 (label model "asli")
+     *   sedang : 50 sampai di bawah ambang prioritas (label "palsu", belum prioritas)
+     *   tinggi : >= ambang prioritas (config/lokerlens.php, default 70)
+     */
+    public function getTingkatRisikoAttribute(): string
     {
         return match (true) {
-            $this->confidence_score >= 75 => 'Risiko Tinggi',
-            $this->confidence_score >= 50 => 'Risiko Sedang',
-            default => 'Risiko Rendah',
+            $this->confidence_score >= config('lokerlens.ambang_prioritas') => 'tinggi',
+            $this->confidence_score >= 50 => 'sedang',
+            default => 'rendah',
         };
     }
 
-    public function getWarnaPillAttribute(): string
+    /** Mis. "Risiko tinggi". */
+    public function getLabelRisikoAttribute(): string
     {
-        return match (true) {
-            $this->confidence_score >= 75 => 'risk-high',
-            $this->confidence_score >= 50 => 'risk-mid',
-            default => 'ok',
+        return 'Risiko ' . $this->tingkat_risiko;
+    }
+
+    /** Palsu jika skor >= 50, sama dengan label dari model (ml/api/app.py). */
+    public function getIsPalsuAttribute(): bool
+    {
+        return $this->confidence_score >= 50;
+    }
+
+    /**
+     * Kelas warna Tailwind sesuai tingkat risiko (warna dari tailwind.config.js:
+     * risk-high merah, risk-mid oranye, risk-low hijau).
+     *
+     * @return array{teks: string, bar: string, badge: string, kotak: string}
+     */
+    public function getWarnaRisikoAttribute(): array
+    {
+        return match ($this->tingkat_risiko) {
+            'tinggi' => ['teks' => 'text-risk-high', 'bar' => 'bg-risk-high', 'badge' => 'bg-red-100 text-risk-high border border-red-200', 'kotak' => 'bg-red-50 border-red-200'],
+            'sedang' => ['teks' => 'text-risk-mid', 'bar' => 'bg-risk-mid', 'badge' => 'bg-amber-100 text-risk-mid border border-amber-200', 'kotak' => 'bg-amber-50 border-amber-200'],
+            default  => ['teks' => 'text-risk-low', 'bar' => 'bg-risk-low', 'badge' => 'bg-emerald-100 text-risk-low border border-emerald-200', 'kotak' => 'bg-emerald-50 border-emerald-200'],
         };
     }
 }

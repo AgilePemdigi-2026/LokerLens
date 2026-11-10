@@ -56,8 +56,10 @@
                     <label for="filter_skor" class="block text-xs font-semibold text-gray-700 mb-1">Filter Skor</label>
                     <select id="filter_skor" name="filter_skor" class="w-full px-3 py-2 rounded-control border border-gray-300 text-xs sm:text-sm text-navy-900 focus:ring-2 focus:ring-teal-600 focus:outline-none bg-white">
                         <option value="">Semua Skor</option>
-                        <option value="Skor Tinggi" {{ request('filter_skor') === 'Skor Tinggi' ? 'selected' : '' }}>Skor Tinggi (≥ 75%)</option>
-                        <option value="Skor Sedang" {{ request('filter_skor') === 'Skor Sedang' ? 'selected' : '' }}>Skor Sedang (50% - 74%)</option>
+                        {{-- Batas mengikuti ambang prioritas (config/lokerlens.php) --}}
+                        @php $ambang = (int) config('lokerlens.ambang_prioritas'); @endphp
+                        <option value="Skor Tinggi" {{ request('filter_skor') === 'Skor Tinggi' ? 'selected' : '' }}>Skor Tinggi (≥ {{ $ambang }}%)</option>
+                        <option value="Skor Sedang" {{ request('filter_skor') === 'Skor Sedang' ? 'selected' : '' }}>Skor Sedang (50% - {{ $ambang - 1 }}%)</option>
                     </select>
                 </div>
 
@@ -122,11 +124,11 @@
                                 <!-- Nama Perusahaan -->
                                 <td class="px-4 py-3.5">
                                     <div class="font-bold text-navy-900">
-                                        {{ $perusahaan->nama_perusahaan ?? 'Entitas Tidak Terdaftar' }}
+                                        {{ $perusahaan->nama_perusahaan ?? '-' }}
                                     </div>
                                     <div class="text-[11px] text-gray-500 flex items-center gap-1 mt-0.5">
                                         <svg class="w-3 h-3 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
-                                        <span>{{ $perusahaan->status_terdaftar ?? 'Entitas Tak Terdaftar Kemenaker / AHU' }}</span>
+                                        <span>{{ $perusahaan->status_terdaftar ?? '-' }}</span>
                                     </div>
                                 </td>
 

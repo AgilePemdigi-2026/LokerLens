@@ -11,7 +11,7 @@
             <!-- A. Kasus Disetujui untuk Tindaklanjuti (Gambar 2.13) -->
             <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-10 text-navy-900 border border-gray-100 animate-fadeIn">
                 <!-- Icon Sukses Hijau -->
-                <div class="w-16 h-16 rounded-full bg-emerald-100 text-ok flex items-center justify-center mx-auto mb-4 shadow-sm">
+                <div class="w-16 h-16 rounded-full bg-emerald-100 text-risk-low flex items-center justify-center mx-auto mb-4 shadow-sm">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
                     </svg>
@@ -21,7 +21,7 @@
                     <h1 class="text-2xl sm:text-3xl font-extrabold text-navy-900 tracking-tight">
                         Keputusan Berhasil Disimpan
                     </h1>
-                    <p class="text-sm text-ok font-semibold mt-1">
+                    <p class="text-sm text-risk-low font-semibold mt-1">
                         Kasus berhasil ditandai untuk ditindaklanjuti.
                     </p>
                 </div>
@@ -48,7 +48,7 @@
                     </div>
                     <div class="flex justify-between pb-2 border-b border-gray-200">
                         <span class="text-gray-500">Status Kasus Terbaru:</span>
-                        <strong class="text-ok font-bold">{{ $pengaduan->status_pengaduan }}</strong>
+                        <strong class="text-risk-low font-bold">{{ $pengaduan->status_pengaduan }}</strong>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-500">Riwayat Kasus:</span>

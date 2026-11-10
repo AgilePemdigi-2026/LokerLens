@@ -105,6 +105,7 @@
                 </span>
             </div>
 
+            {{-- Selama memeriksa, isian dikunci dengan readonly (bukan disabled): kolom yang disabled tidak ikut terkirim ke server --}}
             <form id="form-periksa" method="POST" action="{{ route('periksa-lowongan.store') }}" @submit="handleSubmit($event)" class="space-y-6">
                 @csrf
 
@@ -113,7 +114,7 @@
                     <label for="link_lowongan" class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
                         Link Lowongan Kerja <span class="text-gray-400 font-normal lowercase">(opsional)</span>
                     </label>
-                    <input type="url" id="link_lowongan" name="link_lowongan" value="{{ old('link_lowongan') }}" :disabled="submitting"
+                    <input type="url" id="link_lowongan" name="link_lowongan" value="{{ old('link_lowongan') }}" :readonly="submitting"
                         placeholder="https://www.linkedin.com/jobs/view/..."
                         class="w-full px-4 py-2.5 rounded-control border border-gray-300 text-sm text-navy-900 focus:ring-2 focus:ring-teal-600 focus:outline-none transition disabled:bg-gray-100" />
                     <p class="text-[11px] text-gray-500 mt-1">
@@ -128,7 +129,7 @@
                         <label for="nama_perusahaan" class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
                             Nama Perusahaan <span class="text-risk-high">*</span>
                         </label>
-                        <input type="text" id="nama_perusahaan" name="nama_perusahaan" value="{{ old('nama_perusahaan') }}" required :disabled="submitting"
+                        <input type="text" id="nama_perusahaan" name="nama_perusahaan" value="{{ old('nama_perusahaan') }}" required :readonly="submitting"
                             placeholder="Contoh: PT Maju Bersama Sejahtera"
                             class="w-full px-4 py-2.5 rounded-control border text-sm text-navy-900 focus:ring-2 focus:ring-teal-600 focus:outline-none transition disabled:bg-gray-100 {{ $errors->has('nama_perusahaan') ? 'border-risk-high' : 'border-gray-300' }}" />
                     </div>
@@ -138,7 +139,7 @@
                         <label for="posisi_lowongan" class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
                             Posisi Lowongan <span class="text-risk-high">*</span>
                         </label>
-                        <input type="text" id="posisi_lowongan" name="posisi_lowongan" value="{{ old('posisi_lowongan') }}" required :disabled="submitting"
+                        <input type="text" id="posisi_lowongan" name="posisi_lowongan" value="{{ old('posisi_lowongan') }}" required :readonly="submitting"
                             placeholder="Contoh: Staff Administrasi / Customer Service"
                             class="w-full px-4 py-2.5 rounded-control border text-sm text-navy-900 focus:ring-2 focus:ring-teal-600 focus:outline-none transition disabled:bg-gray-100 {{ $errors->has('posisi_lowongan') ? 'border-risk-high' : 'border-gray-300' }}" />
                     </div>
@@ -152,7 +153,7 @@
                         </label>
                         <span class="text-xs text-gray-500 font-medium">Minimal 50 karakter</span>
                     </div>
-                    <textarea id="deskripsi_lowongan" name="deskripsi_lowongan" rows="5" required minlength="50" :disabled="submitting"
+                    <textarea id="deskripsi_lowongan" name="deskripsi_lowongan" rows="5" required minlength="50" :readonly="submitting"
                         placeholder="Salin dan tempel deskripsi lowongan, kualifikasi, benefit, dan instruksi pendaftaran di sini..."
                         class="w-full px-4 py-3 rounded-control border text-sm text-navy-900 focus:ring-2 focus:ring-teal-600 focus:outline-none transition disabled:bg-gray-100 {{ $errors->has('deskripsi_lowongan') ? 'border-risk-high' : 'border-gray-300' }}">{{ old('deskripsi_lowongan') }}</textarea>
                 </div>
@@ -162,7 +163,7 @@
                     <label for="informasi_tambahan" class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
                         Informasi Tambahan & Kontak <span class="text-gray-400 font-normal lowercase">(opsional)</span>
                     </label>
-                    <input type="text" id="informasi_tambahan" name="informasi_tambahan" value="{{ old('informasi_tambahan') }}" :disabled="submitting"
+                    <input type="text" id="informasi_tambahan" name="informasi_tambahan" value="{{ old('informasi_tambahan') }}" :readonly="submitting"
                         placeholder="Cantumkan kontak perekrut (email, WhatsApp), lokasi wawancara, atau informasi lain yang perlu diperiksa..."
                         class="w-full px-4 py-2.5 rounded-control border border-gray-300 text-sm text-navy-900 focus:ring-2 focus:ring-teal-600 focus:outline-none transition disabled:bg-gray-100" />
                 </div>
@@ -181,28 +182,28 @@
                     <div class="space-y-2.5 text-xs sm:text-sm">
                         <!-- 1. Permintaan biaya -->
                         <label class="flex items-start space-x-3 cursor-pointer hover:text-teal-200">
-                            <input type="checkbox" name="checklist[]" value="biaya" :disabled="submitting"
+                            <input type="checkbox" name="checklist[]" value="biaya" @click="submitting && $event.preventDefault()"
                                 class="w-4 h-4 mt-0.5 rounded border-gray-600 text-teal-600 focus:ring-teal-500 bg-navy-800">
                             <span>Ada permintaan biaya pendaftaran / tes / seragam</span>
                         </label>
 
                         <!-- 2. Email gratisan -->
                         <label class="flex items-start space-x-3 cursor-pointer hover:text-teal-200">
-                            <input type="checkbox" name="checklist[]" value="email_gratis" :disabled="submitting"
+                            <input type="checkbox" name="checklist[]" value="email_gratis" @click="submitting && $event.preventDefault()"
                                 class="w-4 h-4 mt-0.5 rounded border-gray-600 text-teal-600 focus:ring-teal-500 bg-navy-800">
                             <span>Menggunakan alamat email gratisan (gmail/yahoo/hotmail)</span>
                         </label>
 
                         <!-- 3. Lokasi wawancara mencurigakan -->
                         <label class="flex items-start space-x-3 cursor-pointer hover:text-teal-200">
-                            <input type="checkbox" name="checklist[]" value="lokasi" :disabled="submitting"
+                            <input type="checkbox" name="checklist[]" value="lokasi" @click="submitting && $event.preventDefault()"
                                 class="w-4 h-4 mt-0.5 rounded border-gray-600 text-teal-600 focus:ring-teal-500 bg-navy-800">
                             <span>Lokasi interview di luar / penginapan / alamat mencurigakan</span>
                         </label>
 
                         <!-- 4. Gaji tidak masuk akal -->
                         <label class="flex items-start space-x-3 cursor-pointer hover:text-teal-200">
-                            <input type="checkbox" name="checklist[]" value="gaji" :disabled="submitting"
+                            <input type="checkbox" name="checklist[]" value="gaji" @click="submitting && $event.preventDefault()"
                                 class="w-4 h-4 mt-0.5 rounded border-gray-600 text-teal-600 focus:ring-teal-500 bg-navy-800">
                             <span>Menawarkan gaji tidak masuk akal tanpa kualifikasi spesifik</span>
                         </label>

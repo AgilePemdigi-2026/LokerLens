@@ -8,6 +8,7 @@ use App\Http\Controllers\DashboardKepalaBidangController;
 use App\Http\Controllers\PeriksaLowonganController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RiwayatPengaduanController;
+use App\Http\Controllers\StatusPengaduanController;
 use App\Http\Controllers\TindakLanjutController;
 use App\Http\Controllers\TinjauLowonganController;
 use Illuminate\Support\Facades\Route;
@@ -30,6 +31,12 @@ Route::get('/', function () {
 // ─── Autentikasi (Laravel Breeze) ────────────────────────────────────────────
 require __DIR__ . '/auth.php';
 
+// ─── Mode Preview Pengembangan (/dev) ────────────────────────────────────────
+// Hanya terdaftar jika APP_ENV=local DAN DEV_PREVIEW=true.
+if (\App\Support\DevPreview::aktif()) {
+    require __DIR__ . '/dev.php';
+}
+
 // ─── Rute Terproteksi (wajib login) ──────────────────────────────────────────
 Route::middleware('auth')->group(function () {
 
@@ -47,6 +54,13 @@ Route::middleware('auth')->group(function () {
             ->name('periksa-lowongan.store');
         Route::get('/periksa-lowongan/hasil/{id}', [PeriksaLowonganController::class, 'hasil'])
             ->name('periksa-lowongan.hasil');
+
+        // Status Pengaduan — /status-pengaduan/ (Sprint 2, issue #11)
+        Route::get('/status-pengaduan', [StatusPengaduanController::class, 'index'])
+            ->name('status-pengaduan.index');
+        Route::get('/status-pengaduan/{id}', [StatusPengaduanController::class, 'detail'])
+            ->whereNumber('id')
+            ->name('status-pengaduan.detail');
 
         // Riwayat Pengaduan — /riwayat-pengaduan (Sprint 2)
         Route::get('/riwayat-pengaduan', [RiwayatPengaduanController::class, 'index'])
@@ -76,6 +90,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard-kepala-bidang', [DashboardKepalaBidangController::class, 'index'])
             ->name('dashboard-kepala-bidang.index');
 
+
         // Tindak Lanjut — /tindak-lanjut/ (Sprint 1)
         Route::get('/tindak-lanjut', [TindakLanjutController::class, 'index'])
             ->name('tindak-lanjut.index');
@@ -93,6 +108,8 @@ Route::middleware('auth')->group(function () {
             ->name('arsip-kasus.show');
 
         // Buat Surat — /buat-surat/ (Sprint 1) — FR-ST-02: hanya setelah Tindaklanjuti
+        // Tanpa nomor kasus: surat selalu dibuat dari laporan tertentu, jadi arahkan ke Daftar Laporan
+        Route::redirect('/buat-surat', '/tindak-lanjut')->name('buat-surat.daftar');
         Route::get('/buat-surat/{pengaduanId}', [BuatSuratController::class, 'index'])
             ->name('buat-surat.index');
         Route::post('/buat-surat/{pengaduanId}/draft', [BuatSuratController::class, 'simpanDraft'])

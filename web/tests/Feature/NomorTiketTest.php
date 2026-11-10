@@ -21,6 +21,7 @@ class NomorTiketTest extends TestCase
     public function test_dua_pemeriksaan_berturut_turut_mendapat_nomor_tiket_berbeda(): void
     {
         $masyarakat = User::factory()->create(['role' => 'Masyarakat']);
+        $this->palsukanApiMl(0.9);
 
         $data = [
             'nama_perusahaan'    => 'PT Contoh Abadi',

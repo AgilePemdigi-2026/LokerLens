@@ -13,10 +13,12 @@
         "symfony/mime": "^7.4"
     },
     "scripts": {
-        "test-bdd": "@php ganti_nama_laporan.php --jalankan-behat"
+        "test-bdd": "@php ganti_nama_laporan.php --jalankan-behat",
+        "test-bdd-demo": "@php ganti_nama_laporan.php --jalankan-behat --profile=demo"
     },
     "scripts-descriptions": {
-        "test-bdd": "Jalankan semua skenario Behat, lalu simpan laporan HTML sebagai laporan/hasil-test-bdd_<tanggal>_<jam>.html"
+        "test-bdd": "Jalankan semua skenario Behat, lalu simpan laporan HTML sebagai laporan/hasil-test-bdd_<tanggal>_<jam>.html",
+        "test-bdd-demo": "Jalankan semua skenario di Chrome yang terlihat dengan jeda antar langkah (BDD_JEDA, default 1 detik), lalu simpan laporan HTML"
     },
     "config": {
         "platform": {

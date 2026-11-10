@@ -46,3 +46,21 @@ default:
           chrome:
             api_url: 'http://127.0.0.1:9222'
             socket_timeout: 15
+
+# ─── Profil "demo": menonton skenario berjalan ─────────────────────────────
+# Jalankan dengan: composer test-bdd-demo (dari web/bdd/). Cara lengkap ada di README.md.
+# Bedanya dengan profil default:
+#   - SEMUA skenario (bukan hanya @javascript) berjalan di Chrome port 9222.
+#     Chrome harus dibuka TANPA --headless supaya jendelanya terlihat.
+#   - Ada jeda setelah setiap langkah: variabel BDD_JEDA (detik), default 1.
+demo:
+  suites:
+    default:
+      contexts:
+        - FeatureContext:
+            modeDemo: true
+
+  extensions:
+    Behat\MinkExtension:
+      default_session: chrome
+      javascript_session: chrome

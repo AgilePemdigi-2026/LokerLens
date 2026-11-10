@@ -5,6 +5,8 @@ Tanggal: 27 Oktober 2026
 > **Catatan kondisi kode.** Laporan ini dibuat dari kode yang sudah berisi integrasi model ML (API FastAPI, `KlasifikasiService`, perintah `lokerlens:klasifikasi-ulang`, dan `KlasifikasiMlTest`). Integrasi ini sudah masuk `main` lewat PR #39 (commit `88f73ba`).
 >
 > **Pembaruan (issue #21):** bagian 1–5 menggambarkan kondisi **sebelum** test BDD dibuat. Test BDD (Behat + Mink) sekarang sudah ada di `web/bdd/`. Perbedaan skenario dengan SRS ada di **bagian 6**, hasilnya di **bagian 7**.
+>
+> **Pembaruan Sprint 2 (10 November 2026):** user story dan skenario BDD untuk fitur Sprint 2 (US-05 s.d. US-12, Table B.6–B.13) beserta hasil test-nya ada di **bagian 8**. Semuanya **baru** dan perlu ditambahkan ke SRS.
 
 ---
 
@@ -252,3 +254,110 @@ Dijalankan di Windows 11, PHP 8.5.4, MySQL 8.4.3 (Laragon), dan Chrome 156 (head
 Sebagian besar waktu habis untuk reset database (sekitar 3 detik per skenario).
 
 Test PHPUnit (`php artisan test`): 88 test, 87 lulus. Yang gagal tetap `RegistrationTest::test_new_users_can_register`, yang sudah usang sejak PR #37 (lihat bagian 3).
+
+---
+
+## 8. User story dan skenario BDD Sprint 2 (10 November 2026)
+
+### 8.1 Dasar penyusunan
+
+- **SRS Appendix B.1** hanya berisi US-01 s.d. US-04 dan Table B.2–B.5 (fitur Sprint 1). Fitur Sprint 2 **belum punya user story maupun skenario** di SRS.
+- **SRS Appendix C no. 7** masih menandai *"Fitur Dashboard, Riwayat, dan Statistik: masuk SRS atau tidak"* sebagai **[TBD]**.
+- **Data Mockup** hanya merancang Beranda (Gambar 2.4) dari fitur Sprint 2.
+- **Sprint Planning** mencantumkan 7 fitur Sprint 2: Lupa Password, Beranda, Status Pengaduan, Riwayat Pengaduan, Dashboard Analis, Dashboard Kepala Bidang, dan Arsip Kasus. **Riwayat Tinjauan Analis** adalah fitur tambahan dari issue #25.
+
+Karena itu user story dan skenario di bawah **semuanya BARU** dan perlu ditambahkan ke SRS Appendix B, melanjutkan penomoran US-05 dan Table B.6. Formatnya sama dengan SRS: *"As a …, I want to …, so that …"*, dan langkah skenarionya bergaya Behat + Mink.
+
+Aturan penyusunan:
+- hanya menguji perilaku yang sudah ada di aplikasi;
+- teks yang diharapkan diambil dari `LokerLensCopy.php` atau teks yang tampil di halaman;
+- data dari seeder yang sudah ada, tanpa perubahan seeder.
+
+Setiap fitur punya minimal satu skenario berhasil, satu skenario kosong/gagal/validasi, dan satu skenario hak akses peran (kecuali Lupa Password, yang memang untuk tamu).
+
+### 8.2 User story baru
+
+| ID | Peran | User Story | Tabel | File |
+|---|---|---|---|---|
+| US-05 | Pengguna (Masyarakat, Analis, Kepala Bidang) | As a Pengguna, I want to mengatur ulang kata sandi melalui tautan yang dikirim ke email, so that saya dapat kembali masuk ke akun ketika lupa kata sandi. | B.6 | `lupa_password.feature` |
+| US-06 | Masyarakat | As a Masyarakat, I want to melihat beranda berisi pintasan layanan dan pengaduan terbaru saya, so that saya dapat langsung melapor atau memantau pengaduan dari satu halaman. | B.7 | `beranda.feature` |
+| US-07 | Masyarakat | As a Masyarakat, I want to memantau status dan tahapan penanganan pengaduan yang masih berjalan, so that saya mengetahui perkembangan laporan yang saya ajukan. | B.8 | `status_pengaduan.feature` |
+| US-08 | Masyarakat | As a Masyarakat, I want to melihat kembali pengaduan yang sudah selesai beserta hasil akhirnya, so that saya dapat meninjau hasil pemeriksaan dan keputusan atas laporan saya. | B.9 | `riwayat_pengaduan.feature` |
+| US-09 | Analis | As a Analis, I want to melihat ringkasan beban kerja dan antrean lowongan berisiko tinggi, so that saya dapat memprioritaskan lowongan yang perlu ditinjau. | B.10 | `dashboard_analis.feature` |
+| US-10 | Analis | As a Analis, I want to melihat daftar lowongan yang sudah ditinjau beserta hasil akhir kasusnya, so that saya dapat menelusuri kembali hasil tinjauan dan keputusan lanjutannya. | B.11 | `riwayat_tinjauan.feature` |
+| US-11 | Kepala Bidang | As a Kepala Bidang, I want to melihat ringkasan jumlah laporan berdasarkan status penanganan, so that saya dapat segera menemukan laporan yang menunggu keputusan. | B.12 | `dashboard_kepala_bidang.feature` |
+| US-12 | Kepala Bidang | As a Kepala Bidang, I want to menelusuri arsip kasus yang sudah berstatus akhir, so that saya dapat melihat kembali dokumen dan riwayat penanganan kasus. | B.13 | `arsip_kasus.feature` |
+
+### 8.3 Skenario baru (32 skenario, semua BARU untuk SRS)
+
+Penomoran mengikuti bagian 1, misalnya B.6-1 = Table B.6 skenario ke-1. Langkah lengkapnya ada di file `.feature`.
+
+| ID | Fitur | Aktor | Judul skenario | Given → When → Then |
+|---|---|---|---|---|
+| B.6-1 | Lupa Password | Tamu | Meminta tautan reset dengan email yang terdaftar | Di `/forgot-password` → isi `email` "adelulinn@gmail.com", tekan "Kirim Tautan Reset Kata Sandi" → tampil "Periksa email Anda" |
+| B.6-2 | Lupa Password | Tamu | Email yang tidak terdaftar tetap mendapat pesan yang sama | Di `/forgot-password` → isi email yang tidak terdaftar, tekan "Kirim Tautan Reset Kata Sandi" → tampil "Periksa email Anda" (pesan netral, tidak membocorkan email terdaftar) |
+| B.6-3 | Lupa Password | Tamu | Gagal meminta tautan karena email kosong | Di `/forgot-password` → tekan "Kirim Tautan Reset Kata Sandi" → tampil "Email wajib diisi." dan tidak tampil "Periksa email Anda" |
+| B.6-4 | Lupa Password | Tamu | Mengatur kata sandi baru dengan tautan yang sah | Tautan reset sah untuk akun Masyarakat → isi `email`, `password`, `password_confirmation`, tekan "Simpan Kata Sandi Baru" → tampil "Kata sandi berhasil diubah"; login dengan sandi baru → berada di `/beranda` |
+| B.6-5 | Lupa Password | Tamu | Gagal mengatur kata sandi karena tautan tidak sah | Di `/reset-password/token-tidak-sah` → isi isian, tekan "Simpan Kata Sandi Baru" → tampil "Tautan atur ulang kata sandi tidak valid atau sudah kedaluwarsa. Silakan minta tautan baru." |
+| B.7-1 | Beranda | Masyarakat | Menampilkan beranda dan pengaduan terbaru | Di `/beranda` → tampil "Satu tempat untuk melapor, memantau, dan meninjau.", "Pengaduan Terbaru Anda", "#LKR-8821" |
+| B.7-2 | Beranda | Masyarakat | Membuka Status Pengaduan dari beranda | Di `/beranda` → klik "Cek Status Pengaduan" → berada di `/status-pengaduan`, tampil "Pengaduan Berjalan" |
+| B.7-3 | Beranda | Masyarakat | Beranda akun yang belum punya pengaduan | Login akun Masyarakat tanpa pengaduan → di `/beranda` tampil "Belum ada pengaduan yang diajukan" |
+| B.7-4 | Beranda | Analis | Peran lain tidak bisa membuka beranda Masyarakat | Login Analis → buka `/beranda` → kode respons 403 |
+| B.8-1 | Status Pengaduan | Masyarakat | Menampilkan pengaduan yang masih berjalan | Di `/status-pengaduan` → tampil "Pengaduan Berjalan", "#LKR-8821"; tidak tampil "#LKR-8798" (sudah selesai) |
+| B.8-2 | Status Pengaduan | Masyarakat | Melihat progres penanganan satu pengaduan | Di `/status-pengaduan` → klik kartu "#LKR-8821" → tampil "Progres Penanganan", "Ditinjau Analis" |
+| B.8-3 | Status Pengaduan | Masyarakat | Tidak ada pengaduan yang sedang berjalan | Login akun Masyarakat tanpa pengaduan → tampil "Belum ada pengaduan berjalan" |
+| B.8-4 | Status Pengaduan | Kepala Bidang | Peran lain tidak bisa membuka Status Pengaduan | Login Kepala Bidang → buka `/status-pengaduan` → 403 |
+| B.9-1 | Riwayat Pengaduan | Masyarakat | Menampilkan pengaduan yang sudah selesai | Di `/riwayat-pengaduan` → tampil "Total Selesai", "#LKR-8798", "#LKR-8752"; tidak tampil "#LKR-8821" |
+| B.9-2 | Riwayat Pengaduan | Masyarakat | Memfilter riwayat berdasarkan status akhir | Pilih "Tidak Terbukti" di `status`, tekan "Cari" → tampil "#LKR-8752"; tidak tampil "#LKR-8798" |
+| B.9-3 | Riwayat Pengaduan | Masyarakat | Belum ada pengaduan yang selesai | Login akun Masyarakat tanpa pengaduan → tampil "Belum ada pengaduan yang selesai" |
+| B.9-4 | Riwayat Pengaduan | Analis | Peran lain tidak bisa membuka Riwayat Pengaduan | Login Analis → buka `/riwayat-pengaduan` → 403 |
+| B.10-1 | Dashboard Analis | Analis | Menampilkan dashboard Analis | Klik "Dashboard" di navbar → tampil "Dashboard Analis", "Pantau beban kerja dan prioritaskan lowongan berisiko tinggi." |
+| B.10-2 | Dashboard Analis | Analis | Membuka antrean tinjauan dari dashboard | Di `/dashboard-analis` → klik "Lihat seluruh antrean" → tampil "Daftar Lowongan Prioritas Tinggi" |
+| B.10-3 | Dashboard Analis | Analis | Periode tanpa antrean tinjauan | Di `/dashboard-analis` periode kustom 1–7 Januari 2020 → tampil "Belum ada antrean pada periode ini" |
+| B.10-4 | Dashboard Analis | Masyarakat | Peran lain tidak bisa membuka dashboard Analis | Login Masyarakat → buka `/dashboard-analis` → 403 |
+| B.11-1 | Riwayat Tinjauan | Analis | Menampilkan lowongan yang sudah ditinjau | Klik "Riwayat" di navbar → tampil "Riwayat Tinjauan Lowongan", "#LKR-8798"; tidak tampil "#LKR-8821" |
+| B.11-2 | Riwayat Tinjauan | Analis | Memfilter riwayat berdasarkan hasil akhir | Pilih "Tidak Ditindaklanjuti" di `filter_hasil_akhir`, tekan "Cari" → tampil "#LKR-8781"; tidak tampil "#LKR-8798" |
+| B.11-3 | Riwayat Tinjauan | Analis | Melihat detail tinjauan dalam mode hanya-baca | Klik "Lihat Detail" di baris "#LKR-2025-0842" → tampil "Hasil Akhir Kasus", "Menunggu keputusan Kepala Bidang"; tidak ada elemen `#catatan_tinjauan` (form tinjauan tidak tampil) |
+| B.11-4 | Riwayat Tinjauan | Kepala Bidang | Peran lain tidak bisa membuka Riwayat Tinjauan | Login Kepala Bidang → buka `/riwayat-tinjauan` → 403 |
+| B.12-1 | Dashboard Kepala Bidang | Kepala Bidang | Dashboard tampil setelah login | Login → berada di `/dashboard-kepala-bidang`, tampil "Dashboard Kepala Bidang", "Ringkasan jumlah laporan berdasarkan status penanganan." |
+| B.12-2 | Dashboard Kepala Bidang | Kepala Bidang | Membuka laporan yang menunggu keputusan | Di dashboard → klik "Lihat semua" → tampil "Daftar Laporan", "#LKR-2025-0842" |
+| B.12-3 | Dashboard Kepala Bidang | Analis | Peran lain tidak bisa membuka dashboard Kepala Bidang | Login Analis → buka `/dashboard-kepala-bidang` → 403 |
+| B.13-1 | Arsip Kasus | Kepala Bidang | Menampilkan arsip kasus berstatus akhir | Klik "Arsip Kasus" di navbar → tampil "#LKR-8798", "#LKR-8781", "#LKR-8752"; tidak tampil "#LKR-2025-0842" |
+| B.13-2 | Arsip Kasus | Kepala Bidang | Melihat detail arsip kasus | Di `/arsip-kasus` → klik "Buka Detail" di baris "#LKR-8798" → tampil "Dokumen Surat Resmi", "Status Akhir" |
+| B.13-3 | Arsip Kasus | Kepala Bidang | Pencarian arsip tidak menemukan kasus | Isi `cari` "#LKR-0000", tekan "Cari" → tampil "Tidak Ada Kasus Sesuai Kriteria Filter" |
+| B.13-4 | Arsip Kasus | Analis | Peran lain tidak bisa membuka Arsip Kasus | Login Analis → buka `/arsip-kasus` → 403 |
+
+Skenario kosong untuk Dashboard Kepala Bidang ("Tidak ada laporan yang menunggu keputusan.") dan Riwayat Tinjauan ("Belum ada lowongan yang ditinjau") tidak dibuat, karena seeder selalu berisi kasus untuk keduanya dan data seeder lama tidak diubah. Kondisi kosong itu sudah diuji di PHPUnit (`DashboardKepalaBidangTest`, `RiwayatTinjauanTest`).
+
+### 8.4 Langkah tambahan di `FeatureContext`
+
+| Langkah / perubahan | Kegunaan |
+|---|---|
+| Akun `"Masyarakat Baru"` di `I am logged in as` | Akun seeder `masyarakat.baru@lokerlens.test` tanpa pengaduan, untuk tampilan kosong |
+| `Given I am on a valid password reset page for "<email>"` | Membuat token reset langsung di tabel `password_reset_tokens` database test (hash bcrypt, sama dengan Laravel), jadi tidak bergantung pada email sungguhan. `.env.behat` memakai `MAIL_MAILER=log` |
+| `When I follow "<tautan>" in the row for ticket "<tiket>"` | Klik tautan di baris tabel yang memuat nomor tiket tertentu |
+| Profil `demo` (parameter `modeDemo`) | Semua skenario di Chrome yang terlihat, jeda antar langkah dari `BDD_JEDA` (default 1 detik), dan berhenti dengan pesan jelas kalau Chrome di port 9222 ternyata headless |
+| Screenshot saat gagal | Halaman disimpan ke `web/bdd/laporan/screenshot/`: `.png` di Chrome, `.html` di mode tanpa browser |
+
+### 8.5 Hasil test
+
+Dijalankan di Windows 11, PHP 8.5.4, MySQL (Laragon), dan Chrome 157, dengan server test port 8010 dan API ML menyala.
+
+| Perintah (dari `web/bdd/`) | Skenario | Hasil | Waktu |
+|---|---|---|---|
+| `composer test-bdd` (Chrome headless untuk `@javascript`) | 47 (15 lama + 32 baru) | **47 lulus (235 langkah)** | ±4 menit |
+| `composer test-bdd-demo` (Chrome terlihat, `BDD_JEDA` = 1 detik) | 47 (15 lama + 32 baru) | HASIL_DEMO | WAKTU_DEMO |
+
+Test PHPUnit (`php artisan test`): **233 lulus, 0 gagal** (1587 assertion).
+
+Tidak ada skenario yang gagal karena bug aplikasi.
+
+### 8.6 Catatan untuk ditindaklanjuti (tidak diubah di branch ini)
+
+1. **Teks Lupa Password ditulis langsung di Blade**, bukan dari `LokerLensCopy`. Contohnya view menampilkan "Periksa Email Anda" dan "Kata Sandi Berhasil Diubah", sedangkan `LokerLensCopy::LUPA_TERKIRIM_JUDUL` dan `SANDI_BERHASIL_JUDUL` berisi "Periksa email Anda" dan "Kata sandi berhasil diubah". Skenario tetap lulus karena `I should see` di Mink tidak peka huruf besar, tetapi sumber teksnya sebaiknya disatukan ke `LokerLensCopy`.
+2. **Halaman awal setelah login tidak konsisten:**
+   - Analis masuk ke `/tinjau-lowongan` (Pemantauan), bukan Dashboard Analis;
+   - Kepala Bidang masuk ke `/dashboard-kepala-bidang`;
+   - aturannya ada di `User::halamanAwal()`.
+
+   Karena itu skenario B.10-1 membuka Dashboard Analis lewat menu, sedangkan B.12-1 memeriksa dashboard langsung setelah login.

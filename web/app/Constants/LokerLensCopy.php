@@ -275,6 +275,10 @@ final class LokerLensCopy
     public const KOLOM_TANGGAL_DITINJAU    = 'Tanggal Ditinjau';
     public const KOLOM_AKSI                = 'Aksi';
 
+    // Tombol aksi di tabel Pemantauan (issue #25), dibedakan dari teks status kasus
+    public const BTN_MULAI_TINJAU          = 'Mulai Tinjau';
+    public const BTN_LANJUTKAN_TINJAUAN    = 'Lanjutkan Tinjauan';
+
     // Tampilan kosong
     public const BELUM_ADA_TINJAUAN        = 'Belum ada lowongan yang ditinjau';
     public const BELUM_ADA_TINJAUAN_KETERANGAN = 'Lowongan yang sudah Anda tinjau di menu Pemantauan akan tampil di sini.';

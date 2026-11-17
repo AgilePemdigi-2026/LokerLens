@@ -1,3 +1,6 @@
+@use('App\Constants\LokerLensCopy')
+@use('App\Enums\StatusKasus')
+
 <x-app-layout>
     <div class="max-w-7xl mx-auto py-4 space-y-6">
         <!-- Header Halaman (Bagian 6.4.1) -->
@@ -36,8 +39,9 @@
                 </div>
             </div>
 
-            <!-- Formulir Filter & Pencarian (BDD Hooks: nomor_tiket, filter_skor, urutan, Cari) -->
-            <form method="GET" action="{{ route('tinjau-lowongan.index') }}" class="grid grid-cols-1 md:grid-cols-12 gap-3 mb-6 bg-gray-50 p-4 rounded-xl border border-gray-200">
+            <!-- Formulir Filter & Pencarian (BDD Hooks: nomor_tiket, filter_skor, urutan, Cari).
+                 filterOtomatis (resources/js/app.js): dropdown langsung terkirim, pencarian setelah berhenti mengetik. -->
+            <form method="GET" action="{{ route('tinjau-lowongan.index') }}" x-data="filterOtomatis" class="grid grid-cols-1 md:grid-cols-12 gap-3 mb-6 bg-gray-50 p-4 rounded-xl border border-gray-200">
                 <!-- Input Pencarian -->
                 <div class="md:col-span-5">
                     <label for="nomor_tiket" class="block text-xs font-semibold text-gray-700 mb-1">Pencarian Laporan</label>
@@ -99,12 +103,12 @@
                 <table class="min-w-full divide-y divide-gray-200 text-left text-xs sm:text-sm">
                     <thead class="bg-gray-100 text-gray-700 font-bold uppercase tracking-wider text-[11px]">
                         <tr>
-                            <th class="px-4 py-3">ID LOWONGAN</th>
-                            <th class="px-4 py-3">NAMA PERUSAHAAN</th>
-                            <th class="px-4 py-3">POSISI DITAWARKAN</th>
-                            <th class="px-4 py-3">CONFIDENCE SCORE</th>
-                            <th class="px-4 py-3">STATUS SISTEM</th>
-                            <th class="px-4 py-3 text-right">AKSI</th>
+                            <th class="px-4 py-3 whitespace-nowrap">{{ LokerLensCopy::KOLOM_NOMOR_TIKET }}</th>
+                            <th class="px-4 py-3 min-w-[12rem]">NAMA PERUSAHAAN</th>
+                            <th class="px-4 py-3 min-w-[10rem]">POSISI DITAWARKAN</th>
+                            <th class="px-4 py-3 whitespace-nowrap">CONFIDENCE SCORE</th>
+                            <th class="px-4 py-3 whitespace-nowrap">STATUS SISTEM</th>
+                            <th class="px-4 py-3 text-right whitespace-nowrap">AKSI</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 bg-white">
@@ -117,7 +121,7 @@
                             @endphp
                             <tr class="hover:bg-gray-50/80 transition">
                                 <!-- ID Lowongan / Tiket -->
-                                <td class="px-4 py-3.5 font-mono font-bold text-teal-800">
+                                <td class="px-4 py-3.5 font-mono font-bold text-teal-800 whitespace-nowrap">
                                     {{ $pengaduan->nomor_tiket }}
                                 </td>
 
@@ -137,34 +141,26 @@
                                     {{ $lowongan->posisi_lowongan ?? '-' }}
                                 </td>
 
-                                <!-- Confidence Score -->
+                                <!-- Confidence Score: warna & keterangan sesuai tingkat risiko -->
                                 <td class="px-4 py-3.5">
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold {{ $item->confidence_score >= 75 ? 'bg-red-100 text-risk-high border border-red-200' : 'bg-amber-100 text-risk-mid border border-amber-200' }}">
-                                        {{ number_format($item->confidence_score, 0) }}% Indikasi Penipuan
-                                    </span>
-                                    <div class="text-[10px] text-gray-400 mt-0.5">
-                                        {{ $item->confidence_score >= 75 ? 'Skor Kritis (Tingkat Bahaya)' : 'Perlu Tinjauan' }}
-                                    </div>
+                                    <x-badge-skor :klasifikasi="$item" />
                                 </td>
 
                                 <!-- Status Sistem -->
                                 <td class="px-4 py-3.5">
-                                    <span class="px-2.5 py-0.5 rounded text-xs font-semibold {{ $pengaduan->warna_badge ?? 'bg-yellow-100 text-yellow-800' }}">
+                                    <span class="inline-flex items-center whitespace-nowrap px-2.5 py-0.5 rounded text-xs font-semibold {{ $pengaduan->warna_badge ?? 'bg-yellow-100 text-yellow-800' }}">
                                         {{ $pengaduan->status_pengaduan }}
                                     </span>
                                 </td>
 
-                                <!-- Aksi (BDD Hook: "Lihat Detail") -->
-                                <td class="px-4 py-3.5 text-right">
-                                    @if($pengaduan->status_pengaduan === \App\Enums\StatusKasus::SedangDitinjau)
-                                        <a href="{{ route('tinjau-lowongan.detail', $item->id_klasifikasi) }}" class="inline-flex items-center px-3 py-1.5 rounded-control bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs shadow transition">
-                                            Sedang Ditinjau
-                                        </a>
-                                    @else
-                                        <a href="{{ route('tinjau-lowongan.detail', $item->id_klasifikasi) }}" class="inline-flex items-center px-3 py-1.5 rounded-control bg-navy-900 hover:bg-navy-800 text-white font-semibold text-xs shadow transition">
-                                            Lihat Detail
-                                        </a>
-                                    @endif
+                                <!-- Aksi: teks tombol beda dari teks status. Atribut title "Lihat Detail ..."
+                                     dipakai langkah BDD 'I follow "Lihat Detail"' (Mink juga mencocokkan title). -->
+                                <td class="px-4 py-3.5 text-right whitespace-nowrap">
+                                    <a href="{{ route('tinjau-lowongan.detail', $item->id_klasifikasi) }}"
+                                       title="{{ LokerLensCopy::BTN_LIHAT_DETAIL }} {{ $pengaduan->nomor_tiket }}"
+                                       class="inline-flex items-center whitespace-nowrap px-3 py-1.5 rounded-control bg-navy-900 hover:bg-navy-800 text-white font-semibold text-xs shadow transition">
+                                        {{ $pengaduan->status_pengaduan === StatusKasus::SedangDitinjau ? LokerLensCopy::BTN_LANJUTKAN_TINJAUAN : LokerLensCopy::BTN_MULAI_TINJAU }}
+                                    </a>
                                 </td>
                             </tr>
                         @empty

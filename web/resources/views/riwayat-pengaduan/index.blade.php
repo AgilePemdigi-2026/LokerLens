@@ -54,7 +54,7 @@
              BILAH PENCARIAN & FILTER — Sesuai design.md §3.2 & screen_06.jpg
         ============================================================ --}}
         <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-5">
-            <form method="GET" action="{{ route('riwayat-pengaduan.index') }}"
+            <form method="GET" action="{{ route('riwayat-pengaduan.index') }}" x-data="filterOtomatis"
                   class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
 
                 {{-- Input Pencarian --}}
@@ -205,19 +205,10 @@
                                 default => 'bg-teal-50 text-teal-700 border border-teal-200',
                             };
 
-                            // Badge warna skor risiko
-                            $scoreColor = match(true) {
-                                $score === null                   => 'bg-gray-100 text-gray-500',
-                                $score >= 70                      => 'bg-red-50 text-red-700 border border-red-200',
-                                $score >= 40                      => 'bg-amber-50 text-amber-700 border border-amber-200',
-                                default                           => 'bg-emerald-50 text-emerald-700 border border-emerald-200',
-                            };
-                            $risikoLabel = match(true) {
-                                $score === null => '-',
-                                $score >= 70    => 'Risiko Tinggi',
-                                $score >= 40    => 'Risiko Sedang',
-                                default         => 'Risiko Rendah',
-                            };
+                            // Badge skor risiko: aturan dari HasilKlasifikasi (<50 rendah, 50–69 sedang, ≥70 tinggi),
+                            // sama dengan tabel Pemantauan dan Riwayat Tinjauan
+                            $scoreColor = $klas?->warna_risiko['badge'] ?? 'bg-gray-100 text-gray-500';
+                            $risikoLabel = $klas?->label_risiko ?? '-';
                         @endphp
 
                         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-md hover:border-gray-200
@@ -226,7 +217,7 @@
 
                                 {{-- Kolom Kiri: Nomor Tiket & Tanggal --}}
                                 <div class="shrink-0 w-full sm:w-40">
-                                    <span class="font-mono text-xs font-bold text-teal-800 bg-teal-50
+                                    <span class="font-mono text-xs font-bold text-teal-800 bg-teal-50 whitespace-nowrap
                                                  border border-teal-200 px-2.5 py-1 rounded block w-fit">
                                         {{ $item->nomor_tiket }}
                                     </span>
@@ -249,7 +240,7 @@
                                         @endif
                                     </p>
                                     {{-- Status --}}
-                                    <span class="inline-flex mt-2 px-2.5 py-0.5 rounded text-[11px] font-semibold {{ $statusColor }}">
+                                    <span class="inline-flex items-center whitespace-nowrap mt-2 px-2.5 py-0.5 rounded text-[11px] font-semibold {{ $statusColor }}">
                                         {{ $status->value ?? $status }}
                                     </span>
                                 </div>
@@ -264,7 +255,7 @@
                                             <p class="text-2xl font-extrabold text-navy-900 leading-tight mt-0.5">
                                                 {{ $score }}<span class="text-sm font-bold text-gray-500">%</span>
                                             </p>
-                                            <span class="inline-flex px-2 py-0.5 rounded text-[10px] font-semibold {{ $scoreColor }}">
+                                            <span class="inline-flex items-center whitespace-nowrap px-2 py-0.5 rounded text-[10px] font-semibold {{ $scoreColor }}">
                                                 {{ $risikoLabel }}
                                             </span>
                                         </div>

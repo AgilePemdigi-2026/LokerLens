@@ -33,7 +33,7 @@
 
         <!-- Filter & Pencarian Laporan (§6.5.1: pencarian, filter Status, filter Prioritas) -->
         <div class="bg-white rounded-card shadow-lg p-5 border border-gray-100">
-            <form method="GET" action="{{ route('tindak-lanjut.index') }}" class="flex flex-col sm:flex-row items-end gap-3">
+            <form method="GET" action="{{ route('tindak-lanjut.index') }}" x-data="filterOtomatis" class="flex flex-col sm:flex-row items-end gap-3">
                 <div class="relative flex-1 w-full">
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Pencarian</label>
                     <div class="relative">
@@ -89,13 +89,13 @@
                 <div class="bg-white rounded-card shadow-md p-5 sm:p-6 border border-gray-100 hover:shadow-lg transition flex flex-col md:flex-row md:items-center justify-between gap-5">
                     <div class="flex-1 space-y-2">
                         <div class="flex flex-wrap items-center gap-2">
-                            <span class="font-mono text-xs font-bold text-teal-800 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
+                            <span class="font-mono text-xs font-bold text-teal-800 bg-teal-50 px-2 py-0.5 rounded border border-teal-200 whitespace-nowrap">
                                 {{ $kasus->nomor_tiket }}
                             </span>
-                            <span class="text-xs text-gray-400">
+                            <span class="text-xs text-gray-400 whitespace-nowrap">
                                 {{ $kasus->tanggal_pengaduan->translatedFormat('d M Y, H:i') }} WIB
                             </span>
-                            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold {{ $isMenunggu ? 'bg-amber-100 text-risk-mid border border-amber-200' : ($isApproved ? 'bg-emerald-100 text-risk-low border border-emerald-200' : 'bg-gray-100 text-gray-600 border border-gray-200') }}">
+                            <span class="inline-flex items-center whitespace-nowrap px-2.5 py-0.5 rounded-full text-xs font-bold {{ $isMenunggu ? 'bg-amber-100 text-risk-mid border border-amber-200' : ($isApproved ? 'bg-emerald-100 text-risk-low border border-emerald-200' : 'bg-gray-100 text-gray-600 border border-gray-200') }}">
                                 {{ $kasus->status_pengaduan }}
                             </span>
                         </div>

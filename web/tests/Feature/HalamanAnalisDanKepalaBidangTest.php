@@ -133,7 +133,7 @@ class HalamanAnalisDanKepalaBidangTest extends TestCase
         $response = $this->actingAs($this->analis)->get('/tinjau-lowongan');
         $response->assertOk()
             ->assertSee('Daftar Lowongan Prioritas Tinggi')
-            ->assertSee('ID LOWONGAN')
+            ->assertSee(LokerLensCopy::KOLOM_NOMOR_TIKET)
             ->assertSee('CONFIDENCE SCORE')
             ->assertSee('#LKR-UJI-01')
             ->assertSee('#LKR-UJI-02');

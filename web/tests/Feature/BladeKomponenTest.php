@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Constants\LokerLensCopy;
 use App\Enums\StatusKasus;
 use App\Models\HasilKlasifikasi;
 use App\Models\Pengaduan;
@@ -97,10 +98,11 @@ class BladeKomponenTest extends TestCase
             'kasus' => $kasusList,
             'peran' => 'analis',
         ]);
-        $viewAnalis->assertSee('ID LOWONGAN')
+        $viewAnalis->assertSee(LokerLensCopy::KOLOM_NOMOR_TIKET)
             ->assertSee('CONFIDENCE SCORE')
             ->assertSee('STATUS SISTEM')
-            ->assertSee('Lihat Detail');
+            ->assertSee('Lihat Detail')
+            ->assertDontSee('Indikasi Penipuan');
 
         // Tabel untuk Kepala Bidang
         $pengaduanList = Pengaduan::with(['lowonganKerja.perusahaan', 'hasilKlasifikasi'])->limit(3)->get();

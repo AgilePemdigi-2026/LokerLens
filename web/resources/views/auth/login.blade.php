@@ -59,13 +59,10 @@
         <!-- Kolom Kanan: Panel Krem Form Login (Bagian 6.2) -->
         <div class="bg-cream-50 p-8 sm:p-12 flex flex-col justify-between text-navy-900">
             <!-- Navigasi Atas -->
-            <div class="flex justify-between items-center text-xs text-gray-500 mb-6">
+            <div class="text-xs text-gray-500 mb-6">
                 <a href="{{ route('beranda') }}" class="hover:text-navy-900 transition flex items-center gap-1 font-medium">
                     ← Kembali ke Beranda
                 </a>
-                <span>
-                    Belum punya akun? <a href="{{ route('register') }}" class="text-teal-700 font-bold hover:underline">Daftar</a>
-                </span>
             </div>
 
             <div>
@@ -136,16 +133,9 @@
 
                     <!-- Password Field dengan Toggle Mata -->
                     <div x-data="{ show: false }">
-                        <div class="flex justify-between items-center mb-1">
-                            <label for="password" class="block text-xs font-semibold uppercase tracking-wider text-gray-700">
-                                Kata Sandi <span class="text-risk-high">*</span>
-                            </label>
-                            @if (Route::has('password.request'))
-                                <a href="{{ route('password.request') }}" class="text-xs text-teal-700 hover:underline font-medium">
-                                    Lupa kata sandi?
-                                </a>
-                            @endif
-                        </div>
+                        <label for="password" class="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1">
+                            Kata Sandi <span class="text-risk-high">*</span>
+                        </label>
                         <div class="relative">
                             <input id="password" :type="show ? 'text' : 'password'" name="password" required autocomplete="current-password"
                                 placeholder="••••••••"
@@ -163,6 +153,13 @@
                         @error('password')
                             <p class="text-xs text-risk-high mt-1">{{ $message }}</p>
                         @enderror
+                        @if (Route::has('password.request'))
+                            <div class="flex justify-end mt-2">
+                                <a href="{{ route('password.request') }}" class="text-xs text-teal-700 hover:underline font-medium">
+                                    Lupa kata sandi?
+                                </a>
+                            </div>
+                        @endif
                     </div>
 
                     <!-- Ingat Saya -->
@@ -181,6 +178,12 @@
                         </svg>
                     </button>
                 </form>
+
+                <!-- Belum punya akun? -->
+                <p class="mt-5 text-center text-xs text-gray-500">
+                    Belum punya akun?
+                    <a href="{{ route('register') }}" class="text-teal-700 font-bold hover:underline">Daftar</a>
+                </p>
             </div>
 
             <!-- Footer Teks -->

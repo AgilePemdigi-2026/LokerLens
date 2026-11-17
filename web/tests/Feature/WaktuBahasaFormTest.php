@@ -85,7 +85,10 @@ class WaktuBahasaFormTest extends TestCase
         $kasus = $this->kasus('#LKR-2025-0842'); // Menunggu Keputusan
         $kasus->ubahStatus(StatusKasus::TidakDitindaklanjuti, LokerLensCopy::KASUS_DIARSIPKAN);
 
-        $riwayat = $kasus->riwayatKasus()->first();
+        // Ambil berdasarkan keterangan: riwayat dari seeder bisa lebih baru dari tanggal uji di atas
+        $riwayat = $kasus->riwayatKasus()
+            ->where('keterangan', LokerLensCopy::KASUS_DIARSIPKAN)
+            ->firstOrFail();
         $this->assertSame('2026-11-10 21:15', $riwayat->tanggal_update->format('Y-m-d H:i'));
 
         Carbon::setTestNow();

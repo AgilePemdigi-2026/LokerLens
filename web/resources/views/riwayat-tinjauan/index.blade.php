@@ -42,8 +42,8 @@
                 </p>
             </div>
 
-            <!-- Formulir Pencarian, Filter, dan Urutan (pola sama dengan Pemantauan) -->
-            <form method="GET" action="{{ route('riwayat-tinjauan.index') }}" class="grid grid-cols-1 md:grid-cols-12 gap-3 mb-6 bg-gray-50 p-4 rounded-xl border border-gray-200">
+            <!-- Formulir Pencarian, Filter, dan Urutan (pola sama dengan Pemantauan, filter otomatis) -->
+            <form method="GET" action="{{ route('riwayat-tinjauan.index') }}" x-data="filterOtomatis" class="grid grid-cols-1 md:grid-cols-12 gap-3 mb-6 bg-gray-50 p-4 rounded-xl border border-gray-200">
                 <div class="md:col-span-4">
                     <label for="cari" class="block text-xs font-semibold text-gray-700 mb-1">{{ LokerLensCopy::RIWAYAT_TINJAUAN_LABEL_CARI }}</label>
                     <div class="relative">
@@ -97,15 +97,15 @@
                 <table class="min-w-full divide-y divide-gray-200 text-left text-xs sm:text-sm">
                     <thead class="bg-gray-100 text-gray-700 font-bold uppercase tracking-wider text-[11px]">
                         <tr>
-                            <th class="px-4 py-3">{{ LokerLensCopy::KOLOM_NOMOR_TIKET }}</th>
-                            <th class="px-4 py-3">{{ LokerLensCopy::KOLOM_PERUSAHAAN }}</th>
-                            <th class="px-4 py-3">{{ LokerLensCopy::KOLOM_POSISI }}</th>
-                            <th class="px-4 py-3">{{ LokerLensCopy::LABEL_SKOR_RISIKO }}</th>
-                            <th class="px-4 py-3">{{ LokerLensCopy::RIWAYAT_TINJAUAN_LABEL_HASIL }}</th>
-                            <th class="px-4 py-3">{{ LokerLensCopy::KOLOM_ANALIS }}</th>
-                            <th class="px-4 py-3">{{ LokerLensCopy::KOLOM_TANGGAL_DITINJAU }}</th>
-                            <th class="px-4 py-3">{{ LokerLensCopy::RIWAYAT_TINJAUAN_LABEL_HASIL_AKHIR }}</th>
-                            <th class="px-4 py-3 text-right">{{ LokerLensCopy::KOLOM_AKSI }}</th>
+                            <th class="px-4 py-3 whitespace-nowrap">{{ LokerLensCopy::KOLOM_NOMOR_TIKET }}</th>
+                            <th class="px-4 py-3 min-w-[10rem]">{{ LokerLensCopy::KOLOM_PERUSAHAAN }}</th>
+                            <th class="px-4 py-3 min-w-[9rem]">{{ LokerLensCopy::KOLOM_POSISI }}</th>
+                            <th class="px-4 py-3 whitespace-nowrap">{{ LokerLensCopy::LABEL_SKOR_RISIKO }}</th>
+                            <th class="px-4 py-3 whitespace-nowrap">{{ LokerLensCopy::RIWAYAT_TINJAUAN_LABEL_HASIL }}</th>
+                            <th class="px-4 py-3 whitespace-nowrap">{{ LokerLensCopy::KOLOM_ANALIS }}</th>
+                            <th class="px-4 py-3 whitespace-nowrap">{{ LokerLensCopy::KOLOM_TANGGAL_DITINJAU }}</th>
+                            <th class="px-4 py-3 whitespace-nowrap">{{ LokerLensCopy::RIWAYAT_TINJAUAN_LABEL_HASIL_AKHIR }}</th>
+                            <th class="px-4 py-3 text-right whitespace-nowrap">{{ LokerLensCopy::KOLOM_AKSI }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 bg-white">
@@ -117,31 +117,28 @@
                                 $terkonfirmasi = $tinjauan->hasil_tinjauan === HasilTinjauan::TerkonfirmasiMencurigakan->value;
                             @endphp
                             <tr class="hover:bg-gray-50/80 transition" data-testid="baris-riwayat-tinjauan">
-                                <td class="px-4 py-3.5 font-mono font-bold text-teal-800">{{ $pengaduan->nomor_tiket }}</td>
+                                <td class="px-4 py-3.5 font-mono font-bold text-teal-800 whitespace-nowrap">{{ $pengaduan->nomor_tiket }}</td>
                                 <td class="px-4 py-3.5 font-bold text-navy-900">{{ $lowongan->perusahaan->nama_perusahaan ?? '-' }}</td>
                                 <td class="px-4 py-3.5 font-medium text-gray-900">{{ $lowongan->posisi_lowongan ?? '-' }}</td>
 
                                 <!-- Skor risiko: warna dari HasilKlasifikasi::warna_risiko -->
                                 <td class="px-4 py-3.5">
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold {{ $item->warna_risiko['badge'] }}">
-                                        {{ number_format($item->confidence_score, 0) }}%
-                                    </span>
-                                    <div class="text-[10px] text-gray-400 mt-0.5">{{ $item->label_risiko }}</div>
+                                    <x-badge-skor :klasifikasi="$item" />
                                 </td>
 
                                 <td class="px-4 py-3.5">
-                                    <span class="px-2.5 py-0.5 rounded text-xs font-semibold {{ $terkonfirmasi ? 'bg-red-100 text-risk-high border border-red-200' : 'bg-gray-100 text-gray-700 border border-gray-200' }}">
+                                    <span class="inline-flex items-center whitespace-nowrap px-2.5 py-0.5 rounded text-xs font-semibold {{ $terkonfirmasi ? 'bg-red-100 text-risk-high border border-red-200' : 'bg-gray-100 text-gray-700 border border-gray-200' }}">
                                         {{ $tinjauan->hasil_tinjauan }}
                                     </span>
                                 </td>
-                                <td class="px-4 py-3.5 text-gray-900">{{ $tinjauan->analis->name ?? '-' }}</td>
+                                <td class="px-4 py-3.5 text-gray-900 whitespace-nowrap">{{ $tinjauan->analis->name ?? '-' }}</td>
                                 <td class="px-4 py-3.5 text-gray-600 whitespace-nowrap">
                                     {{ $tinjauan->tanggal_tinjauan ? $tinjauan->tanggal_tinjauan->translatedFormat('d M Y, H:i') . ' WIB' : '-' }}
                                 </td>
 
                                 <!-- Hasil akhir: pengelompokan status kasus (warna badge dari StatusKasus) -->
                                 <td class="px-4 py-3.5">
-                                    <span class="px-2.5 py-0.5 rounded text-xs font-semibold whitespace-nowrap {{ $pengaduan->warna_badge }}">
+                                    <span class="inline-flex items-center whitespace-nowrap px-2.5 py-0.5 rounded text-xs font-semibold {{ $pengaduan->warna_badge }}">
                                         {{ RiwayatTinjauanController::hasilAkhir($pengaduan->status_pengaduan) }}
                                     </span>
                                 </td>

@@ -5,12 +5,12 @@
 ])
 
 @php
+    use App\Constants\LokerLensCopy;
     use App\Enums\StatusKasus;
 
     // Tentukan peran pengguna jika tidak dispesifikasikan
     $peranAktif = $peran ?? (auth()->user()?->role === 'Kepala Bidang' ? 'kepala-bidang' : 'analis');
     $isKepalaBidang = $peranAktif === 'kepala-bidang';
-    $ambang = (float) config('lokerlens.ambang_prioritas', 70);
 @endphp
 
 <div class="space-y-4">
@@ -19,12 +19,12 @@
         <table class="min-w-full divide-y divide-gray-200 text-left text-xs sm:text-sm">
             <thead class="bg-gray-100 text-gray-700 font-bold uppercase tracking-wider text-[11px]">
                 <tr>
-                    <th scope="col" class="px-4 py-3">{{ $isKepalaBidang ? 'ID LAPORAN' : 'ID LOWONGAN' }}</th>
-                    <th scope="col" class="px-4 py-3">NAMA PERUSAHAAN</th>
-                    <th scope="col" class="px-4 py-3">POSISI DITAWARKAN</th>
-                    <th scope="col" class="px-4 py-3">{{ $isKepalaBidang ? 'SKOR KECURIGAAN' : 'CONFIDENCE SCORE' }}</th>
-                    <th scope="col" class="px-4 py-3">{{ $isKepalaBidang ? 'STATUS KASUS' : 'STATUS SISTEM' }}</th>
-                    <th scope="col" class="px-4 py-3 text-right">AKSI</th>
+                    <th scope="col" class="px-4 py-3 whitespace-nowrap">{{ $isKepalaBidang ? 'ID LAPORAN' : LokerLensCopy::KOLOM_NOMOR_TIKET }}</th>
+                    <th scope="col" class="px-4 py-3 min-w-[12rem]">NAMA PERUSAHAAN</th>
+                    <th scope="col" class="px-4 py-3 min-w-[10rem]">POSISI DITAWARKAN</th>
+                    <th scope="col" class="px-4 py-3 whitespace-nowrap">{{ $isKepalaBidang ? 'SKOR KECURIGAAN' : 'CONFIDENCE SCORE' }}</th>
+                    <th scope="col" class="px-4 py-3 whitespace-nowrap">{{ $isKepalaBidang ? 'STATUS KASUS' : 'STATUS SISTEM' }}</th>
+                    <th scope="col" class="px-4 py-3 text-right whitespace-nowrap">AKSI</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-200 bg-white">
@@ -44,7 +44,6 @@
 
                         $lowongan = $pengaduan?->lowonganKerja;
                         $perusahaan = $lowongan?->perusahaan;
-                        $score = $klasifikasi ? (float) $klasifikasi->confidence_score : 0;
                         $status = $pengaduan?->status_pengaduan;
                         $statusValue = $status instanceof StatusKasus ? $status->value : (string) $status;
 
@@ -87,14 +86,9 @@
                             {{ $lowongan?->posisi_lowongan ?? '-' }}
                         </td>
 
-                        <!-- Confidence Score / Skor Kecurigaan -->
+                        <!-- Confidence Score / Skor Kecurigaan: warna & keterangan sesuai tingkat risiko -->
                         <td class="px-4 py-3.5 whitespace-nowrap">
-                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold {{ $score >= $ambang ? 'bg-red-100 text-risk-high border border-red-200' : 'bg-amber-100 text-risk-mid border border-amber-200' }}">
-                                {{ number_format($score, 0) }}% Indikasi Penipuan
-                            </span>
-                            <div class="text-[10px] text-gray-400 mt-0.5">
-                                {{ $score >= $ambang ? 'Skor Kritis (Tingkat Bahaya)' : 'Perlu Tinjauan' }}
-                            </div>
+                            <x-badge-skor :klasifikasi="$klasifikasi" />
                         </td>
 
                         <!-- Status Kasus / Sistem (Komponen badge-status) -->
@@ -105,19 +99,20 @@
                         <!-- Tombol Aksi -->
                         <td class="px-4 py-3.5 text-right whitespace-nowrap">
                             <div class="inline-flex items-center gap-1.5 justify-end">
-                                @if(! $isKepalaBidang && $isSedangDitinjau)
-                                    <a href="{{ $detailUrl }}" class="inline-flex items-center px-3 py-1.5 rounded-control bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs shadow transition">
-                                        Sedang Ditinjau
-                                    </a>
-                                @else
-                                    <a href="{{ $detailUrl }}" class="inline-flex items-center px-3 py-1.5 rounded-control bg-navy-900 hover:bg-navy-800 text-white font-semibold text-xs shadow transition">
-                                        Lihat Detail
-                                    </a>
-                                @endif
+                                {{-- Analis: teks tombol beda dari teks status; title tetap "Lihat Detail ..." --}}
+                                <a href="{{ $detailUrl }}"
+                                   title="{{ LokerLensCopy::BTN_LIHAT_DETAIL }} {{ $pengaduan?->nomor_tiket }}"
+                                   class="inline-flex items-center whitespace-nowrap px-3 py-1.5 rounded-control bg-navy-900 hover:bg-navy-800 text-white font-semibold text-xs shadow transition">
+                                    @if($isKepalaBidang)
+                                        {{ LokerLensCopy::BTN_LIHAT_DETAIL }}
+                                    @else
+                                        {{ $isSedangDitinjau ? LokerLensCopy::BTN_LANJUTKAN_TINJAUAN : LokerLensCopy::BTN_MULAI_TINJAU }}
+                                    @endif
+                                </a>
 
                                 @if($isKepalaBidang && $isTindakLanjutDisetujui && $pengaduan)
                                     <a href="{{ route('buat-surat.index', $pengaduan->id_pengaduan) }}"
-                                       class="inline-flex items-center px-2.5 py-1.5 rounded-control bg-teal-600 hover:bg-teal-500 text-white font-semibold text-xs shadow transition"
+                                       class="inline-flex items-center whitespace-nowrap px-2.5 py-1.5 rounded-control bg-teal-600 hover:bg-teal-500 text-white font-semibold text-xs shadow transition"
                                        title="Buat Laporan Polisi">
                                         Surat Polisi →
                                     </a>

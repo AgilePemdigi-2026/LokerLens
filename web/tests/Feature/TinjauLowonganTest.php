@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Constants\LokerLensCopy;
+use App\Enums\StatusKasus;
 use App\Models\HasilKlasifikasi;
 use App\Models\LowonganKerja;
 use App\Models\Pengaduan;
@@ -67,6 +69,48 @@ class TinjauLowonganTest extends TestCase
         $responseTerbaru = $this->actingAs($this->analis)->get('/tinjau-lowongan?urutan=Terbaru');
         $responseTerbaru->assertOk();
         $responseTerbaru->assertSeeInOrder(['#TIKET-90', '#TIKET-80', '#TIKET-75']);
+    }
+
+    /**
+     * Issue #25: tombol aksi tidak sama dengan teks status, dan skor tampil sebagai tingkat risiko.
+     */
+    public function test_tombol_aksi_dan_badge_skor_di_tabel_pemantauan(): void
+    {
+        $this->buatKasus(83.0, '#TIKET-83');
+        $sedang = $this->buatKasus(65.0, '#TIKET-65');
+        $sedang->pengaduan->update(['status_pengaduan' => StatusKasus::SedangDitinjau]);
+
+        $this->actingAs($this->analis)->get('/tinjau-lowongan')
+            ->assertOk()
+            ->assertSee(LokerLensCopy::KOLOM_NOMOR_TIKET)
+            ->assertSee(LokerLensCopy::BTN_MULAI_TINJAU)
+            ->assertSee(LokerLensCopy::BTN_LANJUTKAN_TINJAUAN)
+            // Title "Lihat Detail ..." dipakai langkah BDD 'I follow "Lihat Detail"'
+            ->assertSee('title="' . LokerLensCopy::BTN_LIHAT_DETAIL . ' #TIKET-83"', false)
+            ->assertSee('83%')
+            ->assertSee('Risiko tinggi')
+            ->assertSee('Risiko sedang')
+            ->assertDontSee('Indikasi Penipuan')
+            ->assertDontSee('Skor Kritis')
+            ->assertDontSee('bg-amber-500');
+    }
+
+    /**
+     * Issue #25: form filter memakai filterOtomatis, tombol "Cari" tetap ada,
+     * dan pilihan filter tetap terpilih setelah halaman dimuat ulang.
+     */
+    public function test_form_filter_otomatis_dan_pilihan_tetap_terpilih(): void
+    {
+        $this->buatKasus(83.0, '#TIKET-83');
+
+        $this->actingAs($this->analis)->get('/tinjau-lowongan?filter_skor=Skor+Tinggi&urutan=Terbaru&nomor_tiket=TIKET')
+            ->assertOk()
+            ->assertSee('x-data="filterOtomatis"', false)
+            ->assertSee('type="submit"', false)
+            ->assertSeeText(LokerLensCopy::BTN_CARI)
+            ->assertSee('value="Skor Tinggi" selected', false)
+            ->assertSee('value="Terbaru" selected', false)
+            ->assertSee('value="TIKET"', false);
     }
 
     // Keputusan tim: ID yang tidak ada tetap menampilkan 404 (tidak diarahkan ke daftar).

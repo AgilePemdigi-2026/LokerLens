@@ -66,7 +66,7 @@
             </div>
 
             {{-- Form Pencarian --}}
-            <form method="GET" action="{{ route('arsip-kasus.index') }}" class="w-full md:w-80 flex items-center gap-2">
+            <form method="GET" action="{{ route('arsip-kasus.index') }}" x-data="filterOtomatis" class="w-full md:w-80 flex items-center gap-2">
                 @if(request('status'))
                     <input type="hidden" name="status" value="{{ request('status') }}">
                 @endif
@@ -120,12 +120,12 @@
                     <table class="w-full text-left text-xs">
                         <thead class="bg-gray-50 text-gray-500 uppercase tracking-wider font-semibold border-b border-gray-200">
                             <tr>
-                                <th class="py-3.5 px-4">Kasus / ID Tiket</th>
-                                <th class="py-3.5 px-4">Lowongan & Perusahaan</th>
-                                <th class="py-3.5 px-4">Status Akhir</th>
-                                <th class="py-3.5 px-4">Dokumen Resmi Terbit</th>
-                                <th class="py-3.5 px-4">Tanggal Arsip</th>
-                                <th class="py-3.5 px-4 text-right">Aksi</th>
+                                <th class="py-3.5 px-4 whitespace-nowrap">Kasus / ID Tiket</th>
+                                <th class="py-3.5 px-4 min-w-[12rem]">Lowongan & Perusahaan</th>
+                                <th class="py-3.5 px-4 whitespace-nowrap">Status Akhir</th>
+                                <th class="py-3.5 px-4 whitespace-nowrap">Dokumen Resmi Terbit</th>
+                                <th class="py-3.5 px-4 whitespace-nowrap">Tanggal Arsip</th>
+                                <th class="py-3.5 px-4 text-right whitespace-nowrap">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
@@ -140,11 +140,11 @@
                                 @endphp
                                 <tr class="hover:bg-gray-50/80 transition">
                                     <td class="py-4 px-4">
-                                        <span class="font-mono font-bold text-navy-900 block text-xs">
+                                        <span class="font-mono font-bold text-navy-900 block text-xs whitespace-nowrap">
                                             {{ $item->nomor_tiket }}
                                         </span>
                                         @if($klas)
-                                            <span class="text-[11px] text-gray-500">
+                                            <span class="text-[11px] text-gray-500 whitespace-nowrap">
                                                 Skor: {{ number_format($klas->confidence_score, 1) }}%
                                             </span>
                                         @endif
@@ -157,7 +157,7 @@
                                             {{ $perusahaan->nama_perusahaan ?? 'Perusahaan Tidak Disebutkan' }}
                                         </span>
                                     </td>
-                                    <td class="py-4 px-4">
+                                    <td class="py-4 px-4 whitespace-nowrap">
                                         @if($status === \App\Enums\StatusKasus::Selesai)
                                             <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 inline-flex items-center gap-1.5">
                                                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
@@ -174,32 +174,32 @@
                                                 {{ $status->value }}
                                             </span>
                                         @else
-                                            <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-gray-100 text-gray-700 border border-gray-300">
+                                            <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-gray-100 text-gray-700 border border-gray-300 inline-flex items-center">
                                                 {{ $status instanceof \App\Enums\StatusKasus ? $status->value : $status }}
                                             </span>
                                         @endif
                                     </td>
                                     <td class="py-4 px-4">
                                         @if($surat && $surat->status_penerbitan === 'Terbit')
-                                            <span class="font-mono text-teal-800 font-bold block text-xs">
+                                            <span class="font-mono text-teal-800 font-bold block text-xs whitespace-nowrap">
                                                 {{ $surat->nomor_surat }}
                                             </span>
                                             <span class="text-[10px] text-gray-500 truncate block max-w-xs" title="{{ $surat->tujuan_instansi }}">
                                                 {{ $surat->tujuan_instansi }}
                                             </span>
                                         @elseif($status === \App\Enums\StatusKasus::TidakTerbukti)
-                                            <span class="text-gray-400 italic text-[11px]">- (Ditutup Analis)</span>
+                                            <span class="text-gray-400 italic text-[11px] whitespace-nowrap">- (Ditutup Analis)</span>
                                         @else
-                                            <span class="text-gray-400 italic text-[11px]">- (Tidak Ada Surat)</span>
+                                            <span class="text-gray-400 italic text-[11px] whitespace-nowrap">- (Tidak Ada Surat)</span>
                                         @endif
                                     </td>
-                                    <td class="py-4 px-4 text-gray-600">
+                                    <td class="py-4 px-4 text-gray-600 whitespace-nowrap">
                                         {{-- Tanggal kasus diselesaikan (Riwayat Kasus), bukan updated_at --}}
                                         {{ $item->tanggalSelesai()?->translatedFormat('d M Y') ?? '-' }}
                                     </td>
-                                    <td class="py-4 px-4 text-right">
+                                    <td class="py-4 px-4 text-right whitespace-nowrap">
                                         <a href="{{ route('arsip-kasus.show', $item->id_pengaduan) }}"
-                                           class="inline-block px-3 py-1.5 rounded bg-navy-900 hover:bg-navy-800 text-white font-semibold transition text-xs shadow-xs">
+                                           class="inline-block whitespace-nowrap px-3 py-1.5 rounded bg-navy-900 hover:bg-navy-800 text-white font-semibold transition text-xs shadow-xs">
                                             Buka Detail →
                                         </a>
                                     </td>

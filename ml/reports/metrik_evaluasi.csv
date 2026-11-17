@@ -1,0 +1,11 @@
+,nilai
+accuracy,0.9818
+precision_palsu,0.9844
+recall_palsu,0.9692
+f1_palsu,0.9767
+precision_asli,0.9802
+recall_asli,0.99
+f1_asli,0.9851
+f1_macro,0.9809
+roc_auc,0.9986
+pr_auc,0.998

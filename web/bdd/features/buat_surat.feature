@@ -24,3 +24,32 @@ Feature: Buat surat teguran/laporan polisi
     When I press "Terbitkan Laporan"
     Then I should see "Gagal menerbitkan dokumen, draf telah disimpan"
     And I should see "Buat Laporan Polisi"
+
+  # Skenario di bawah BARU (issue #8): halaman Surat untuk draf dan surat terbit.
+  # Belum ada di SRS Appendix B Table B.5, perlu ditambahkan (lihat docs/laporan_kondisi_bdd.md bagian 9).
+  Scenario: Melihat daftar surat
+    When I follow "Surat"
+    Then I should see "Daftar Surat Teguran/Laporan Polisi"
+    And I should see "#LKR-8770"
+    And I should see "#LKR-8798"
+    And I should see "Lanjutkan Draf"
+    And I should see "Lihat Surat"
+
+  Scenario: Melanjutkan draf surat
+    Given I am on the "/surat" page
+    When I follow "Lanjutkan Draf" in the row for ticket "#LKR-8770"
+    Then the url should match "/buat-surat/\d+$"
+    And I should see "Buat Laporan Polisi"
+    And the "kronologi" field should contain "Draf: pelapor diminta mentransfer biaya pelatihan Rp250.000 sebelum mulai bekerja."
+
+  Scenario: Memfilter surat berdasarkan status
+    Given I am on the "/surat" page
+    When I select "Terbit" from "status"
+    And I press "Cari"
+    Then I should see "#LKR-8798"
+    And I should not see "#LKR-8770"
+
+  Scenario: Peran lain tidak bisa membuka halaman Surat
+    Given I am logged in as "Analis"
+    When I am on the "/surat" page
+    Then the response status code should be 403

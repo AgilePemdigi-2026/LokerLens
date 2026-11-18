@@ -393,11 +393,12 @@ class HalamanAnalisDanKepalaBidangTest extends TestCase
         $this->assertMatchesRegularExpression('/@media print\s*\{\s*nav,\s*footer,\s*\.no-print\s*\{\s*display:\s*none !important;/', $css);
     }
 
-    public function test_navbar_kepala_bidang_tanpa_menu_pemantauan(): void
+    public function test_navbar_kepala_bidang_tanpa_menu_tinjau_lowongan(): void
     {
         $this->actingAs($this->kepalaBidang)->get('/tindak-lanjut')->assertOk()
-            ->assertSeeInOrder(['Dashboard', 'Laporan', 'Arsip Kasus'])
-            ->assertDontSee('Pemantauan')
+            ->assertSeeInOrder(['Dashboard', LokerLensCopy::NAV_TINDAK_LANJUT, LokerLensCopy::NAV_SURAT, 'Arsip Kasus'])
+            ->assertDontSee(LokerLensCopy::NAV_TINJAU_LOWONGAN)
+            ->assertSee(route('surat.index'), false)
             ->assertDontSee('Sprint 2')
             ->assertSee(route('arsip-kasus.index'), false)
             ->assertSee(route('dashboard-kepala-bidang.index'), false);

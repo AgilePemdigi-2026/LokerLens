@@ -2,7 +2,7 @@
 @use('App\Enums\HasilTinjauan')
 @use('App\Http\Controllers\RiwayatTinjauanController')
 
-{{-- Riwayat Tinjauan Analis (issue #25). Gaya mengikuti halaman Pemantauan (tinjau-lowongan/index). --}}
+{{-- Riwayat Tinjauan Analis (issue #25). Gaya mengikuti halaman Tinjau Lowongan (tinjau-lowongan/index). --}}
 <x-app-layout>
     <div class="max-w-7xl mx-auto py-4 space-y-6">
         <!-- Header Halaman -->
@@ -42,7 +42,7 @@
                 </p>
             </div>
 
-            <!-- Formulir Pencarian, Filter, dan Urutan (pola sama dengan Pemantauan, filter otomatis) -->
+            <!-- Formulir Pencarian, Filter, dan Urutan (pola sama dengan Tinjau Lowongan, filter otomatis) -->
             <form method="GET" action="{{ route('riwayat-tinjauan.index') }}" x-data="filterOtomatis" class="grid grid-cols-1 md:grid-cols-12 gap-3 mb-6 bg-gray-50 p-4 rounded-xl border border-gray-200">
                 <div class="md:col-span-4">
                     <label for="cari" class="block text-xs font-semibold text-gray-700 mb-1">{{ LokerLensCopy::RIWAYAT_TINJAUAN_LABEL_CARI }}</label>

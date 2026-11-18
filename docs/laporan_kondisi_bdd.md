@@ -7,6 +7,8 @@ Tanggal: 27 Oktober 2026
 > **Pembaruan (issue #21):** bagian 1–5 menggambarkan kondisi **sebelum** test BDD dibuat. Test BDD (Behat + Mink) sekarang sudah ada di `web/bdd/`. Perbedaan skenario dengan SRS ada di **bagian 6**, hasilnya di **bagian 7**.
 >
 > **Pembaruan Sprint 2 (10 November 2026):** user story dan skenario BDD untuk fitur Sprint 2 (US-05 s.d. US-12, Table B.6–B.13) beserta hasil test-nya ada di **bagian 8**. Semuanya **baru** dan perlu ditambahkan ke SRS.
+>
+> **Pembaruan issue #8 (18 November 2026):** nama menu disamakan dengan SRS dan ada halaman Surat baru untuk Kepala Bidang. Perubahan kalimat skenario ada di **bagian 9**.
 
 ---
 
@@ -223,7 +225,7 @@ Di file `web/bdd/features/*.feature`, setiap kalimat yang berbeda ditandai komen
 | D2 | B.2-1 | — | Tag `@ml` | Butuh API ML sungguhan. |
 | D3 | B.2-1 | `"kata-pemicu"` | `"#kata-pemicu"` | Mink membaca nama elemen sebagai selector CSS. Elemen di halaman memakai `id="kata-pemicu"`. |
 | D4 | B.2-3 | — | Tag `@javascript` | Tombol Reset berjalan dengan JavaScript (Alpine). |
-| D5 | B.3-1 | Mulai dari `/beranda/`, klik "Tinjau Lowongan" | Langsung klik "Pemantauan" | `/beranda` khusus Masyarakat. Setelah login, Analis langsung masuk `/tinjau-lowongan`, dan menunya bernama "Pemantauan". |
+| D5 | B.3-1 | Mulai dari `/beranda/`, klik "Tinjau Lowongan" | Langsung klik "Tinjau Lowongan" (sebelum issue #8: "Pemantauan") | `/beranda` khusus Masyarakat. Setelah login, Analis langsung masuk Dashboard Analis. Sejak issue #8 nama menunya sama dengan SRS, jadi yang berbeda tinggal halaman awalnya (lihat bagian 9). |
 | D6 | B.3-2 | Tanpa tombol | `And I press "Cari"` | Filter baru berlaku setelah form dikirim. |
 | D7 | B.3-3/4 | "nomor tiket yang (tidak) terdaftar" | `#LKR-8819` / `#LKR-0000` | Test butuh data nyata dari seeder. |
 | D8 | B.3-6 | `/tinjau-lowongan/detail/` | Detail tiket `#LKR-8819` | Route detail butuh ID kasus. |
@@ -368,3 +370,58 @@ Skenario Sprint 2 tidak perlu diubah karena perubahan PR #66 dan #68: semua lang
 
 1. **Teks Lupa Password ditulis langsung di Blade**, bukan dari `LokerLensCopy`. Contohnya view menampilkan "Periksa Email Anda" dan "Kata Sandi Berhasil Diubah", sedangkan `LokerLensCopy::LUPA_TERKIRIM_JUDUL` dan `SANDI_BERHASIL_JUDUL` berisi "Periksa email Anda" dan "Kata sandi berhasil diubah". Skenario tetap lulus karena `I should see` di Mink tidak peka huruf besar, tetapi sumber teksnya sebaiknya disatukan ke `LokerLensCopy`.
 2. ~~**Halaman awal setelah login tidak konsisten**~~ **Sudah diperbaiki (PR #68):** Analis kini masuk ke Dashboard Analis, sama seperti Kepala Bidang ke Dashboard Kepala Bidang (`User::halamanAwal()`). Skenario B.10-1 tetap membuka Dashboard Analis lewat menu "Dashboard" dan tetap lulus, jadi tidak diubah.
+
+---
+
+## 9. Nama menu sesuai SRS dan halaman Surat (issue #8, 18 November 2026)
+
+### 9.1 Nama menu
+
+Nama menu fitur utama disamakan dengan SRS. Judul halaman tidak berubah (tetap nama lengkap dari SRS, kecuali halaman Tindak Lanjut yang tetap berjudul "Daftar Laporan").
+
+| Peran | Menu lama | Menu baru | Fitur SRS |
+|---|---|---|---|
+| Masyarakat | Ajukan Pengaduan | **Periksa Lowongan** | F-01 Periksa Lowongan Kerja |
+| Analis | Pemantauan | **Tinjau Lowongan** | F-02 Meninjau Lowongan Kerja dengan Prioritas Tinggi |
+| Kepala Bidang | Laporan | **Tindak Lanjut** | F-03 Menindaklanjuti Laporan Lowongan Kerja yang Mencurigakan |
+| Kepala Bidang | — | **Surat** (baru, setelah Tindak Lanjut) | F-04 Buat Surat Teguran/Laporan Polisi |
+
+Nama baru juga dipakai di menu HP, footer, dan tombol di Beranda serta Riwayat Pengaduan ("Periksa Lowongan Baru").
+
+### 9.2 Perubahan kalimat skenario lama
+
+| Skenario | Sebelum | Sesudah | Catatan untuk SRS |
+|---|---|---|---|
+| B.3-1 Menampilkan daftar lowongan prioritas tinggi | `When I follow "Pemantauan"` | `When I follow "Tinjau Lowongan"` | Sekarang sama dengan kalimat SRS. Perbedaan yang tersisa hanya halaman awal (D5). |
+
+Skenario lain tidak berubah. Tidak ada skenario yang mengklik menu "Laporan" atau "Ajukan Pengaduan". Skenario B.11-3 (`dashboard_kepala_bidang.feature`) memeriksa teks "Daftar Laporan", yaitu judul halaman yang tidak diubah.
+
+### 9.3 Skenario baru (US-04, `buat_surat.feature`)
+
+Belum ada di SRS. Usul: ditambahkan ke Appendix B **Table B.5** sebagai B.5-4 s.d. B.5-7.
+
+| Kode | Skenario | Langkah utama | Data seeder |
+|---|---|---|---|
+| B.5-4 | Melihat daftar surat | `When I follow "Surat"`, lalu terlihat "Daftar Surat Teguran/Laporan Polisi", `#LKR-8770`, `#LKR-8798`, "Lanjutkan Draf", "Lihat Surat" | Draf `#LKR-8770`, surat terbit `#LKR-8798` |
+| B.5-5 | Melanjutkan draf surat | Di `/surat`, `When I follow "Lanjutkan Draf" in the row for ticket "#LKR-8770"`, lalu URL `/buat-surat/{id}`, terlihat "Buat Laporan Polisi", dan isian `kronologi` berisi kronologi draf | Kronologi draf dari seeder |
+| B.5-6 | Memfilter surat berdasarkan status | Di `/surat`, `When I select "Terbit" from "status"`, `And I press "Cari"`, lalu terlihat `#LKR-8798` dan tidak terlihat `#LKR-8770` | |
+| B.5-7 | Peran lain tidak bisa membuka halaman Surat | `Given I am logged in as "Analis"`, `When I am on the "/surat" page`, lalu status 403 | |
+
+Catatan:
+- Filter langsung berlaku saat dropdown diganti (JavaScript). Skenario B.5-6 tetap menekan "Cari" karena berjalan tanpa browser; tombol "Cari" sengaja dipertahankan.
+- Pilihan "Surat Teguran" ada di filter jenis dokumen (sesuai enum `jenis_dokumen`), tetapi aplikasi saat ini hanya membuat "Laporan Polisi". Hasil filter "Surat Teguran" selalu kosong; ini diuji di PHPUnit (`SuratTest`), tidak dibuat skenario BDD.
+
+### 9.4 Perubahan `FeatureContext`
+
+| Perubahan | Alasan |
+|---|---|
+| `I am logged in as` menghapus sesi lama (`getSession()->reset()`) sebelum membuka `/login` | Skenario B.5-7 login sebagai Analis, padahal Background `buat_surat.feature` sudah login sebagai Kepala Bidang. Tanpa reset, `/login` langsung dialihkan dan form login tidak tampil. Skenario lain tidak terpengaruh. |
+
+### 9.5 Hasil test
+
+Dijalankan 18 November 2026 di Windows 11, MySQL 8.4.3 (Laragon), dan Chrome 157 (headless), dengan server test port 8010 dan API ML menyala.
+
+| Perintah | Hasil |
+|---|---|
+| `composer test-bdd` (dari `web/bdd/`) | **51 skenario lulus (258 langkah)**: 47 lama + 4 baru |
+| `php artisan test` (dari `web/`) | **288 lulus, 0 gagal** (termasuk `SuratTest` baru) |

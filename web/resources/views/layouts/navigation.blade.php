@@ -6,25 +6,27 @@
     // Daftar menu per peran (Bagian 5.2 Panduan). Dipakai dua kali: menu desktop dan menu HP,
     // supaya isinya selalu sama. 'aktif' = pola nama route yang menandai menu sedang dibuka.
     if ($pengguna->isMasyarakat()) {
-        // Navbar Masyarakat (Gambar 2.4): Ajukan Pengaduan · Status Pengaduan · Riwayat Pengaduan
+        // Navbar Masyarakat: Periksa Lowongan · Status Pengaduan · Riwayat Pengaduan (nama menu sesuai SRS, issue #8)
         $menu = [
-            ['label' => LokerLensCopy::BTN_AJUKAN_PENGADUAN, 'url' => route('periksa-lowongan.index'), 'aktif' => ['periksa-lowongan.*']],
+            ['label' => LokerLensCopy::NAV_PERIKSA_LOWONGAN, 'url' => route('periksa-lowongan.index'), 'aktif' => ['periksa-lowongan.*']],
             ['label' => LokerLensCopy::NAV_STATUS_PENGADUAN, 'url' => route('status-pengaduan.index'), 'aktif' => ['status-pengaduan.*']],
             ['label' => LokerLensCopy::BTN_RIWAYAT_PENGADUAN, 'url' => route('riwayat-pengaduan.index'), 'aktif' => ['riwayat-pengaduan.*']],
         ];
     } elseif ($pengguna->isAnalis()) {
-        // Navbar Analis: Dashboard · Pemantauan · Riwayat (issue #25)
+        // Navbar Analis: Dashboard · Tinjau Lowongan · Riwayat (issue #25, nama menu sesuai SRS issue #8)
         $menu = [
             ['label' => LokerLensCopy::NAV_DASHBOARD, 'url' => route('dashboard-analis.index'), 'aktif' => ['dashboard-analis.*']],
-            ['label' => LokerLensCopy::NAV_PEMANTAUAN, 'url' => route('tinjau-lowongan.index'), 'aktif' => ['tinjau-lowongan.*']],
+            ['label' => LokerLensCopy::NAV_TINJAU_LOWONGAN, 'url' => route('tinjau-lowongan.index'), 'aktif' => ['tinjau-lowongan.*']],
             ['label' => LokerLensCopy::NAV_RIWAYAT, 'url' => route('riwayat-tinjauan.index'), 'aktif' => ['riwayat-tinjauan.*']],
         ];
     } else {
-        // Navbar Kepala Bidang: Dashboard · Laporan (badge jumlah Menunggu Keputusan) · Arsip Kasus
+        // Navbar Kepala Bidang: Dashboard · Tindak Lanjut (badge jumlah Menunggu Keputusan) · Surat · Arsip Kasus
+        // Halaman Buat Surat (buat-surat.*) menandai menu Surat (issue #8)
         $menu = [
             ['label' => LokerLensCopy::NAV_DASHBOARD, 'url' => route('dashboard-kepala-bidang.index'), 'aktif' => ['dashboard-kepala-bidang.*']],
-            ['label' => LokerLensCopy::NAV_LAPORAN, 'url' => route('tindak-lanjut.index'), 'aktif' => ['tindak-lanjut.*', 'buat-surat.*'],
+            ['label' => LokerLensCopy::NAV_TINDAK_LANJUT, 'url' => route('tindak-lanjut.index'), 'aktif' => ['tindak-lanjut.*'],
              'badge' => \App\Models\Pengaduan::where('status_pengaduan', \App\Enums\StatusKasus::MenungguKeputusan)->count()],
+            ['label' => LokerLensCopy::NAV_SURAT, 'url' => route('surat.index'), 'aktif' => ['surat.*', 'buat-surat.*']],
             ['label' => LokerLensCopy::NAV_ARSIP_KASUS, 'url' => route('arsip-kasus.index'), 'aktif' => ['arsip-kasus.*']],
         ];
     }

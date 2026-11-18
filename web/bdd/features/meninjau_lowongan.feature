@@ -5,7 +5,7 @@ Feature: Meninjau lowongan kerja dengan prioritas tinggi
     Given I am logged in as "Analis"
 
   Scenario: Menampilkan daftar lowongan prioritas tinggi
-    When I follow "Pemantauan"
+    When I follow "Tinjau Lowongan"
     Then I should see "Daftar Lowongan Prioritas Tinggi"
 
   Scenario: Memfilter daftar berdasarkan skor

@@ -10,6 +10,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RiwayatPengaduanController;
 use App\Http\Controllers\RiwayatTinjauanController;
 use App\Http\Controllers\StatusPengaduanController;
+use App\Http\Controllers\SuratController;
 use App\Http\Controllers\TindakLanjutController;
 use App\Http\Controllers\TinjauLowonganController;
 use Illuminate\Support\Facades\Route;
@@ -119,6 +120,10 @@ Route::middleware('auth')->group(function () {
             ->name('buat-surat.terbitkan');
         Route::get('/buat-surat/{pengaduanId}/terbit/{suratId}', [BuatSuratController::class, 'terbit'])
             ->name('buat-surat.terbit');
+
+        // Daftar Surat — /surat (issue #8): semua draf dan surat terbit
+        Route::get('/surat', [SuratController::class, 'index'])
+            ->name('surat.index');
 
         // Berkas bukti pendukung disimpan di disk private, jadi hanya bisa dibuka lewat route ini
         Route::get('/bukti/{bukti}', [BuatSuratController::class, 'lihatBukti'])

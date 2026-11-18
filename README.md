@@ -151,10 +151,10 @@ Ambang prioritas tinggi (default 70) diatur di `LOKERLENS_AMBANG_PRIORITAS` (`we
 
 ### Menjalankan Test BDD (Behat)
 
-53 skenario ada di `web/bdd/features/`, satu file per fitur:
+55 skenario ada di `web/bdd/features/`, satu file per fitur:
 - **15 skenario Sprint 1** dari SRS Appendix B (Table B.2–B.5);
 - **32 skenario Sprint 2** dari user story baru US-05 s.d. US-12 (Table B.6–B.13), yang perlu ditambahkan ke SRS. Daftarnya ada di [docs/laporan_kondisi_bdd.md bagian 8](docs/laporan_kondisi_bdd.md);
-- **4 skenario halaman Surat** (US-04, issue #8), juga perlu ditambahkan ke SRS. Daftarnya ada di [docs/laporan_kondisi_bdd.md bagian 9](docs/laporan_kondisi_bdd.md);
+- **6 skenario US-04 tambahan** (issue #8): 4 untuk halaman Surat dan 2 untuk Surat Teguran, juga perlu ditambahkan ke SRS. Daftarnya ada di [docs/laporan_kondisi_bdd.md bagian 9 dan 10](docs/laporan_kondisi_bdd.md);
 - **2 skenario alur lintas aktor** (`alur_pengaduan.feature`): skor 85% berjalan Masyarakat → Analis → Kepala Bidang → Masyarakat; skor 55% langsung *Selesai - Risiko Rendah* dan tidak masuk ke Analis (BR-05).
 
 Behat dipasang sebagai project Composer terpisah di `web/bdd/`, supaya paket aplikasi Laravel tidak berubah. Perbedaan kalimat skenario dengan SRS dijelaskan di [docs/laporan_kondisi_bdd.md bagian 6](docs/laporan_kondisi_bdd.md).
@@ -203,8 +203,8 @@ uvicorn api.app:app --port 8001
 #   Sesuaikan lokasi chrome.exe. macOS: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" ...
 
 # Terminal 4 (dari web/bdd/): cara yang disarankan
-composer test-bdd                                        # semua 53 skenario + laporan HTML
-composer test-bdd -- --tags="~@javascript&&~@ml"         # 49 skenario: hanya butuh Terminal 1
+composer test-bdd                                        # semua 55 skenario + laporan HTML
+composer test-bdd -- --tags="~@javascript&&~@ml"         # 51 skenario: hanya butuh Terminal 1
 composer test-bdd -- --tags="@javascript"                # 3 skenario: butuh Terminal 1 + 3
 composer test-bdd -- --tags="@ml"                        # 1 skenario: butuh Terminal 1 + 2
 composer test-bdd -- features/buat_surat.feature         # satu fitur saja

@@ -183,6 +183,10 @@ class FeatureContext extends MinkContext
             throw new InvalidArgumentException("Peran tidak dikenal: {$peran}");
         }
 
+        // Hapus sesi lama dulu, supaya bisa login sebagai peran lain setelah Background
+        // (kalau masih login, /login langsung dialihkan dan form login tidak tampil)
+        $this->getSession()->reset();
+
         $this->visitPath('/login');
         $this->isiFormLogin(self::AKUN[$peran]);
         $this->pressButton('Masuk'); // menunggu halaman tujuan selesai dimuat (lihat pressButton)

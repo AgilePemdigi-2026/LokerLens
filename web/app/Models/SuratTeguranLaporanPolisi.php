@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Constants\LokerLensCopy;
 use Illuminate\Database\Eloquent\Model;
 
 class SuratTeguranLaporanPolisi extends Model
@@ -23,6 +24,12 @@ class SuratTeguranLaporanPolisi extends Model
             'judul'      => 'Pungutan Biaya Penempatan Ilegal bagi Calon Tenaga Kerja (UU No. 13/2003)',
             'keterangan' => 'Larangan pemungutan biaya dalam proses penempatan tenaga kerja di luar ketentuan perundang-undangan.',
         ],
+    ];
+
+    /** Jenis dokumen yang bisa dipilih (sama dengan enum kolom jenis_dokumen). Satu kasus hanya punya satu surat. */
+    public const DAFTAR_JENIS = [
+        LokerLensCopy::JENIS_LAPORAN_POLISI,
+        LokerLensCopy::JENIS_SURAT_TEGURAN,
     ];
 
     protected $table = 'surat_teguran_laporan_polisi';
@@ -50,11 +57,16 @@ class SuratTeguranLaporanPolisi extends Model
     }
 
     /**
-     * Generate nomor surat resmi, mis: #LP-2026/POLRI/8821
+     * Nomor surat resmi dengan tahun berjalan, mis.:
+     *   Laporan Polisi: #LP-2026/POLRI/8821
+     *   Surat Teguran : #ST-2026/DISNAKER/8821
      */
-    public static function generateNomorSurat(string $nomorTiket): string
+    public static function generateNomorSurat(string $nomorTiket, string $jenis = LokerLensCopy::JENIS_LAPORAN_POLISI): string
     {
         $number = str_replace('#LKR-', '', $nomorTiket);
-        return '#LP-' . date('Y') . '/POLRI/' . $number;
+        $kode = $jenis === LokerLensCopy::JENIS_SURAT_TEGURAN ? 'ST' : 'LP';
+        $instansi = $jenis === LokerLensCopy::JENIS_SURAT_TEGURAN ? 'DISNAKER' : 'POLRI';
+
+        return '#' . $kode . '-' . now()->year . '/' . $instansi . '/' . $number;
     }
 }

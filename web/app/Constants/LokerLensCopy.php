@@ -328,6 +328,36 @@ final class LokerLensCopy
     public const SURAT_TUJUAN_WAJIB        = 'Tujuan kepolisian wajib dipilih.';
     public const SURAT_BUKTI_TIPE          = 'Berkas bukti harus berformat PDF, JPG, atau PNG.';
     public const SURAT_BUKTI_UKURAN        = 'Ukuran berkas bukti maksimal 10 MB.';
+    public const SURAT_TUJUAN_TEGURAN_WAJIB = 'Tujuan surat teguran wajib diisi.';
+    public const SURAT_JENIS_TIDAK_DIKENAL = 'Jenis dokumen harus Laporan Polisi atau Surat Teguran.';
+
+    // ──────────────────────────────────────────────
+    //  Jenis dokumen di Buat Surat (issue #8, F-04 / US-04)
+    //  Nilai jenis sama dengan enum kolom jenis_dokumen. Isi Surat Teguran belum
+    //  dijelaskan di SRS (Appendix C no. 4); teks di bawah dari rancangan tim.
+    // ──────────────────────────────────────────────
+    public const JENIS_LAPORAN_POLISI      = 'Laporan Polisi';
+    public const JENIS_SURAT_TEGURAN       = 'Surat Teguran';
+    public const KETERANGAN_JENIS_LAPORAN  = 'Dilaporkan ke kepolisian sebagai dugaan tindak pidana penipuan rekrutmen.';
+    public const KETERANGAN_JENIS_TEGURAN  = 'Peringatan resmi Dinas kepada perusahaan/pemasang lowongan agar menghentikan pelanggaran.';
+    public const JUDUL_BUAT_TEGURAN        = 'Buat Surat Teguran';
+    public const DESKRIPSI_BUAT_LAPORAN    = 'Formulir pembentukan laporan resmi indikasi penipuan rekrutmen tenaga kerja kepada pihak kepolisian / penyidik tindak pidana siber.';
+    public const DESKRIPSI_BUAT_TEGURAN    = 'Formulir surat teguran resmi kepada perusahaan/pemasang lowongan yang terindikasi melanggar ketentuan rekrutmen tenaga kerja.';
+    public const LABEL_KRONOLOGI_LAPORAN   = 'Uraian Kronologi Kejadian';
+    public const LABEL_KRONOLOGI_TEGURAN   = 'Uraian Pelanggaran';
+    public const PANEL_TUJUAN_TEGURAN      = 'Tujuan Surat Teguran';
+    public const LABEL_TUJUAN_TEGURAN      = 'Ditujukan Kepada (Perusahaan/Pemasang Lowongan)';
+    /** %s = nama perusahaan; isi bawaan tujuan surat teguran. */
+    public const TUJUAN_TEGURAN_BAWAAN     = 'Pimpinan %s';
+    public const BTN_BUAT_SURAT            = 'Buat Surat →';
+
+    // Halaman surat terbit per jenis dokumen
+    public const JUDUL_TERBIT_LAPORAN      = 'Laporan Polisi Berhasil Diterbitkan';
+    public const JUDUL_TERBIT_TEGURAN      = 'Surat Teguran Berhasil Diterbitkan';
+    public const DESKRIPSI_TERBIT_LAPORAN  = 'Dokumen laporan resmi dan seluruh berkas bukti digital telah berhasil disahkan serta siap diteruskan ke instansi kepolisian tujuan.';
+    public const DESKRIPSI_TERBIT_TEGURAN  = 'Surat teguran resmi telah berhasil disahkan dan siap dikirimkan kepada perusahaan/pemasang lowongan.';
+    public const LABEL_TUJUAN_KEPOLISIAN   = 'Instansi Kepolisian Tujuan';
+    public const LABEL_DITUJUKAN_KEPADA    = 'Ditujukan Kepada';
 
     // Form Keputusan Kepala Bidang
     public const KEPUTUSAN_WAJIB           = 'Keputusan wajib dipilih.';

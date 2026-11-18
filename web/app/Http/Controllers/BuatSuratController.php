@@ -28,8 +28,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class BuatSuratController extends Controller
 {
     /**
-     * Form buat laporan polisi.
-     * Otomatis terisi data kasus (FR-ST-03).
+     * Form buat surat teguran/laporan polisi.
+     * Otomatis terisi data kasus (FR-ST-03). Jenis dokumen bawaan: Laporan Polisi.
      */
     public function index(int $pengaduanId): View|RedirectResponse
     {
@@ -58,7 +58,13 @@ class BuatSuratController extends Controller
         // Kronologi otomatis dari data kasus (dapat diedit)
         $kronologiDefault = $this->buatKronologiDefault($pengaduan);
 
-        return view('buat-surat.index', compact('pengaduan', 'surat', 'kronologiDefault'));
+        // Jenis terpilih: isian terakhir (jika validasi gagal) → jenis di draf → Laporan Polisi
+        $jenisTerpilih = old('jenis_dokumen', $surat->jenis_dokumen ?? LokerLensCopy::JENIS_LAPORAN_POLISI);
+        if (! in_array($jenisTerpilih, SuratTeguranLaporanPolisi::DAFTAR_JENIS, true)) {
+            $jenisTerpilih = LokerLensCopy::JENIS_LAPORAN_POLISI;
+        }
+
+        return view('buat-surat.index', compact('pengaduan', 'surat', 'kronologiDefault', 'jenisTerpilih'));
     }
 
     /**
@@ -75,19 +81,13 @@ class BuatSuratController extends Controller
             return $tolak;
         }
 
-        $this->validasiIsianSurat($request);
+        $isian = $this->isianSurat($request);
 
         $this->simpanBuktiTambahan($request, $pengaduan);
 
         SuratTeguranLaporanPolisi::updateOrCreate(
             ['id_tindaklanjut' => $tindakLanjut->id_tindaklanjut],
-            [
-                'jenis_dokumen'       => 'Laporan Polisi',
-                'kronologi_kejadian'  => $request->kronologi,
-                'tujuan_instansi'     => $request->tujuan_kepolisian,
-                'pasal_dilanggar'     => $this->pasalTerpilih($request),
-                'status_penerbitan'   => 'Draft',
-            ]
+            $isian
         );
 
         return redirect()->route('buat-surat.index', $pengaduanId)
@@ -109,24 +109,18 @@ class BuatSuratController extends Controller
             return $tolak;
         }
 
-        $this->validasiIsianSurat($request);
+        $isian = $this->isianSurat($request);
 
         $this->simpanBuktiTambahan($request, $pengaduan);
 
         $surat = SuratTeguranLaporanPolisi::updateOrCreate(
             ['id_tindaklanjut' => $tindakLanjut->id_tindaklanjut],
-            [
-                'jenis_dokumen'      => 'Laporan Polisi',
-                'kronologi_kejadian' => $request->kronologi,
-                'tujuan_instansi'    => $request->tujuan_kepolisian,
-                'pasal_dilanggar'    => $this->pasalTerpilih($request),
-                'status_penerbitan'  => 'Draft',
-            ]
+            $isian
         );
 
         try {
             DB::transaction(function () use ($pengaduan, $surat) {
-                $nomorSurat = SuratTeguranLaporanPolisi::generateNomorSurat($pengaduan->nomor_tiket);
+                $nomorSurat = SuratTeguranLaporanPolisi::generateNomorSurat($pengaduan->nomor_tiket, $surat->jenis_dokumen);
 
                 $surat->update([
                     'nomor_surat'       => $nomorSurat,
@@ -137,7 +131,7 @@ class BuatSuratController extends Controller
                 // BR-10, BR-11: kasus Selesai dan tercatat di riwayat
                 $pengaduan->ubahStatus(
                     StatusKasus::Selesai,
-                    'Laporan Polisi ' . $nomorSurat . ' berhasil diterbitkan. ' . LokerLensCopy::KASUS_TERDOKUMENTASI . '.'
+                    $surat->jenis_dokumen . ' ' . $nomorSurat . ' berhasil diterbitkan. ' . LokerLensCopy::KASUS_TERDOKUMENTASI . '.'
                 );
             });
         } catch (\Exception $e) {
@@ -194,20 +188,43 @@ public function lihatBukti(BuktiPendukung $bukti): StreamedResponse
 }
 
 /**
- * Aturan isian surat, sama untuk Simpan Draft dan Terbitkan Laporan.
+ * Validasi isian surat lalu kembalikan data yang disimpan (status tetap Draft).
+ * Sama untuk Simpan Draft dan Terbitkan Laporan.
+ *
+ * Tujuan surat bergantung jenis dokumen:
+ *   Laporan Polisi → tujuan_kepolisian (dropdown instansi kepolisian)
+ *   Surat Teguran  → tujuan_teguran (perusahaan/pemasang lowongan)
+ * Isian tujuan milik jenis lain (panel yang tersembunyi) tidak divalidasi dan tidak disimpan.
+ * Tanpa jenis_dokumen dianggap Laporan Polisi (sama seperti sebelum ada pilihan jenis).
  * Pesan wajib dari LokerLensCopy; pesan lain dari lang/id/validation.php.
+ *
+ * @return array<string, mixed>
  */
-private function validasiIsianSurat(Request $request): void
+private function isianSurat(Request $request): array
 {
+    $jenis = $request->input('jenis_dokumen') ?? LokerLensCopy::JENIS_LAPORAN_POLISI;
+    $kolomTujuan = $jenis === LokerLensCopy::JENIS_SURAT_TEGURAN ? 'tujuan_teguran' : 'tujuan_kepolisian';
+
     $request->validate([
-        'kronologi'         => ['required', 'string'],
-        'tujuan_kepolisian' => ['required', 'string', 'max:255'],
-        'pasal'             => ['array'],
-        'pasal.*'           => [Rule::in(array_keys(SuratTeguranLaporanPolisi::DAFTAR_PASAL))],
+        'jenis_dokumen' => ['nullable', Rule::in(SuratTeguranLaporanPolisi::DAFTAR_JENIS)],
+        'kronologi'     => ['required', 'string'],
+        $kolomTujuan    => ['required', 'string', 'max:255'],
+        'pasal'         => ['array'],
+        'pasal.*'       => [Rule::in(array_keys(SuratTeguranLaporanPolisi::DAFTAR_PASAL))],
     ], [
+        'jenis_dokumen.in'           => LokerLensCopy::SURAT_JENIS_TIDAK_DIKENAL,
         'kronologi.required'         => LokerLensCopy::SURAT_KRONOLOGI_WAJIB,
         'tujuan_kepolisian.required' => LokerLensCopy::SURAT_TUJUAN_WAJIB,
+        'tujuan_teguran.required'    => LokerLensCopy::SURAT_TUJUAN_TEGURAN_WAJIB,
     ]);
+
+    return [
+        'jenis_dokumen'      => $jenis,
+        'kronologi_kejadian' => $request->kronologi,
+        'tujuan_instansi'    => $request->input($kolomTujuan),
+        'pasal_dilanggar'    => $this->pasalTerpilih($request),
+        'status_penerbitan'  => 'Draft',
+    ];
 }
 
 private function simpanBuktiTambahan(Request $request, Pengaduan $pengaduan): void
@@ -291,6 +308,6 @@ private function simpanBuktiTambahan(Request $request, Pengaduan $pengaduan): vo
 
         return "Telah ditemukan indikasi lowongan kerja mencurigakan yang mengatasnamakan {$perusahaan} untuk posisi {$posisi}. " .
                "Sistem LokerLens mendeteksi probabilitas penipuan sebesar {$skor}% berdasarkan analisis pola deskripsi dan indikator bahaya. " .
-               "Berdasarkan tinjauan Analis dan keputusan Kepala Bidang, kasus ini perlu ditindaklanjuti oleh pihak berwajib.";
+               "Berdasarkan tinjauan Analis dan keputusan Kepala Bidang, kasus ini ditindaklanjuti sesuai kewenangan instansi yang dituju.";
     }
 }

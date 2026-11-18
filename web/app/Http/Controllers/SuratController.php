@@ -19,7 +19,7 @@ use Illuminate\View\View;
 class SuratController extends Controller
 {
     /** Pilihan filter jenis dokumen (sama dengan enum kolom jenis_dokumen). */
-    public const PILIHAN_JENIS = ['Surat Teguran', 'Laporan Polisi'];
+    public const PILIHAN_JENIS = SuratTeguranLaporanPolisi::DAFTAR_JENIS;
 
     /** Pilihan filter status: nilai di database => label di layar. */
     public const PILIHAN_STATUS = [

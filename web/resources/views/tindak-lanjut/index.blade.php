@@ -142,8 +142,8 @@
                             @if($isApproved)
                                 <a href="{{ route('buat-surat.index', $kasus->id_pengaduan) }}"
                                    class="inline-flex items-center whitespace-nowrap px-3 py-2 rounded-control bg-teal-600 hover:bg-teal-500 text-white font-semibold text-xs shadow transition"
-                                   title="Buat Laporan Polisi">
-                                    Surat Polisi →
+                                   title="{{ \App\Constants\LokerLensCopy::JUDUL_BUAT_LAPORAN }} / {{ \App\Constants\LokerLensCopy::JUDUL_BUAT_TEGURAN }}">
+                                    {{ \App\Constants\LokerLensCopy::BTN_BUAT_SURAT }}
                                 </a>
                             @endif
                         </div>

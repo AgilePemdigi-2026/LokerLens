@@ -16,7 +16,7 @@ use Tests\TestCase;
  * Riwayat Tinjauan Analis (issue #25): /riwayat-tinjauan dan detail hanya-baca.
  *
  * Memakai data seeder. Kasus yang sudah ditinjau Analis:
- *   #LKR-2025-0842  Terkonfirmasi, Menunggu Keputusan          (skor 84)
+ *   #LKR-8842  Terkonfirmasi, Menunggu Keputusan          (skor 84)
  *   #LKR-8770       Terkonfirmasi, Tindak Lanjut Disetujui     (skor 90, surat masih draf)
  *   #LKR-8798       Terkonfirmasi, Selesai                     (skor 95, surat terbit)
  *   #LKR-8781       Terkonfirmasi, Tidak Ditindaklanjuti       (skor 76)
@@ -27,7 +27,7 @@ class RiwayatTinjauanTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const SUDAH_DITINJAU = ['#LKR-2025-0842', '#LKR-8770', '#LKR-8798', '#LKR-8781', '#LKR-8752'];
+    private const SUDAH_DITINJAU = ['#LKR-8842', '#LKR-8770', '#LKR-8798', '#LKR-8781', '#LKR-8752'];
     private const BELUM_DITINJAU = ['#LKR-8821', '#LKR-8819', '#LKR-8790', '#LKR-8765'];
 
     protected function setUp(): void
@@ -146,7 +146,7 @@ class RiwayatTinjauanTest extends TestCase
         $response->assertSeeInOrder([
             '#LKR-8798', LokerLensCopy::HASIL_AKHIR_DITINDAKLANJUTI,
             '#LKR-8770', LokerLensCopy::HASIL_AKHIR_DITINDAKLANJUTI,
-            '#LKR-2025-0842', LokerLensCopy::HASIL_AKHIR_MENUNGGU,
+            '#LKR-8842', LokerLensCopy::HASIL_AKHIR_MENUNGGU,
             '#LKR-8781', LokerLensCopy::HASIL_AKHIR_TIDAK_DITINDAKLANJUTI,
             '#LKR-8752', LokerLensCopy::HASIL_AKHIR_TIDAK_TERBUKTI,
         ]);
@@ -176,14 +176,14 @@ class RiwayatTinjauanTest extends TestCase
         $tidakTerbukti = $this->actingAs($this->analis())
             ->get('/riwayat-tinjauan?filter_hasil=' . urlencode(HasilTinjauan::TidakTerbukti->value));
         $tidakTerbukti->assertSee('#LKR-8752');
-        foreach (['#LKR-2025-0842', '#LKR-8770', '#LKR-8798', '#LKR-8781'] as $tiket) {
+        foreach (['#LKR-8842', '#LKR-8770', '#LKR-8798', '#LKR-8781'] as $tiket) {
             $tidakTerbukti->assertDontSee($tiket);
         }
 
         $terkonfirmasi = $this->actingAs($this->analis())
             ->get('/riwayat-tinjauan?filter_hasil=' . urlencode(HasilTinjauan::TerkonfirmasiMencurigakan->value));
         $terkonfirmasi->assertDontSee('#LKR-8752');
-        foreach (['#LKR-2025-0842', '#LKR-8770', '#LKR-8798', '#LKR-8781'] as $tiket) {
+        foreach (['#LKR-8842', '#LKR-8770', '#LKR-8798', '#LKR-8781'] as $tiket) {
             $terkonfirmasi->assertSee($tiket);
         }
     }
@@ -191,7 +191,7 @@ class RiwayatTinjauanTest extends TestCase
     public function test_filter_hasil_akhir(): void
     {
         $harapan = [
-            LokerLensCopy::HASIL_AKHIR_MENUNGGU              => ['#LKR-2025-0842'],
+            LokerLensCopy::HASIL_AKHIR_MENUNGGU              => ['#LKR-8842'],
             LokerLensCopy::HASIL_AKHIR_DITINDAKLANJUTI       => ['#LKR-8770', '#LKR-8798'],
             LokerLensCopy::HASIL_AKHIR_TIDAK_DITINDAKLANJUTI => ['#LKR-8781'],
         ];
@@ -219,7 +219,7 @@ class RiwayatTinjauanTest extends TestCase
     public function test_urutan_terbaru_skor_tertinggi_dan_skor_terendah(): void
     {
         $analis = $this->analis();
-        $skorTurun = ['#LKR-8798', '#LKR-8770', '#LKR-2025-0842', '#LKR-8781', '#LKR-8752'];
+        $skorTurun = ['#LKR-8798', '#LKR-8770', '#LKR-8842', '#LKR-8781', '#LKR-8752'];
 
         $this->actingAs($analis)->get('/riwayat-tinjauan?urutan=' . urlencode(LokerLensCopy::URUTAN_SKOR_TERTINGGI))
             ->assertSeeInOrder($skorTurun);
@@ -258,7 +258,7 @@ class RiwayatTinjauanTest extends TestCase
 
     public function test_detail_hanya_baca_tanpa_form_tinjauan(): void
     {
-        $response = $this->detail('#LKR-2025-0842')->assertOk();
+        $response = $this->detail('#LKR-8842')->assertOk();
 
         // Data lowongan, skor, kata pemicu, dan hasil tinjauan
         $response->assertSee('Detail Lowongan Terpilih')
@@ -275,14 +275,14 @@ class RiwayatTinjauanTest extends TestCase
         // Form tinjauan tidak dirender
         $response->assertDontSee('name="catatan_tinjauan"', false)
             ->assertDontSee('name="hasil_tinjauan"', false)
-            ->assertDontSee(route('tinjau-lowongan.simpan', $this->idKlasifikasi('#LKR-2025-0842')), false)
+            ->assertDontSee(route('tinjau-lowongan.simpan', $this->idKlasifikasi('#LKR-8842')), false)
             ->assertDontSee('Lanjutkan');
     }
 
     public function test_detail_tidak_mengubah_status_dan_kasus_belum_ditinjau_404(): void
     {
-        $this->detail('#LKR-2025-0842')->assertOk();
-        $this->assertSame(StatusKasus::MenungguKeputusan, Pengaduan::where('nomor_tiket', '#LKR-2025-0842')->first()->status_pengaduan);
+        $this->detail('#LKR-8842')->assertOk();
+        $this->assertSame(StatusKasus::MenungguKeputusan, Pengaduan::where('nomor_tiket', '#LKR-8842')->first()->status_pengaduan);
 
         // Kasus yang masih di Pemantauan tidak bisa dibuka lewat Riwayat, dan statusnya tidak berubah
         foreach (self::BELUM_DITINJAU as $tiket) {
@@ -320,7 +320,7 @@ class RiwayatTinjauanTest extends TestCase
 
     public function test_hasil_akhir_menunggu_keputusan(): void
     {
-        $this->detail('#LKR-2025-0842')
+        $this->detail('#LKR-8842')
             ->assertSee(LokerLensCopy::JUDUL_HASIL_AKHIR_KASUS)
             ->assertSee(LokerLensCopy::MENUNGGU_KEPUTUSAN_KABID)
             ->assertDontSee(LokerLensCopy::LABEL_KEPUTUSAN . ':')

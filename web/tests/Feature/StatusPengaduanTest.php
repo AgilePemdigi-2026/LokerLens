@@ -110,7 +110,7 @@ class StatusPengaduanTest extends TestCase
         $response = $this->actingAs($this->akunDemo())->get('/status-pengaduan')->assertOk();
 
         $this->assertSame(
-            ['#LKR-8805', '#LKR-8765', '#LKR-8790', '#LKR-8819', '#LKR-8821', '#LKR-2025-0842', '#LKR-8770'],
+            ['#LKR-8805', '#LKR-8765', '#LKR-8790', '#LKR-8819', '#LKR-8821', '#LKR-8842', '#LKR-8770'],
             $this->tiketDiDaftar($response)
         );
         // Tidak ada panel detail di halaman daftar; setiap kartu menuju halaman detailnya
@@ -139,7 +139,7 @@ class StatusPengaduanTest extends TestCase
     public function test_jumlah_di_tiap_pilihan_filter(): void
     {
         // Menunggu: Menunggu klasifikasi (#LKR-8805), Perlu Tinjauan (#LKR-8765, #LKR-8790, #LKR-8819)
-        // Aktif: Sedang Ditinjau (#LKR-8821), Menunggu Keputusan (#LKR-2025-0842), Tindak Lanjut Disetujui (#LKR-8770)
+        // Aktif: Sedang Ditinjau (#LKR-8821), Menunggu Keputusan (#LKR-8842), Tindak Lanjut Disetujui (#LKR-8770)
         $this->actingAs($this->akunDemo())->get('/status-pengaduan')
             ->assertSee('Semua (7)')
             ->assertSee('Aktif (3)')
@@ -153,7 +153,7 @@ class StatusPengaduanTest extends TestCase
             'Menunggu klasifikasi'    => ['#LKR-8805', ProgresPengaduan::FILTER_MENUNGGU],
             'Perlu Tinjauan'          => ['#LKR-8819', ProgresPengaduan::FILTER_MENUNGGU],
             'Sedang Ditinjau'         => ['#LKR-8821', ProgresPengaduan::FILTER_AKTIF],
-            'Menunggu Keputusan'      => ['#LKR-2025-0842', ProgresPengaduan::FILTER_AKTIF],
+            'Menunggu Keputusan'      => ['#LKR-8842', ProgresPengaduan::FILTER_AKTIF],
             'Tindak Lanjut Disetujui' => ['#LKR-8770', ProgresPengaduan::FILTER_AKTIF],
             'Selesai'                 => ['#LKR-8798', null],
             'Tidak Terbukti'          => ['#LKR-8752', null],
@@ -169,7 +169,7 @@ class StatusPengaduanTest extends TestCase
     public function test_filter_aktif_dan_menunggu(): void
     {
         $aktif = $this->actingAs($this->akunDemo())->get('/status-pengaduan?filter=aktif')->assertOk();
-        $this->assertSame(['#LKR-8821', '#LKR-2025-0842', '#LKR-8770'], $this->tiketDiDaftar($aktif));
+        $this->assertSame(['#LKR-8821', '#LKR-8842', '#LKR-8770'], $this->tiketDiDaftar($aktif));
         // Link kartu membawa filter supaya tombol kembali membuka daftar yang sama
         $aktif->assertSee(route('status-pengaduan.detail', ['id' => $this->tiket('#LKR-8770')->id_pengaduan, 'filter' => 'aktif']), false);
 
@@ -261,7 +261,7 @@ class StatusPengaduanTest extends TestCase
             'Perlu Tinjauan'          => ['#LKR-8819', 2, [self::SELESAI, self::BERLANGSUNG, self::BELUM, self::BELUM, self::BELUM], null],
             'Sedang Ditinjau'         => ['#LKR-8821', 2, [self::SELESAI, self::BERLANGSUNG, self::BELUM, self::BELUM, self::BELUM], null],
             'Tidak Terbukti'          => ['#LKR-8752', 2, [self::SELESAI, self::DIHENTIKAN], LokerLensCopy::PESAN_BERHENTI_TIDAK_TERBUKTI],
-            'Menunggu Keputusan'      => ['#LKR-2025-0842', 3, [self::SELESAI, self::SELESAI, self::BERLANGSUNG, self::BELUM, self::BELUM], null],
+            'Menunggu Keputusan'      => ['#LKR-8842', 3, [self::SELESAI, self::SELESAI, self::BERLANGSUNG, self::BELUM, self::BELUM], null],
             'Tidak Ditindaklanjuti'   => ['#LKR-8781', 3, [self::SELESAI, self::SELESAI, self::DIHENTIKAN], LokerLensCopy::PESAN_BERHENTI_TIDAK_DITINDAKLANJUTI],
             'Tindak Lanjut Disetujui' => ['#LKR-8770', 4, [self::SELESAI, self::SELESAI, self::SELESAI, self::BERLANGSUNG, self::BELUM], null],
             'Selesai'                 => ['#LKR-8798', 5, [self::SELESAI, self::SELESAI, self::SELESAI, self::SELESAI, self::SELESAI], null],

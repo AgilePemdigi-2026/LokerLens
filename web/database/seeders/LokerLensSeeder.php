@@ -91,7 +91,7 @@ class LokerLensSeeder extends Seeder
             'status_terdaftar' => 'Belum Diverifikasi',
         ]);
 
-        // Perusahaan untuk kasus Kepala Bidang (LKR-2025-0842)
+        // Perusahaan untuk kasus Kepala Bidang (LKR-8842)
         $perusahaan5 = Perusahaan::create([
             'nama_perusahaan'  => 'PT Maju Sejahtera Energi Nusantara',
             'status_terdaftar' => 'Tidak Terdaftar',
@@ -202,13 +202,13 @@ class LokerLensSeeder extends Seeder
         $this->buatKataPemicu($klasifikasi4, ['biaya bpjs' => 26, 'wajib dp' => 20, 'tidak perlu pengalaman' => 11]);
         $this->buatRiwayat($pengaduan4, [[StatusKasus::PerluTinjauan, 'Pengaduan diterima dan klasifikasi dilakukan. Masuk antrean tinjauan Analis.', $diajukan4]]);
 
-        // ─── Kasus Kepala Bidang (LKR-2025-0842, sudah ditinjau Analis) ─
+        // ─── Kasus Kepala Bidang (LKR-8842, sudah ditinjau Analis) ─
         $diajukan5 = $this->waktu(8, 10, 0);
         $ditinjau5 = $this->waktu(4, 15, 10);
         $pengaduan5 = Pengaduan::create([
             'id_lowongan'       => $lowongan5->id_lowongan,
             'id_pengguna'       => $masyarakat->id,
-            'nomor_tiket'       => '#LKR-2025-0842',
+            'nomor_tiket'       => '#LKR-8842',
             'deskripsi_singkat' => 'Staff Administrasi Operasional PT Maju Sejahtera Energi Nusantara',
             'status_pengaduan'  => StatusKasus::MenungguKeputusan,
             'tanggal_pengaduan' => $diajukan5,

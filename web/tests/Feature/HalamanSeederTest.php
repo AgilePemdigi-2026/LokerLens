@@ -46,13 +46,13 @@ class HalamanSeederTest extends TestCase
 
         $this->actingAs($analis)->get('/tinjau-lowongan')
             ->assertOk()->assertSee('Daftar Lowongan Prioritas Tinggi')->assertSee('#LKR-8821')
-            ->assertDontSee('#LKR-2025-0842'); // sudah Menunggu Keputusan, bukan antrean Analis
+            ->assertDontSee('#LKR-8842'); // sudah Menunggu Keputusan, bukan antrean Analis
 
         $this->actingAs($analis)->get("/tinjau-lowongan/detail/{$klasifikasi->id_klasifikasi}")
             ->assertOk()->assertSee('Detail Lowongan Terpilih')->assertSee('Terkonfirmasi Mencurigakan');
 
         // Kasus yang sudah lewat tahap tinjauan tampil tanpa formulir
-        $sudahDitinjau = HasilKlasifikasi::whereHas('pengaduan', fn ($q) => $q->where('nomor_tiket', '#LKR-2025-0842'))->firstOrFail();
+        $sudahDitinjau = HasilKlasifikasi::whereHas('pengaduan', fn ($q) => $q->where('nomor_tiket', '#LKR-8842'))->firstOrFail();
         $this->actingAs($analis)->get("/tinjau-lowongan/detail/{$sudahDitinjau->id_klasifikasi}")
             ->assertOk()->assertSee('Tinjauan untuk kasus ini sudah selesai')->assertDontSee('name="catatan_tinjauan"', false);
     }

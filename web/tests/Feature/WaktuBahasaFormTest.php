@@ -82,7 +82,7 @@ class WaktuBahasaFormTest extends TestCase
     {
         Carbon::setTestNow(Carbon::create(2026, 11, 10, 21, 15, 0, 'Asia/Jakarta'));
 
-        $kasus = $this->kasus('#LKR-2025-0842'); // Menunggu Keputusan
+        $kasus = $this->kasus('#LKR-8842'); // Menunggu Keputusan
         $kasus->ubahStatus(StatusKasus::TidakDitindaklanjuti, LokerLensCopy::KASUS_DIARSIPKAN);
 
         // Ambil berdasarkan keterangan: riwayat dari seeder bisa lebih baru dari tanggal uji di atas
@@ -96,7 +96,7 @@ class WaktuBahasaFormTest extends TestCase
 
     public function test_dashboard_kepala_bidang_memakai_nama_bulan_indonesia(): void
     {
-        $kasus = $this->kasus('#LKR-2025-0842');
+        $kasus = $this->kasus('#LKR-8842');
         $kasus->update(['tanggal_pengaduan' => Carbon::create(2026, 10, 5, 10, 0)]);
 
         $this->actingAs($this->kepalaBidang)
@@ -134,7 +134,7 @@ class WaktuBahasaFormTest extends TestCase
             $this->get('/buat-surat/' . $this->kasus('#LKR-8770')->id_pengaduan)->assertOk(), 'buat-surat');
 
         // Form keputusan tidak memakai required, tetapi tetap novalidate dan punya tempat pesan error
-        $this->get('/tindak-lanjut/' . $this->kasus('#LKR-2025-0842')->id_pengaduan)
+        $this->get('/tindak-lanjut/' . $this->kasus('#LKR-8842')->id_pengaduan)
             ->assertOk()
             ->assertSee('id="form-keputusan" novalidate', false);
     }
@@ -272,7 +272,7 @@ class WaktuBahasaFormTest extends TestCase
 
     public function test_keputusan_kosong_menampilkan_pesan(): void
     {
-        $id = $this->kasus('#LKR-2025-0842')->id_pengaduan;
+        $id = $this->kasus('#LKR-8842')->id_pengaduan;
 
         $this->actingAs($this->kepalaBidang)
             ->from("/tindak-lanjut/{$id}")
@@ -282,7 +282,7 @@ class WaktuBahasaFormTest extends TestCase
         $this->followingRedirects()->from("/tindak-lanjut/{$id}")
             ->post("/tindak-lanjut/{$id}/keputusan", ['keputusan' => ''])
             ->assertSee(LokerLensCopy::KEPUTUSAN_WAJIB);
-        $this->assertSame(StatusKasus::MenungguKeputusan, $this->kasus('#LKR-2025-0842')->status_pengaduan);
+        $this->assertSame(StatusKasus::MenungguKeputusan, $this->kasus('#LKR-8842')->status_pengaduan);
     }
 
     public function test_periode_kustom_kosong_menampilkan_pesan(): void

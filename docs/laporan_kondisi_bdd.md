@@ -232,7 +232,7 @@ Di file `web/bdd/features/*.feature`, setiap kalimat yang berbeda ditandai komen
 | D9 | B.3-6 | "Mencurigakan" | "Terkonfirmasi Mencurigakan" | Pilihan resmi sesuai keputusan tim (`requirements.md`). |
 | D10 | B.3-6 | Teks "Menindaklanjuti Laporan Lowongan Kerja yang Mencurigakan" | "Daftar Lowongan Prioritas Tinggi" | Setelah disimpan, aplikasi kembali ke daftar. Teks itu hanya ada di halaman detail. |
 | D11 | B.4-1 | Teks detail di `/tindak-lanjut/` | Ditambah `When I follow "Lihat Detail"` | `/tindak-lanjut` adalah daftar. Detail ada di `/tindak-lanjut/{id}`. |
-| D12 | B.4-2/3 | Tekan "Tidak Ditindaklanjuti"/"Tindaklanjuti" di `/tindak-lanjut/` | Di detail tiket `#LKR-2025-0842`: pilih keputusan, tekan "Konfirmasi Keputusan", lalu "Ya, Konfirmasi" di pop-up. Tag `@javascript` | Keputusan diambil lewat pilihan dan pop-up konfirmasi (Data Mockup 6.5.3). |
+| D12 | B.4-2/3 | Tekan "Tidak Ditindaklanjuti"/"Tindaklanjuti" di `/tindak-lanjut/` | Di detail tiket `#LKR-8842`: pilih keputusan, tekan "Konfirmasi Keputusan", lalu "Ya, Konfirmasi" di pop-up. Tag `@javascript` | Keputusan diambil lewat pilihan dan pop-up konfirmasi (Data Mockup 6.5.3). |
 | D13 | B.4-3 | Langsung di `/buat-surat/` | "Keputusan Berhasil Disimpan", lalu klik "Lanjut ke Pembuatan Surat", lalu URL `/buat-surat/{id}` | Setelah keputusan, aplikasi menampilkan halaman hasil keputusan dulu (Data Mockup 6.5.4). |
 | D14 | B.5-* | `/buat-surat/` | Halaman surat tiket `#LKR-8770` | Route butuh ID kasus. `/buat-surat` dialihkan ke daftar laporan. |
 | D15 | B.5-1 | "Subdit Siber Ditreskrimsus Polda Metro Jaya" | "… / Wilayah Terkait" | Teks pilihan di aplikasi lebih panjang, dan Mink butuh teks yang persis sama. |
@@ -319,12 +319,12 @@ Penomoran mengikuti bagian 1, misalnya B.6-1 = Table B.6 skenario ke-1. Langkah 
 | B.10-4 | Dashboard Analis | Masyarakat | Peran lain tidak bisa membuka dashboard Analis | Login Masyarakat → buka `/dashboard-analis` → 403 |
 | B.11-1 | Riwayat Tinjauan | Analis | Menampilkan lowongan yang sudah ditinjau | Klik "Riwayat" di navbar → tampil "Riwayat Tinjauan Lowongan", "#LKR-8798"; tidak tampil "#LKR-8821" |
 | B.11-2 | Riwayat Tinjauan | Analis | Memfilter riwayat berdasarkan hasil akhir | Pilih "Tidak Ditindaklanjuti" di `filter_hasil_akhir`, tekan "Cari" → tampil "#LKR-8781"; tidak tampil "#LKR-8798" |
-| B.11-3 | Riwayat Tinjauan | Analis | Melihat detail tinjauan dalam mode hanya-baca | Klik "Lihat Detail" di baris "#LKR-2025-0842" → tampil "Hasil Akhir Kasus", "Menunggu keputusan Kepala Bidang"; tidak ada elemen `#catatan_tinjauan` (form tinjauan tidak tampil) |
+| B.11-3 | Riwayat Tinjauan | Analis | Melihat detail tinjauan dalam mode hanya-baca | Klik "Lihat Detail" di baris "#LKR-8842" → tampil "Hasil Akhir Kasus", "Menunggu keputusan Kepala Bidang"; tidak ada elemen `#catatan_tinjauan` (form tinjauan tidak tampil) |
 | B.11-4 | Riwayat Tinjauan | Kepala Bidang | Peran lain tidak bisa membuka Riwayat Tinjauan | Login Kepala Bidang → buka `/riwayat-tinjauan` → 403 |
 | B.12-1 | Dashboard Kepala Bidang | Kepala Bidang | Dashboard tampil setelah login | Login → berada di `/dashboard-kepala-bidang`, tampil "Dashboard Kepala Bidang", "Ringkasan jumlah laporan berdasarkan status penanganan." |
-| B.12-2 | Dashboard Kepala Bidang | Kepala Bidang | Membuka laporan yang menunggu keputusan | Di dashboard → klik "Lihat semua" → tampil "Daftar Laporan", "#LKR-2025-0842" |
+| B.12-2 | Dashboard Kepala Bidang | Kepala Bidang | Membuka laporan yang menunggu keputusan | Di dashboard → klik "Lihat semua" → tampil "Daftar Laporan", "#LKR-8842" |
 | B.12-3 | Dashboard Kepala Bidang | Analis | Peran lain tidak bisa membuka dashboard Kepala Bidang | Login Analis → buka `/dashboard-kepala-bidang` → 403 |
-| B.13-1 | Arsip Kasus | Kepala Bidang | Menampilkan arsip kasus berstatus akhir | Klik "Arsip Kasus" di navbar → tampil "#LKR-8798", "#LKR-8781", "#LKR-8752"; tidak tampil "#LKR-2025-0842" |
+| B.13-1 | Arsip Kasus | Kepala Bidang | Menampilkan arsip kasus berstatus akhir | Klik "Arsip Kasus" di navbar → tampil "#LKR-8798", "#LKR-8781", "#LKR-8752"; tidak tampil "#LKR-8842" |
 | B.13-2 | Arsip Kasus | Kepala Bidang | Melihat detail arsip kasus | Di `/arsip-kasus` → klik "Buka Detail" di baris "#LKR-8798" → tampil "Dokumen Surat Resmi", "Status Akhir" |
 | B.13-3 | Arsip Kasus | Kepala Bidang | Pencarian arsip tidak menemukan kasus | Isi `cari` "#LKR-0000", tekan "Cari" → tampil "Tidak Ada Kasus Sesuai Kriteria Filter" |
 | B.13-4 | Arsip Kasus | Analis | Peran lain tidak bisa membuka Arsip Kasus | Login Analis → buka `/arsip-kasus` → 403 |

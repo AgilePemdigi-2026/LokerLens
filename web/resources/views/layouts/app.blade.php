@@ -64,7 +64,7 @@
                         <h4 class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Layanan</h4>
                         <ul class="space-y-2.5">
                             @foreach([
-                                [\App\Constants\LokerLensCopy::BTN_AJUKAN_PENGADUAN, route('periksa-lowongan.index')],
+                                [\App\Constants\LokerLensCopy::NAV_PERIKSA_LOWONGAN, route('periksa-lowongan.index')],
                                 [\App\Constants\LokerLensCopy::NAV_STATUS_PENGADUAN, route('status-pengaduan.index')],
                                 [\App\Constants\LokerLensCopy::BTN_RIWAYAT_PENGADUAN, route('riwayat-pengaduan.index')],
                             ] as [$label, $url])

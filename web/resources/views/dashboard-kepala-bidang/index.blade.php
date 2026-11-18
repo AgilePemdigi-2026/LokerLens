@@ -21,6 +21,22 @@
             <div class="absolute -right-2 -bottom-6 w-24 h-24 rounded-full border-[12px] border-teal-400/10"></div>
         </div>
 
+        {{-- Pengingat draf surat yang belum diterbitkan (issue #8) --}}
+        @if($jumlahDraf > 0)
+            <div id="pengingat-draf-surat" class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-amber-50 border border-amber-300 rounded-card px-5 py-3 text-sm text-amber-900">
+                <p class="flex items-center gap-2">
+                    <svg class="w-4 h-4 shrink-0 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span><strong>{{ $jumlahDraf }}</strong> {{ \App\Constants\LokerLensCopy::PENGINGAT_DRAF_SURAT }}</span>
+                </p>
+                <a href="{{ route('surat.index', ['status' => 'Draft']) }}"
+                   class="inline-flex items-center whitespace-nowrap px-3 py-1.5 rounded-control bg-navy-900 hover:bg-navy-800 text-white text-xs font-semibold transition self-start sm:self-auto">
+                    {{ \App\Constants\LokerLensCopy::BTN_LIHAT_DRAF_SURAT }} →
+                </a>
+            </div>
+        @endif
+
         {{-- Ringkasan Status --}}
         <div>
             <div class="flex items-center justify-between mb-4">

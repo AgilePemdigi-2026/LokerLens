@@ -21,9 +21,9 @@ class NavbarProfilTest extends TestCase
     public static function peranDanMenu(): array
     {
         return [
-            'Masyarakat'    => ['Masyarakat', '/beranda', ['Ajukan Pengaduan', 'Status Pengaduan', 'Riwayat Pengaduan']],
-            'Analis'        => ['Analis', '/dashboard-analis', ['Dashboard', 'Pemantauan', 'Riwayat']],
-            'Kepala Bidang' => ['Kepala Bidang', '/dashboard-kepala-bidang', ['Dashboard', 'Laporan', 'Arsip Kasus']],
+            'Masyarakat'    => ['Masyarakat', '/beranda', ['Periksa Lowongan', 'Status Pengaduan', 'Riwayat Pengaduan']],
+            'Analis'        => ['Analis', '/dashboard-analis', ['Dashboard', 'Tinjau Lowongan', 'Riwayat']],
+            'Kepala Bidang' => ['Kepala Bidang', '/dashboard-kepala-bidang', ['Dashboard', 'Tindak Lanjut', 'Surat', 'Arsip Kasus']],
         ];
     }
 

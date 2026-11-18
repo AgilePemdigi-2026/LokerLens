@@ -31,7 +31,7 @@ class TindakLanjutController extends Controller
             'lowonganKerja.perusahaan',
             'pengguna',
             'hasilKlasifikasi.tinjauanAnalis',
-            'tindakLanjutKasus',
+            'tindakLanjutKasus.suratTeguranLaporanPolisi', // untuk tanda "Ada draf" (issue #8)
         ]);
 
         // Filter berdasarkan status (§6.5.1) — hanya status tahap Kepala Bidang

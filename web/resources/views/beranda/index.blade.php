@@ -17,7 +17,7 @@
                 <div class="flex flex-wrap items-center gap-3 pt-3">
                     <a href="{{ route('periksa-lowongan.index') }}"
                        class="px-6 py-3 rounded-control bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs uppercase tracking-wider shadow-lg transition flex items-center space-x-2">
-                        <span>Ajukan Pengaduan</span>
+                        <span>{{ \App\Constants\LokerLensCopy::NAV_PERIKSA_LOWONGAN }}</span>
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                     </a>
                     {{-- Cek Status Pengaduan: mengarah ke halaman Status Pengaduan (#11) --}}
@@ -52,11 +52,11 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                <!-- Kartu 01: Ajukan Pengaduan -->
+                <!-- Kartu 01: Periksa Lowongan -->
                 <div class="bg-white rounded-card shadow-lg p-6 border border-gray-100 flex flex-col justify-between hover:shadow-xl transition">
                     <div>
                         <span class="text-xs font-mono font-bold text-teal-600 bg-teal-50 px-2.5 py-1 rounded">01</span>
-                        <h3 class="text-lg font-bold text-navy-900 mt-3">Ajukan Pengaduan</h3>
+                        <h3 class="text-lg font-bold text-navy-900 mt-3">{{ \App\Constants\LokerLensCopy::NAV_PERIKSA_LOWONGAN }}</h3>
                         <p class="text-xs text-gray-600 mt-1.5 leading-relaxed">
                             Buat laporan baru untuk memeriksa keaslian lowongan kerja serta mendeteksi potensi indikasi penipuan.
                         </p>
@@ -111,7 +111,7 @@
                     </p>
                 </div>
                 <a href="{{ route('periksa-lowongan.index') }}" class="text-xs font-bold text-teal-700 hover:underline">
-                    + Ajukan Pengaduan Baru
+                    + {{ \App\Constants\LokerLensCopy::BTN_PERIKSA_LOWONGAN_BARU }}
                 </a>
             </div>
 
@@ -129,7 +129,7 @@
                     </p>
                     <a href="{{ route('periksa-lowongan.index') }}"
                        class="inline-flex items-center px-6 py-2.5 rounded-control bg-navy-900 hover:bg-navy-800 text-white text-xs font-semibold shadow transition">
-                        Ajukan Pengaduan
+                        {{ \App\Constants\LokerLensCopy::NAV_PERIKSA_LOWONGAN }}
                     </a>
                 </div>
             @else

@@ -94,11 +94,11 @@ class RiwayatTinjauanTest extends TestCase
         $this->actingAs($this->analis())->get("/riwayat-tinjauan/{$id}")->assertOk();
     }
 
-    public function test_navbar_analis_dashboard_pemantauan_riwayat_tanpa_laporan_dan_arsip(): void
+    public function test_navbar_analis_dashboard_tinjau_lowongan_riwayat_tanpa_laporan_dan_arsip(): void
     {
         $response = $this->actingAs($this->analis())->get('/riwayat-tinjauan')->assertOk();
 
-        $response->assertSeeInOrder(['Dashboard', 'Pemantauan', LokerLensCopy::NAV_RIWAYAT])
+        $response->assertSeeInOrder(['Dashboard', LokerLensCopy::NAV_TINJAU_LOWONGAN, LokerLensCopy::NAV_RIWAYAT])
             ->assertSee(route('riwayat-tinjauan.index'), false)
             ->assertDontSee('Arsip Kasus')
             ->assertDontSee('Sprint 2');

@@ -85,6 +85,8 @@
                     $score = $klasifikasi ? $klasifikasi->confidence_score : 0;
                     $isApproved = $kasus->status_pengaduan === \App\Enums\StatusKasus::TindakLanjutDisetujui;
                     $isMenunggu = $kasus->status_pengaduan === \App\Enums\StatusKasus::MenungguKeputusan;
+                    // Kasus yang suratnya sudah disimpan sebagai draf tetapi belum terbit (issue #8)
+                    $adaDraf = $kasus->tindakLanjutKasus?->suratTeguranLaporanPolisi?->status_penerbitan === 'Draft';
                 @endphp
                 <div class="bg-white rounded-card shadow-md p-5 sm:p-6 border border-gray-100 hover:shadow-lg transition flex flex-col md:flex-row md:items-center justify-between gap-5">
                     <div class="flex-1 space-y-2">
@@ -98,6 +100,11 @@
                             <span class="inline-flex items-center whitespace-nowrap px-2.5 py-0.5 rounded-full text-xs font-bold {{ $isMenunggu ? 'bg-amber-100 text-risk-mid border border-amber-200' : ($isApproved ? 'bg-emerald-100 text-risk-low border border-emerald-200' : 'bg-gray-100 text-gray-600 border border-gray-200') }}">
                                 {{ $kasus->status_pengaduan }}
                             </span>
+                            @if($adaDraf)
+                                <span class="inline-flex items-center whitespace-nowrap px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300" data-testid="tanda-ada-draf">
+                                    {{ \App\Constants\LokerLensCopy::TANDA_ADA_DRAF }}
+                                </span>
+                            @endif
                         </div>
 
                         <h3 class="text-lg font-bold text-navy-900 leading-snug">
@@ -128,13 +135,13 @@
 
                         <div class="flex items-center gap-2">
                             <a href="{{ route('tindak-lanjut.detail', $kasus->id_pengaduan) }}"
-                               class="inline-flex items-center px-4 py-2 rounded-control bg-navy-900 hover:bg-navy-800 text-white font-semibold text-xs shadow transition">
+                               class="inline-flex items-center whitespace-nowrap px-4 py-2 rounded-control bg-navy-900 hover:bg-navy-800 text-white font-semibold text-xs shadow transition">
                                 <span>Lihat Detail</span>
                                 <svg class="w-3.5 h-3.5 ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                             </a>
                             @if($isApproved)
                                 <a href="{{ route('buat-surat.index', $kasus->id_pengaduan) }}"
-                                   class="inline-flex items-center px-3 py-2 rounded-control bg-teal-600 hover:bg-teal-500 text-white font-semibold text-xs shadow transition"
+                                   class="inline-flex items-center whitespace-nowrap px-3 py-2 rounded-control bg-teal-600 hover:bg-teal-500 text-white font-semibold text-xs shadow transition"
                                    title="Buat Laporan Polisi">
                                     Surat Polisi →
                                 </a>

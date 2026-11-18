@@ -69,7 +69,6 @@ final class LokerLensCopy
     public const BTN_BUAT_AKUN             = 'Buat Akun';
     public const BTN_MASUK                 = 'Masuk';
     public const BTN_DAFTAR                = 'Daftar';
-    public const BTN_AJUKAN_PENGADUAN      = 'Ajukan Pengaduan';
     public const BTN_CEK_STATUS            = 'Cek Status Pengaduan';
     public const BTN_LIHAT_BUKTI           = 'Lihat Bukti';
     public const BTN_KEMBALI_ANTREAN       = 'Kembali ke Antrean';
@@ -244,7 +243,7 @@ final class LokerLensCopy
     public const RIWAYAT_TINJAUAN_JUDUL    = 'Riwayat Tinjauan Lowongan';
     public const RIWAYAT_TINJAUAN_DESKRIPSI = 'Daftar lowongan yang sudah selesai ditinjau Analis beserta hasil tinjauan dan hasil akhir kasusnya.';
     public const RIWAYAT_TINJAUAN_JUDUL_DAFTAR = 'Daftar Lowongan yang Sudah Ditinjau';
-    public const RIWAYAT_TINJAUAN_KETERANGAN_DAFTAR = 'Hanya berisi kasus dengan hasil tinjauan. Kasus yang belum ditinjau ada di menu Pemantauan.';
+    public const RIWAYAT_TINJAUAN_KETERANGAN_DAFTAR = 'Hanya berisi kasus dengan hasil tinjauan. Kasus yang belum ditinjau ada di menu Tinjau Lowongan.';
 
     // Kotak angka
     public const RIWAYAT_TINJAUAN_STAT_TOTAL = 'Total Ditinjau';
@@ -281,7 +280,7 @@ final class LokerLensCopy
 
     // Tampilan kosong
     public const BELUM_ADA_TINJAUAN        = 'Belum ada lowongan yang ditinjau';
-    public const BELUM_ADA_TINJAUAN_KETERANGAN = 'Lowongan yang sudah Anda tinjau di menu Pemantauan akan tampil di sini.';
+    public const BELUM_ADA_TINJAUAN_KETERANGAN = 'Lowongan yang sudah Anda tinjau di menu Tinjau Lowongan akan tampil di sini.';
     public const TINJAUAN_TIDAK_DITEMUKAN_KETERANGAN = 'Tidak ada lowongan yang cocok dengan kata kunci atau filter yang Anda pilih.';
     public const BTN_RESET_FILTER          = 'Reset Filter Pencarian';
 
@@ -339,13 +338,17 @@ final class LokerLensCopy
     // ──────────────────────────────────────────────
     //  Menu navbar (desktop & HP) dan halaman Profil (issue #25)
     //  Belum ada di SRS; teks dari rancangan tim.
-    //  Label menu dipakai BDD ("Dashboard", "Pemantauan", "Riwayat", "Arsip Kasus"): jangan diubah.
+    //  Label menu dipakai BDD ("Dashboard", "Tinjau Lowongan", "Riwayat", "Surat", "Arsip Kasus"): jangan diubah.
+    //  Menu fitur utama memakai nama singkat dari SRS (issue #8); judul halaman tetap nama lengkap.
     // ──────────────────────────────────────────────
     public const NAV_DASHBOARD             = 'Dashboard';
-    public const NAV_PEMANTAUAN            = 'Pemantauan';
+    public const NAV_PERIKSA_LOWONGAN      = 'Periksa Lowongan';   // F-01 Periksa Lowongan Kerja
+    public const NAV_TINJAU_LOWONGAN       = 'Tinjau Lowongan';    // F-02 Meninjau Lowongan Kerja dengan Prioritas Tinggi
+    public const NAV_TINDAK_LANJUT         = 'Tindak Lanjut';      // F-03 Menindaklanjuti Laporan Lowongan Kerja yang Mencurigakan
+    public const NAV_SURAT                 = 'Surat';              // F-04 Buat Surat Teguran/Laporan Polisi
     public const NAV_STATUS_PENGADUAN      = 'Status Pengaduan';
-    public const NAV_LAPORAN               = 'Laporan';
     public const NAV_ARSIP_KASUS           = 'Arsip Kasus';
+    public const BTN_PERIKSA_LOWONGAN_BARU = 'Periksa Lowongan Baru';
     public const NAV_PROFIL                = 'Profil Saya';
     public const NAV_BUKA_MENU             = 'Buka menu';
     public const NAV_TUTUP_MENU            = 'Tutup menu';
@@ -373,4 +376,59 @@ final class LokerLensCopy
 
     // Halaman Daftar: kebijakan belum punya halaman sendiri, jadi ditulis sebagai teks biasa
     public const DAFTAR_PERSETUJUAN        = 'Saya menyetujui Kebijakan Privasi dan Syarat Layanan LokerLens.';
+
+    // ──────────────────────────────────────────────
+    //  Halaman Surat Kepala Bidang (issue #8, bagian dari F-04 / US-04)
+    //  Daftar semua Surat Teguran/Laporan Polisi: draf dan yang sudah terbit.
+    //  Belum ada di SRS; teks dari rancangan tim.
+    // ──────────────────────────────────────────────
+    public const SURAT_JUDUL               = 'Daftar Surat Teguran/Laporan Polisi';
+    public const SURAT_DESKRIPSI           = 'Semua surat yang dibuat Kepala Bidang, baik yang masih draf maupun yang sudah terbit.';
+    public const SURAT_JUDUL_DAFTAR        = 'Daftar Surat';
+    public const SURAT_KETERANGAN_DAFTAR   = 'Draf bisa dilanjutkan dan diterbitkan. Surat yang sudah terbit hanya bisa dilihat.';
+
+    // Kotak angka
+    public const SURAT_STAT_TOTAL          = 'Total Surat';
+    public const SURAT_STAT_DRAF           = 'Draf';
+    public const SURAT_STAT_TERBIT         = 'Terbit';
+
+    // Label status (nilai di database: "Draft" / "Terbit")
+    public const SURAT_STATUS_DRAF         = 'Draf';
+    public const SURAT_STATUS_TERBIT       = 'Terbit';
+
+    // Filter, pencarian, dan urutan
+    public const SURAT_LABEL_CARI          = 'Pencarian';
+    public const SURAT_PLACEHOLDER_CARI    = 'Cari nomor tiket / perusahaan / nomor surat';
+    public const SURAT_LABEL_JENIS         = 'Jenis Dokumen';
+    public const SURAT_SEMUA_JENIS         = 'Semua Jenis';
+    public const SURAT_LABEL_STATUS        = 'Status';
+    public const SURAT_SEMUA_STATUS        = 'Semua Status';
+    public const SURAT_LABEL_URUTAN        = 'Urutkan';
+    public const URUTAN_TERLAMA            = 'Terlama';
+
+    // Kolom tabel
+    public const KOLOM_NOMOR_SURAT         = 'Nomor Surat';
+    public const KOLOM_JENIS_DOKUMEN       = 'Jenis Dokumen';
+    public const KOLOM_TUJUAN              = 'Tujuan';
+    public const KOLOM_STATUS              = 'Status';
+    public const KOLOM_TANGGAL             = 'Tanggal';
+
+    // Tombol aksi
+    public const BTN_LANJUTKAN_DRAF        = 'Lanjutkan Draf';
+    public const BTN_LIHAT_SURAT           = 'Lihat Surat';
+
+    // Keterangan tanggal: surat terbit memakai tanggal terbit, draf memakai waktu terakhir disimpan
+    public const SURAT_KET_TANGGAL_TERBIT  = 'Diterbitkan';
+    public const SURAT_KET_TANGGAL_DRAF    = 'Terakhir disimpan';
+
+    // Tampilan kosong
+    public const BELUM_ADA_SURAT           = 'Belum ada surat yang dibuat';
+    public const BELUM_ADA_SURAT_KETERANGAN = 'Surat dibuat dari laporan yang diputuskan "Tindaklanjuti" di menu Tindak Lanjut.';
+    public const SURAT_TIDAK_DITEMUKAN     = 'Surat tidak ditemukan';
+    public const SURAT_TIDAK_DITEMUKAN_KETERANGAN = 'Tidak ada surat yang cocok dengan kata kunci atau filter yang Anda pilih.';
+
+    // Tanda di daftar Tindak Lanjut dan pengingat di Dashboard Kepala Bidang
+    public const TANDA_ADA_DRAF            = 'Ada draf';
+    public const PENGINGAT_DRAF_SURAT      = 'draf surat belum diterbitkan.';
+    public const BTN_LIHAT_DRAF_SURAT      = 'Lihat draf';
 }

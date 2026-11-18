@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\StatusKasus;
 use App\Models\Pengaduan;
+use App\Models\SuratTeguranLaporanPolisi;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
@@ -45,6 +46,9 @@ class DashboardKepalaBidangController extends Controller
             ->limit(5)
             ->get();
 
-        return view('dashboard-kepala-bidang.index', compact('ringkasan', 'menungguKeputusan', 'keputusanTerbaru'));
+        // Pengingat: jumlah draf surat yang belum diterbitkan (issue #8)
+        $jumlahDraf = SuratTeguranLaporanPolisi::where('status_penerbitan', 'Draft')->count();
+
+        return view('dashboard-kepala-bidang.index', compact('ringkasan', 'menungguKeputusan', 'keputusanTerbaru', 'jumlahDraf'));
     }
 }

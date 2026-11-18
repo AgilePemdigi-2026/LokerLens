@@ -16,7 +16,7 @@ use Illuminate\View\View;
  * Peran: Analis
  *
  * Hanya kasus yang SUDAH punya hasil tinjauan (tabel tinjauan_analis). Kasus yang masih
- * Perlu Tinjauan / Sedang Ditinjau tetap di Pemantauan (TinjauLowonganController).
+ * Perlu Tinjauan / Sedang Ditinjau tetap di menu Tinjau Lowongan (TinjauLowonganController).
  * Halaman ini tidak mengubah status apa pun.
  */
 class RiwayatTinjauanController extends Controller
@@ -59,7 +59,7 @@ class RiwayatTinjauanController extends Controller
 
     /**
      * Daftar kasus yang sudah ditinjau Analis, dengan pencarian, filter, dan urutan
-     * (pola sama dengan halaman Pemantauan).
+     * (pola sama dengan halaman Tinjau Lowongan).
      */
     public function index(Request $request): View
     {

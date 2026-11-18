@@ -14,8 +14,8 @@
                         <span class="w-2 h-2 rounded-full bg-teal-400 animate-pulse"></span>
                         REPOSITORI PENGAWASAN KETENAGAKERJAAN
                     </p>
-                    <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight leading-tight">
-                        Arsip <span class="font-serif italic text-teal-300">Kasus Pengawasan</span>
+                                        <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight leading-tight">
+                        Arsip Kasus Pengawasan
                     </h1>
                     <p class="text-sm text-gray-400 mt-2 max-w-xl leading-relaxed">
                         Dokumentasi permanen seluruh kasus penipuan lowongan kerja yang telah diproses hingga tahap akhir,
@@ -27,15 +27,15 @@
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 shrink-0 text-xs">
                     <div class="p-3 bg-navy-800/80 rounded-xl border border-navy-700">
                         <span class="text-gray-400 block text-[11px]">Total Kasus</span>
-                        <span class="text-lg font-bold font-mono text-white" data-testid="stat-total-arsip">{{ $totalArsip }} Kasus</span>
+                        <span class="text-lg font-bold font-mono text-white" data-testid="stat-total-arsip">{{ $totalArsip }} </span>
                     </div>
                     <div class="p-3 bg-navy-800/80 rounded-xl border border-navy-700">
                         <span class="text-gray-400 block text-[11px]">Surat Terbit</span>
-                        <span class="text-lg font-bold font-mono text-emerald-400" data-testid="stat-surat-terbit">{{ $jumlahSuratTerbit }} Dokumen</span>
+                        <span class="text-lg font-bold font-mono text-emerald-400" data-testid="stat-surat-terbit">{{ $jumlahSuratTerbit }} </span>
                     </div>
                     <div class="p-3 bg-navy-800/80 rounded-xl border border-navy-700 col-span-2 sm:col-span-1">
                         <span class="text-gray-400 block text-[11px]">Tidak Ditindaklanjuti</span>
-                        <span class="text-lg font-bold font-mono text-amber-400">{{ $jumlahTidakDitindaklanjuti }} Kasus</span>
+                        <span class="text-lg font-bold font-mono text-red-400">{{ $jumlahTidakDitindaklanjuti }} </span>
                     </div>
                 </div>
             </div>
@@ -56,7 +56,7 @@
                     Selesai ({{ $jumlahSelesai }})
                 </a>
                 <a href="{{ route('arsip-kasus.index', array_filter(['status' => \App\Enums\StatusKasus::TidakDitindaklanjuti->value, 'cari' => request('cari')])) }}"
-                   class="px-3.5 py-1.5 rounded-full text-xs font-semibold transition {{ request('status') === \App\Enums\StatusKasus::TidakDitindaklanjuti->value ? 'bg-gray-800 text-white shadow-xs' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                   class="px-3.5 py-1.5 rounded-full text-xs font-semibold transition {{ request('status') === \App\Enums\StatusKasus::TidakDitindaklanjuti->value ? 'bg-red-700 text-white shadow-xs' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                     Tidak Ditindaklanjuti ({{ $jumlahTidakDitindaklanjuti }})
                 </a>
                 <a href="{{ route('arsip-kasus.index', array_filter(['status' => \App\Enums\StatusKasus::TidakTerbukti->value, 'cari' => request('cari')])) }}"
@@ -72,8 +72,8 @@
                 @endif
                 <div class="relative flex-1">
                     <input type="text" name="cari" value="{{ request('cari') }}"
-                           placeholder="Cari tiket, lowongan, perusahaan, nomor surat..."
-                           class="w-full pl-9 pr-4 py-2 rounded-control border border-gray-300 text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none">
+                           placeholder="Cari tiket, lowongan, perusahaan...."
+                           class="w-full pl-9 pr-4 py-2 rounded-control border border-gray-300 text-xs text-navy-900 bg-white focus:ring-2 focus:ring-teal-500 focus:outline-none"
                     <svg class="w-4 h-4 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                     </svg>
@@ -145,7 +145,7 @@
                                         </span>
                                         @if($klas)
                                             <span class="text-[11px] text-gray-500 whitespace-nowrap">
-                                                Skor: {{ number_format($klas->confidence_score, 1) }}%
+                                                Skor: {{ number_format($klas->confidence_score, 0) }}%
                                             </span>
                                         @endif
                                     </td>
@@ -158,25 +158,13 @@
                                         </span>
                                     </td>
                                     <td class="py-4 px-4 whitespace-nowrap">
-                                        @if($status === \App\Enums\StatusKasus::Selesai)
-                                            <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 inline-flex items-center gap-1.5">
-                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
-                                                {{ $status->value }}
-                                            </span>
-                                        @elseif($status === \App\Enums\StatusKasus::TidakDitindaklanjuti)
-                                            <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-gray-100 text-gray-700 border border-gray-300 inline-flex items-center gap-1.5">
-                                                <span class="w-1.5 h-1.5 rounded-full bg-gray-500"></span>
-                                                {{ $status->value }}
-                                            </span>
-                                        @elseif($status === \App\Enums\StatusKasus::TidakTerbukti)
-                                            <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-300 inline-flex items-center gap-1.5">
-                                                <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                                        @if($status instanceof \App\Enums\StatusKasus)
+                                            <span class="px-2.5 py-1 rounded-full text-[11px] font-bold inline-flex items-center gap-1.5 {{ $status->warnaBadge() }}">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
                                                 {{ $status->value }}
                                             </span>
                                         @else
-                                            <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-gray-100 text-gray-700 border border-gray-300 inline-flex items-center">
-                                                {{ $status instanceof \App\Enums\StatusKasus ? $status->value : $status }}
-                                            </span>
+                                            <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-gray-100 text-gray-700">{{ $status }}</span>
                                         @endif
                                     </td>
                                     <td class="py-4 px-4">
@@ -200,7 +188,7 @@
                                     <td class="py-4 px-4 text-right whitespace-nowrap">
                                         <a href="{{ route('arsip-kasus.show', $item->id_pengaduan) }}"
                                            class="inline-block whitespace-nowrap px-3 py-1.5 rounded bg-navy-900 hover:bg-navy-800 text-white font-semibold transition text-xs shadow-xs">
-                                            Buka Detail →
+                                            Lihat Detail →
                                         </a>
                                     </td>
                                 </tr>

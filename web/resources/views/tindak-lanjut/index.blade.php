@@ -70,11 +70,13 @@
 
         <!-- Seksi Antrean Keputusan: Daftar Kartu Laporan (Bagian 6.5.1) -->
         <div class="space-y-4">
-            <div class="flex items-center justify-between">
+                        <div class="flex items-center justify-between">
                 <h2 class="text-lg font-bold text-white tracking-tight">
-                    Antrean Keputusan
+                    Semua Laporan Kepala Bidang
                 </h2>
-                <span class="text-xs text-gray-400">Menampilkan {{ $laporan->count() }} kasus aktif</span>
+                <span class="text-xs text-gray-400">
+                    Menampilkan {{ $laporan->count() }} kasus ({{ $jumlahMenunggu }} menunggu keputusan)
+                </span>
             </div>
 
             @forelse($laporan as $kasus)
@@ -124,20 +126,25 @@
                     </div>
 
                     <!-- Right Side: Confidence Score & Action Button -->
-                    <div class="flex sm:flex-col md:items-end justify-between items-center gap-3 shrink-0 pt-3 md:pt-0 border-t md:border-t-0 border-gray-100">
+                    <div class="flex sm:flex-col md:items-end justify-between items-center gap-3 shrink-0 md:w-72 pt-3 md:pt-0 border-t md:border-t-0 border-gray-100">
                         <div class="text-left md:text-right">
                             <span class="text-[10px] text-gray-400 uppercase font-bold tracking-wider block">Skor Kecurigaan</span>
                             {{-- Warna mengikuti tingkat risiko (<50 rendah, 50–69 sedang, ≥70 tinggi) --}}
-                            <div class="text-2xl font-black font-mono {{ $klasifikasi?->warna_risiko['teks'] ?? 'text-gray-700' }}">
+                    
+                                                        <div class="text-2xl font-black font-mono {{ $klasifikasi?->warna_risiko['teks'] ?? 'text-gray-700' }}">
                                 {{ number_format($score, 0) }}%
                             </div>
+                            @if($klasifikasi)
+                                <span class="text-[11px] font-semibold {{ $klasifikasi->warna_risiko['teks'] }}">
+                                    Prioritas {{ $klasifikasi->tingkat_risiko }}
+                                </span>
+                            @endif
                         </div>
 
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-2 md:justify-end">
                             <a href="{{ route('tindak-lanjut.detail', $kasus->id_pengaduan) }}"
                                class="inline-flex items-center whitespace-nowrap px-4 py-2 rounded-control bg-navy-900 hover:bg-navy-800 text-white font-semibold text-xs shadow transition">
-                                <span>Lihat Detail</span>
-                                <svg class="w-3.5 h-3.5 ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                Lihat Detail →
                             </a>
                             @if($isApproved)
                                 <a href="{{ route('buat-surat.index', $kasus->id_pengaduan) }}"

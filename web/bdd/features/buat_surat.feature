@@ -53,3 +53,25 @@ Feature: Buat surat teguran/laporan polisi
     Given I am logged in as "Analis"
     When I am on the "/surat" page
     Then the response status code should be 403
+
+  # Skenario di bawah BARU (issue #8): pilihan jenis dokumen Surat Teguran.
+  # Belum ada di SRS Appendix B Table B.5 (lihat docs/laporan_kondisi_bdd.md bagian 10).
+  Scenario: Menerbitkan surat teguran
+    Given I am on the letter page for ticket "#LKR-8770"
+    When I select "Surat Teguran" from "jenis_dokumen"
+    And I fill in "kronologi" with "Perusahaan memungut biaya pelatihan dari calon pekerja sebelum mulai bekerja"
+    And I fill in "tujuan_teguran" with "Pimpinan PT Gemilang Karya Persada"
+    And I press "Terbitkan Laporan"
+    Then I should see "Surat Teguran Berhasil Diterbitkan"
+    And I should see "Kasus terdokumentasi otomatis"
+    And I should see "Kasus selesai"
+
+  Scenario: Menyimpan surat teguran sebagai draf
+    Given I am on the letter page for ticket "#LKR-8770"
+    When I select "Surat Teguran" from "jenis_dokumen"
+    And I fill in "kronologi" with "Draf teguran sementara"
+    And I fill in "tujuan_teguran" with "Direktur PT Gemilang Karya Persada"
+    And I press "Simpan Draft"
+    Then I should see "Draf berhasil disimpan"
+    And the "jenis_surat_teguran" checkbox should be checked
+    And the "tujuan_teguran" field should contain "Direktur PT Gemilang Karya Persada"

@@ -9,9 +9,9 @@
                 <h1 class="text-3xl font-extrabold tracking-tight">
                     Daftar Laporan
                 </h1>
-                <p class="text-xs sm:text-sm text-gray-300 mt-1 max-w-2xl leading-relaxed">
-                    Tinjau laporan yang telah diperiksa analis dan tetapkan keputusan tindak lanjut kasus.
-                </p>
+                <p class="text-xs sm:text-sm text-white mt-1 max-w-2xl leading-relaxed">
+    Tinjau laporan yang telah diperiksa analis dan tetapkan keputusan tindak lanjut kasus.
+</p>
             </div>
 
             <!-- Kotak Angka Antrean Keputusan -->

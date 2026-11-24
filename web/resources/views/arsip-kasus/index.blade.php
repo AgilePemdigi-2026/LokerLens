@@ -17,7 +17,7 @@
                                         <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight leading-tight">
                         Arsip Kasus Pengawasan
                     </h1>
-                    <p class="text-sm text-gray-400 mt-2 max-w-xl leading-relaxed">
+                    <p class="text-sm text-white mt-2 max-w-xl leading-relaxed">
                         Dokumentasi permanen seluruh kasus penipuan lowongan kerja yang telah diproses hingga tahap akhir,
                         termasuk berkas penetapan hukum dan surat laporan kepolisian resmi.
                     </p>

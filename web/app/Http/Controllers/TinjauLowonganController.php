@@ -6,6 +6,7 @@ use App\Constants\LokerLensCopy;
 use App\Enums\HasilTinjauan;
 use App\Enums\StatusKasus;
 use App\Models\HasilKlasifikasi;
+use App\Models\Pengaduan;
 use App\Models\TinjauanAnalis;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,14 +20,15 @@ use Illuminate\View\View;
  * Rute: /tinjau-lowongan/ dan /tinjau-lowongan/detail/
  * Peran: Analis
  *
- * BR-05: Hanya lowongan prioritas tinggi (status_prioritas = true).
+ * Revisi tim: SEMUA pengaduan yang sudah diklasifikasi masuk antrean, berapa pun skornya.
+ * BR-05: lowongan prioritas tinggi (status_prioritas = true, skor >= ambang) ditandai dan tampil paling atas.
  * BR-06/BR-07 (revisi tim): hasil tinjauan "Terkonfirmasi Mencurigakan" diteruskan
  * ke Kepala Bidang, "Tidak Terbukti" ditutup oleh Analis.
  */
 class TinjauLowonganController extends Controller
 {
     /**
-     * Daftar lowongan prioritas tinggi yang masih dalam antrean Analis.
+     * Daftar lowongan yang masih dalam antrean Analis (Perlu Tinjauan / Sedang Ditinjau).
      * NFR-PERF-01: daftar muncul ≤ 3 detik untuk 100 data.
      */
     public function index(Request $request): View
@@ -35,8 +37,7 @@ class TinjauLowonganController extends Controller
             'pengaduan.lowonganKerja.perusahaan',
             'pengaduan.pengguna',
             'tinjauanAnalis',
-        ])->where('status_prioritas', true)
-          ->whereHas('pengaduan', fn ($q) => $q->whereIn('status_pengaduan', StatusKasus::tahapAnalis()));
+        ])->whereHas('pengaduan', fn ($q) => $q->whereIn('status_pengaduan', StatusKasus::tahapAnalis()));
 
         // Pencarian berdasarkan nomor_tiket / perusahaan
         if ($request->filled('nomor_tiket')) {
@@ -60,22 +61,30 @@ class TinjauLowonganController extends Controller
             });
         }
 
-        // Urutan (FR-ML-03). Hanya satu urutan yang dipasang; tanpa pilihan = skor tertinggi.
+        // Urutan (FR-ML-03). Hanya satu urutan yang dipasang; tanpa pilihan = prioritas dulu, lalu skor tertinggi.
         // Kalau urutan bawaan dipasang lebih dulu, pilihan "Skor Terendah"/"Terbaru" tidak berpengaruh.
         match ($request->urutan) {
             'Skor Terendah' => $query->orderBy('confidence_score', 'asc'),
             'Terbaru'       => $query->orderBy('tanggal_klasifikasi', 'desc'),
-            default         => $query->orderBy('confidence_score', 'desc'),
+            default         => $query->orderByDesc('status_prioritas')->orderBy('confidence_score', 'desc'),
         };
 
         $hasilKlasifikasi = $query->paginate(10)->withQueryString();
         $adaFilter = $request->filled('nomor_tiket') || $request->filled('filter_skor') || $request->filled('urutan');
 
-        return view('tinjau-lowongan.index', compact('hasilKlasifikasi', 'adaFilter'));
+        // Pengaduan baru yang belum punya skor (API ML mati). Belum bisa ditinjau,
+        // tapi tetap ditampilkan supaya Analis tahu ada pengaduan yang masuk.
+        $menungguKlasifikasi = Pengaduan::menungguKlasifikasi()
+            ->with('lowonganKerja.perusahaan')
+            ->whereIn('status_pengaduan', StatusKasus::tahapAnalis())
+            ->orderByDesc('tanggal_pengaduan')
+            ->get();
+
+        return view('tinjau-lowongan.index', compact('hasilKlasifikasi', 'adaFilter', 'menungguKlasifikasi'));
     }
 
     /**
-     * Detail satu lowongan prioritas tinggi.
+     * Detail satu lowongan di antrean Analis (prioritas maupun bukan).
      * FR-ML-08/09: tampil teks "Detail Lowongan Terpilih", "Confidence Score", "Indikator Mencurigakan".
      * Saat pertama kali dibuka Analis, status maju dari "Perlu Tinjauan" ke "Sedang Ditinjau".
      */
@@ -87,7 +96,6 @@ class TinjauLowonganController extends Controller
             'indikatorMencurigakan',
             'tinjauanAnalis.analis',
         ])->where('id_klasifikasi', $id)
-          ->where('status_prioritas', true)
           ->firstOrFail();
 
         $pengaduan = $klasifikasi->pengaduan;
@@ -114,9 +122,7 @@ class TinjauLowonganController extends Controller
             'hasil_tinjauan.required'   => 'Hasil tinjauan wajib dipilih.',
         ]);
 
-        $klasifikasi = HasilKlasifikasi::where('id_klasifikasi', $id)
-            ->where('status_prioritas', true)
-            ->firstOrFail();
+        $klasifikasi = HasilKlasifikasi::where('id_klasifikasi', $id)->firstOrFail();
 
         $hasil = HasilTinjauan::from($request->hasil_tinjauan);
         $pengaduan = $klasifikasi->pengaduan;

@@ -67,9 +67,7 @@ Semua aktor wajib login. Akses dibatasi sesuai peran (NFR-SEC-01, NFR-SEC-02). H
 flowchart TD
     A[Masyarakat mengisi form<br/>Periksa Lowongan Kerja] --> B[Sistem: validasi, simpan data,<br/>buat Pengaduan, klasifikasi ML]
     B --> C[Masyarakat langsung melihat<br/>probabilitas penipuan + kata pemicu]
-    B --> D{Probabilitas ≥ ambang<br/>prioritas tinggi?}
-    D -- Tidak --> S1([Selesai - Risiko Rendah])
-    D -- Ya --> E[Perlu Tinjauan]
+    B --> E[Perlu Tinjauan<br/>semua pengaduan baru;<br/>skor ≥ ambang ditandai prioritas]
     E --> F[Sedang Ditinjau<br/>Analis membuka & meninjau]
     F --> G{Hasil tinjauan Analis}
     G -- Tidak Terbukti --> S2([Tidak Terbukti<br/>ditutup Analis])
@@ -83,7 +81,7 @@ flowchart TD
 
 Aturan alur status (keputusan tim):
 1. Status hanya boleh **maju** sesuai urutan di atas. Status tidak boleh melompat atau mundur.
-2. Ada **empat status akhir** yang tidak bisa diubah lagi: *Selesai - Risiko Rendah*, *Tidak Terbukti*, *Selesai*, dan *Tidak Ditindaklanjuti*.
+2. Ada **empat status akhir** yang tidak bisa diubah lagi: *Selesai - Risiko Rendah* (hanya data lama), *Tidak Terbukti*, *Selesai*, dan *Tidak Ditindaklanjuti*.
 3. Surat hanya bisa **terbit satu kali**.
 4. **Setiap perubahan status** dicatat di Riwayat Kasus (BR-11, NFR-SAF-06).
 

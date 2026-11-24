@@ -34,6 +34,9 @@ class FeatureContext extends MinkContext
     /** Sudah dicek bahwa Chrome terlihat (mode demo), cukup sekali per run. */
     private static bool $chromeTerlihatDicek = false;
 
+    /** Nomor tiket pengaduan terbaru (diisi langkah "the newest complaint is classified ..."). */
+    private ?string $tiketTerbaru = null;
+
     /**
      * @param bool $modeDemo true pada profil "demo" (behat.yml): semua skenario berjalan
      *                       di Chrome yang terlihat dan ada jeda antar langkah (BDD_JEDA).
@@ -305,7 +308,7 @@ class FeatureContext extends MinkContext
 
     /**
      * Klik tautan di baris tabel yang memuat nomor tiket tertentu,
-     * mis. When I follow "Lihat Detail" in the row for ticket "#LKR-2025-0842"
+     * mis. When I follow "Lihat Detail" in the row for ticket "#LKR-8842"
      *
      * @When /^I follow "(?P<tautan>[^"]+)" in the row for ticket "(?P<tiket>[^"]+)"$/
      */
@@ -322,6 +325,72 @@ class FeatureContext extends MinkContext
         }
 
         throw new RuntimeException("Tautan \"{$tautan}\" untuk tiket {$tiket} tidak ditemukan di tabel.");
+    }
+
+    /**
+     * Memberi skor klasifikasi (0–100) pada pengaduan terbaru di database TEST, supaya skenario
+     * tidak bergantung pada model ML (API ML boleh menyala atau mati). Hasil klasifikasi dari API
+     * (jika ada) diganti. Status pengaduan TIDAK diubah: tetap hasil dari aplikasi.
+     * Tanda prioritas mengikuti LOKERLENS_AMBANG_PRIORITAS di .env.behat.
+     *
+     * @Given /^the newest complaint is classified with a score of "(?P<skor>\d+(?:\.\d+)?)"$/
+     */
+    public function theNewestComplaintIsClassifiedWithAScoreOf(string $skor): void
+    {
+        $this->pastikanDatabaseTest();
+        $db = $this->koneksiDatabase();
+
+        $pengaduan = $db->query('SELECT id_pengaduan, nomor_tiket FROM pengaduan ORDER BY id_pengaduan DESC LIMIT 1')
+            ->fetch(PDO::FETCH_ASSOC);
+        if ($pengaduan === false) {
+            throw new RuntimeException('Belum ada pengaduan di database test.');
+        }
+
+        $ambang = (float) ($this->env('LOKERLENS_AMBANG_PRIORITAS') ?: 70);
+
+        $db->prepare('DELETE FROM hasil_klasifikasi WHERE id_pengaduan = ?')->execute([$pengaduan['id_pengaduan']]);
+        $db->prepare('INSERT INTO hasil_klasifikasi
+                (id_pengaduan, confidence_score, kategori_hasil, status_prioritas, metode_analisis, tanggal_klasifikasi, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, NOW(), NOW(), NOW())')
+            ->execute([
+                $pengaduan['id_pengaduan'],
+                $skor,
+                (float) $skor >= 50 ? 'Lowongan berpotensi penipuan' : 'Lowongan kemungkinan asli',
+                (float) $skor >= $ambang ? 1 : 0,
+                'Skor uji Behat',
+            ]);
+
+        $this->tiketTerbaru = $pengaduan['nomor_tiket'];
+    }
+
+    /**
+     * @Then /^I should see the newest complaint ticket$/
+     */
+    public function iShouldSeeTheNewestComplaintTicket(): void
+    {
+        $this->assertPageContainsText($this->tiketTerbaruAtauGagal());
+    }
+
+    /**
+     * @When /^I follow the newest complaint ticket$/
+     */
+    public function iFollowTheNewestComplaintTicket(): void
+    {
+        $this->clickLink($this->tiketTerbaruAtauGagal());
+    }
+
+    /**
+     * @When /^I follow "(?P<tautan>[^"]+)" in the row for the newest complaint$/
+     */
+    public function iFollowInTheRowForTheNewestComplaint(string $tautan): void
+    {
+        $this->iFollowInTheRowForTicket($tautan, $this->tiketTerbaruAtauGagal());
+    }
+
+    private function tiketTerbaruAtauGagal(): string
+    {
+        return $this->tiketTerbaru
+            ?? throw new RuntimeException('Jalankan dulu langkah "the newest complaint is classified with a score of ...".');
     }
 
     /**

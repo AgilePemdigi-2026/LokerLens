@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\StatusKasus;
+use App\Models\HasilKlasifikasi;
 use Tests\TestCase;
 
 class StatusKasusTest extends TestCase
@@ -41,13 +42,13 @@ class StatusKasusTest extends TestCase
         }
     }
 
-    public function test_status_awal_mengikuti_ambang_prioritas_di_config(): void
+    public function test_tanda_prioritas_mengikuti_ambang_prioritas_di_config(): void
     {
         $this->assertSame(70.0, config('lokerlens.ambang_prioritas'));
-        $this->assertSame(StatusKasus::PerluTinjauan, StatusKasus::awalDariSkor(70));
-        $this->assertSame(StatusKasus::SelesaiRisikoRendah, StatusKasus::awalDariSkor(69.99));
+        $this->assertTrue(HasilKlasifikasi::isSkorPrioritas(70));
+        $this->assertFalse(HasilKlasifikasi::isSkorPrioritas(69.99));
 
         config(['lokerlens.ambang_prioritas' => 80]);
-        $this->assertSame(StatusKasus::SelesaiRisikoRendah, StatusKasus::awalDariSkor(75));
+        $this->assertFalse(HasilKlasifikasi::isSkorPrioritas(75));
     }
 }

@@ -21,7 +21,7 @@ Feature: Riwayat tinjauan Analis
   Scenario: Melihat detail tinjauan dalam mode hanya-baca
     Given I am logged in as "Analis"
     And I am on the "/riwayat-tinjauan" page
-    When I follow "Lihat Detail" in the row for ticket "#LKR-2025-0842"
+    When I follow "Lihat Detail" in the row for ticket "#LKR-8842"
     Then I should see "Hasil Akhir Kasus"
     And I should see "Menunggu keputusan Kepala Bidang"
     And I should not see a "#catatan_tinjauan" element

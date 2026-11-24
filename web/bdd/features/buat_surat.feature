@@ -40,7 +40,7 @@ Feature: Buat surat teguran/laporan polisi
     When I follow "Lanjutkan Draf" in the row for ticket "#LKR-8770"
     Then the url should match "/buat-surat/\d+$"
     And I should see "Buat Laporan Polisi"
-    And the "kronologi" field should contain "Draf: pelapor diminta mentransfer biaya pelatihan Rp250.000 sebelum mulai bekerja."
+    And the "kronologi" field should contain "Pelapor diminta mentransfer biaya pelatihan Rp250.000 sebelum mulai bekerja."
 
   Scenario: Memfilter surat berdasarkan status
     Given I am on the "/surat" page

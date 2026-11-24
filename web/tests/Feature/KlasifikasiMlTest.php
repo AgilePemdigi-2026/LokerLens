@@ -65,18 +65,18 @@ class KlasifikasiMlTest extends TestCase
             ->get('/tinjau-lowongan')->assertSee($pengaduan->nomor_tiket);
     }
 
-    public function test_skor_palsu_di_bawah_ambang_70_tidak_masuk_daftar_analis(): void
+    public function test_skor_palsu_di_bawah_ambang_70_tetap_masuk_daftar_analis_tanpa_prioritas(): void
     {
         $this->palsukanApiMl(0.65);
 
         $this->kirimForm();
 
         $pengaduan = Pengaduan::firstOrFail();
-        $this->assertSame(StatusKasus::SelesaiRisikoRendah, $pengaduan->status_pengaduan);
+        $this->assertSame(StatusKasus::PerluTinjauan, $pengaduan->status_pengaduan);
         $this->assertFalse($pengaduan->hasilKlasifikasi->status_prioritas);
 
         $this->actingAs(User::factory()->create(['role' => 'Analis']))
-            ->get('/tinjau-lowongan')->assertDontSee($pengaduan->nomor_tiket);
+            ->get('/tinjau-lowongan')->assertSee($pengaduan->nomor_tiket);
     }
 
     public function test_api_mati_atau_timeout_pengaduan_tetap_tersimpan_dengan_pesan_jelas(): void

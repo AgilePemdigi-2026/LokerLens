@@ -30,7 +30,7 @@
                         Daftar Lowongan Prioritas Tinggi
                     </h2>
                     <p class="text-xs text-gray-500 mt-0.5">
-                        Laporan otomatis dengan confidence score tinggi yang dialokasikan ke Analis.
+                        Semua pengaduan baru masuk ke sini. Skor ≥ {{ (int) config('lokerlens.ambang_prioritas') }}% ditandai prioritas dan tampil paling atas.
                     </p>
                 </div>
                 <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-risk-high border border-red-200">
@@ -123,6 +123,11 @@
                                 <!-- ID Lowongan / Tiket -->
                                 <td class="px-4 py-3.5 font-mono font-bold text-teal-800 whitespace-nowrap">
                                     {{ $pengaduan->nomor_tiket }}
+                                    @if($item->status_prioritas)
+                                        <span class="block mt-1 w-fit font-sans text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-red-100 text-risk-high border border-red-200">
+                                            {{ LokerLensCopy::LABEL_PRIORITAS }}
+                                        </span>
+                                    @endif
                                 </td>
 
                                 <!-- Nama Perusahaan -->
@@ -175,7 +180,7 @@
                                             Data Lowongan Tidak Ditemukan
                                         </p>
                                         <p class="text-xs text-gray-500 mt-1">
-                                            Tidak ada lowongan prioritas tinggi yang cocok dengan kata kunci atau filter yang Anda pilih.
+                                            Tidak ada lowongan yang cocok dengan kata kunci atau filter yang Anda pilih.
                                         </p>
                                         <a href="{{ route('tinjau-lowongan.index') }}" class="mt-4 inline-block text-xs font-semibold text-teal-600 hover:underline">
                                             Reset Filter Pencarian
@@ -191,12 +196,35 @@
             <!-- Paginasi (Bagian 6.4.1) -->
             <div class="mt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-600 gap-3 border-t border-gray-100 pt-4">
                 <div>
-                    Menampilkan {{ $hasilKlasifikasi->firstItem() ?? 0 }} - {{ $hasilKlasifikasi->lastItem() ?? 0 }} dari {{ $hasilKlasifikasi->total() }} Lowongan Prioritas
+                    Menampilkan {{ $hasilKlasifikasi->firstItem() ?? 0 }} - {{ $hasilKlasifikasi->lastItem() ?? 0 }} dari {{ $hasilKlasifikasi->total() }} Lowongan
                 </div>
                 <div>
                     {{ $hasilKlasifikasi->links() }}
                 </div>
             </div>
         </div>
+
+        <!-- Pengaduan baru yang belum punya skor (API ML mati): tetap terlihat oleh Analis -->
+        @if($menungguKlasifikasi->isNotEmpty())
+            <div id="menunggu-klasifikasi" class="bg-white rounded-card shadow-xl p-6 sm:p-8 text-navy-900 border border-gray-100">
+                <h2 class="text-lg font-bold tracking-tight text-navy-900">
+                    {{ LokerLensCopy::JUDUL_MENUNGGU_KLASIFIKASI_ANALIS }} ({{ $menungguKlasifikasi->count() }})
+                </h2>
+                <p class="text-xs text-gray-500 mt-0.5 mb-4">{{ LokerLensCopy::KETERANGAN_MENUNGGU_KLASIFIKASI_ANALIS }}</p>
+                <ul class="divide-y divide-gray-100 text-xs sm:text-sm">
+                    @foreach($menungguKlasifikasi as $pengaduan)
+                        <li class="py-2.5 flex flex-wrap items-center justify-between gap-2">
+                            <span>
+                                <span class="font-mono font-bold text-teal-800">{{ $pengaduan->nomor_tiket }}</span>
+                                <span class="text-gray-700">· {{ $pengaduan->lowonganKerja->posisi_lowongan ?? '-' }} · {{ $pengaduan->lowonganKerja->perusahaan->nama_perusahaan ?? '-' }}</span>
+                            </span>
+                            <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200 text-xs font-semibold">
+                                {{ LokerLensCopy::MENUNGGU_KLASIFIKASI }}
+                            </span>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
     </div>
 </x-app-layout>

@@ -164,15 +164,16 @@ class Pengaduan extends Model
 
     /**
      * Simpan hasil dari API klasifikasi (KlasifikasiService) untuk pengaduan ini:
-     * Hasil_Klasifikasi, satu Indikator_Mencurigakan per kata pemicu, lalu status
-     * awal kasus sesuai ambang prioritas (BR-05) dan catatan Riwayat Kasus.
+     * Hasil_Klasifikasi, satu Indikator_Mencurigakan per kata pemicu, dan catatan Riwayat Kasus.
+     * Berapa pun skornya, kasus tetap "Perlu Tinjauan" dan masuk antrean Analis.
+     * Skor >= ambang prioritas (BR-05) hanya ditandai prioritas supaya tampil paling atas.
      * Dipanggil di dalam DB::transaction oleh pemanggilnya.
      */
     public function simpanHasilKlasifikasi(array $hasil): HasilKlasifikasi
     {
         // API memberi 0–1, database menyimpan 0–100 (docs/architecture.md §5.3)
-        $skor   = round($hasil['probabilitas_penipuan'] * 100, 2);
-        $status = StatusKasus::awalDariSkor($skor);
+        $skor      = round($hasil['probabilitas_penipuan'] * 100, 2);
+        $prioritas = HasilKlasifikasi::isSkorPrioritas($skor);
 
         $klasifikasi = HasilKlasifikasi::create([
             'id_pengaduan'     => $this->id_pengaduan,
@@ -180,7 +181,7 @@ class Pengaduan extends Model
             'kategori_hasil'   => $hasil['label'] === 'palsu'
                 ? 'Lowongan berpotensi penipuan'
                 : 'Lowongan kemungkinan asli',
-            'status_prioritas' => $status === StatusKasus::PerluTinjauan,
+            'status_prioritas' => $prioritas,
             'metode_analisis'  => $hasil['versi_model'] ?? null,
         ]);
 
@@ -194,10 +195,10 @@ class Pengaduan extends Model
         }
 
         // Status diisi langsung (bukan ubahStatus) karena ini status AWAL kasus
-        $this->update(['status_pengaduan' => $status]);
-        $this->catatRiwayat($status === StatusKasus::PerluTinjauan
-            ? 'Pengaduan diterima dan klasifikasi dilakukan. Masuk antrean tinjauan Analis.'
-            : 'Pengaduan diterima dan klasifikasi dilakukan. Skor di bawah ambang prioritas, kasus selesai.');
+        $this->update(['status_pengaduan' => StatusKasus::PerluTinjauan]);
+        $this->catatRiwayat($prioritas
+            ? 'Pengaduan diterima dan klasifikasi dilakukan. Prioritas tinggi, masuk antrean tinjauan Analis.'
+            : 'Pengaduan diterima dan klasifikasi dilakukan. Masuk antrean tinjauan Analis.');
 
         return $klasifikasi;
     }

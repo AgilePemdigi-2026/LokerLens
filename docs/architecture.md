@@ -293,8 +293,8 @@ Output dua kelas (asli/palsu) dalam bentuk probabilitas penipuan:
 | `versi_model` | identitas model untuk jejak audit | `hasil_klasifikasi.metode_analisis` |
 
 Laravel lalu menentukan:
-- `status_prioritas = confidence_score >= config('lokerlens.ambang_prioritas')`, dengan default 70 (diterapkan lewat `HasilKlasifikasi::isSkorPrioritas()`).
-- Status awal kasus: selalu *Perlu Tinjauan*, berapa pun skornya. Semua pengaduan baru masuk antrean Analis; yang prioritas tinggi hanya ditandai dan tampil paling atas.
+- `status_prioritas = confidence_score >= config('lokerlens.ambang_prioritas')`, dengan default 70 (sudah diterapkan lewat `StatusKasus::awalDariSkor()`).
+- Status awal kasus: *Perlu Tinjauan* (prioritas tinggi) atau *Selesai - Risiko Rendah* (di bawah ambang).
 
 > **[PERLU DISKUSI]** Ambang label asli/palsu (SRS 6.2) belum ditetapkan. Apakah 50%, atau sama dengan ambang prioritas?
 > **[PERLU DISKUSI]** Isi `kategori_indikator` untuk kata pemicu dari model. Model tidak mengelompokkan kata ke kategori seperti "Biaya Fiktif". Usulan: isi dengan "Kata Pemicu Model".

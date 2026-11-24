@@ -92,11 +92,6 @@ final class LokerLensCopy
     public const DESKRIPSI_DASHBOARD_ANALIS        = 'Pantau beban kerja dan prioritaskan lowongan berisiko tinggi.';
     public const ANTREAN_ANALIS_KOSONG_JUDUL       = 'Belum ada antrean pada periode ini';
     public const ANTREAN_ANALIS_KOSONG_KETERANGAN  = 'Ubah filter periode untuk melihat pengaduan yang perlu ditinjau.';
-
-    // Antrean Analis memuat SEMUA pengaduan baru; skor >= ambang ditandai prioritas (keputusan tim)
-    public const LABEL_PRIORITAS                   = 'Prioritas';
-    public const JUDUL_MENUNGGU_KLASIFIKASI_ANALIS = 'Pengaduan Baru Menunggu Klasifikasi';
-    public const KETERANGAN_MENUNGGU_KLASIFIKASI_ANALIS = 'Skor belum tersedia karena layanan pemeriksaan otomatis sedang tidak aktif. Pengaduan ini bisa ditinjau setelah klasifikasi selesai.';
     public const BTN_TAMPILKAN_7_HARI              = 'Tampilkan 7 hari terakhir';
 
     // ──────────────────────────────────────────────
@@ -186,6 +181,9 @@ final class LokerLensCopy
 
     /** Pesan penutup timeline saat pengaduan berhenti di tengah. */
     public const PESAN_BERHENTI_RISIKO_RENDAH     = 'Lowongan ini tidak menunjukkan risiko tinggi, sehingga tidak perlu ditinjau lebih lanjut.';
+
+    /** Alasan status "Selesai - Risiko Rendah" (BR-05). :ambang diganti nilai config lokerlens.ambang_prioritas. */
+    public const ALASAN_RISIKO_RENDAH             = 'Skor lowongan ini di bawah ambang prioritas :ambang%, sehingga pengaduan tidak diteruskan ke petugas.';
     public const PESAN_BERHENTI_TIDAK_TERBUKTI    = 'Hasil tinjauan Analis: lowongan tidak terbukti mencurigakan. Pengaduan ditutup pada tahap ini.';
     public const PESAN_BERHENTI_TIDAK_DITINDAKLANJUTI = 'Kepala Bidang memutuskan laporan tidak ditindaklanjuti. Pengaduan diarsipkan pada tahap ini.';
 

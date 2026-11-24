@@ -8,14 +8,12 @@ use App\Enums\StatusKasus;
 use App\Models\Pengaduan;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Http;
-use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
- * Bug: pengaduan baru dengan skor di bawah 70% tidak muncul di Analis.
- * Aturan yang benar: SEMUA pengaduan baru masuk antrean Analis. Skor >= 70% hanya
- * ditandai prioritas dan tampil paling atas.
+ * Alur pengaduan antar aktor sesuai SRS BR-05:
+ * hanya skor >= ambang prioritas (70%) yang masuk ke Analis. Skor di bawahnya
+ * otomatis "Selesai - Risiko Rendah" dan Masyarakat mendapat penjelasannya.
  */
 class AlurPengaduanKeAnalisTest extends TestCase
 {
@@ -39,43 +37,27 @@ class AlurPengaduanKeAnalisTest extends TestCase
     {
         $this->palsukanApiMl($probabilitas);
 
-        return $this->kirimForm('Staff Gudang');
-    }
-
-    /** Kirim form Periksa Lowongan (API ML harus sudah dipalsukan). */
-    private function kirimForm(string $posisi): Pengaduan
-    {
         $this->actingAs($this->masyarakat)->post('/periksa-lowongan', [
             'nama_perusahaan'    => 'PT Uji Alur',
-            'posisi_lowongan'    => $posisi,
+            'posisi_lowongan'    => 'Staff Gudang',
             'deskripsi_lowongan' => 'Dibutuhkan staff gudang, kirim CV lewat WhatsApp dan siapkan biaya pelatihan sebelum mulai bekerja.',
         ])->assertRedirect();
 
         return Pengaduan::latest('id_pengaduan')->firstOrFail();
     }
 
-    public static function skorPengaduan(): array
+    public function test_skor_85_masuk_analis_lalu_kepala_bidang_dan_status_terlihat_masyarakat(): void
     {
-        return [
-            'skor di bawah 70%' => [0.55, false],
-            'skor di atas 70%'  => [0.85, true],
-        ];
-    }
-
-    #[DataProvider('skorPengaduan')]
-    public function test_alur_lengkap_masyarakat_analis_kepala_bidang_masyarakat(float $probabilitas, bool $prioritas): void
-    {
-        // 1. Masyarakat membuat pengaduan: selalu "Perlu Tinjauan", prioritas sesuai skor
-        $pengaduan = $this->buatPengaduan($probabilitas);
+        // 1. Masyarakat membuat pengaduan: prioritas tinggi, "Perlu Tinjauan"
+        $pengaduan = $this->buatPengaduan(0.85);
         $klasifikasi = $pengaduan->hasilKlasifikasi;
 
         $this->assertSame(StatusKasus::PerluTinjauan, $pengaduan->status_pengaduan);
-        $this->assertSame($prioritas, $klasifikasi->status_prioritas);
+        $this->assertTrue($klasifikasi->status_prioritas);
 
         // 2. Analis melihatnya di Dashboard dan Tinjau Lowongan
         $dashboard = $this->actingAs($this->analis)->get('/dashboard-analis')->assertOk()
             ->assertSee($pengaduan->nomor_tiket);
-        $this->assertSame(1, $dashboard->viewData('ringkasan')[0]['jumlah']);
         $this->assertSame(1, $dashboard->viewData('totalAntrean'));
 
         $this->actingAs($this->analis)->get('/tinjau-lowongan')->assertOk()
@@ -83,8 +65,7 @@ class AlurPengaduanKeAnalisTest extends TestCase
 
         // 3. Analis membuka detail dan menyimpan tinjauan
         $this->actingAs($this->analis)->get("/tinjau-lowongan/detail/{$klasifikasi->id_klasifikasi}")
-            ->assertOk()
-            ->assertSee($prioritas ? 'Prioritas tinggi' : 'Bukan prioritas');
+            ->assertOk()->assertSee('Prioritas tinggi');
         $this->assertSame(StatusKasus::SedangDitinjau, $pengaduan->fresh()->status_pengaduan);
 
         $this->actingAs($this->analis)->post("/tinjau-lowongan/detail/{$klasifikasi->id_klasifikasi}/simpan", [
@@ -94,8 +75,6 @@ class AlurPengaduanKeAnalisTest extends TestCase
           ->assertSessionHas('success', LokerLensCopy::TINJAUAN_BERHASIL);
 
         $this->assertSame(StatusKasus::MenungguKeputusan, $pengaduan->fresh()->status_pengaduan);
-
-        // Sudah tidak di antrean Analis
         $this->actingAs($this->analis)->get('/tinjau-lowongan')->assertDontSee($pengaduan->nomor_tiket);
 
         // 4. Kepala Bidang melihatnya di Tindak Lanjut
@@ -107,44 +86,37 @@ class AlurPengaduanKeAnalisTest extends TestCase
             ->assertSee(StatusKasus::MenungguKeputusan->value);
     }
 
-    public function test_prioritas_tinggi_tampil_di_atas_skor_rendah(): void
+    public function test_skor_55_tidak_masuk_analis_dan_masyarakat_melihat_selesai_risiko_rendah(): void
     {
-        // Http::fake hanya memakai jawaban pertama yang cocok, jadi tiga skor dipasang berurutan
-        $jawaban = fn (float $p) => ['probabilitas_penipuan' => $p, 'label' => $p >= 0.5 ? 'palsu' : 'asli', 'kata_pemicu' => [], 'versi_model' => 'Model Uji'];
-        Http::fake(['*/predict' => Http::sequence()
-            ->push($jawaban(0.30))
-            ->push($jawaban(0.55))
-            ->push($jawaban(0.85))]);
+        $pengaduan = $this->buatPengaduan(0.55);
 
-        $rendah = $this->kirimForm('Kasir');
-        $sedang = $this->kirimForm('Admin Toko');
-        $tinggi = $this->kirimForm('Kurir');
+        $this->assertSame(StatusKasus::SelesaiRisikoRendah, $pengaduan->status_pengaduan);
+        $this->assertFalse($pengaduan->hasilKlasifikasi->status_prioritas);
 
+        // Tidak muncul di Analis maupun Kepala Bidang
         $this->actingAs($this->analis)->get('/tinjau-lowongan')->assertOk()
-            ->assertSeeInOrder([$tinggi->nomor_tiket, $sedang->nomor_tiket, $rendah->nomor_tiket]);
+            ->assertDontSee($pengaduan->nomor_tiket);
+        $this->actingAs($this->analis)->get('/dashboard-analis')->assertOk()
+            ->assertDontSee($pengaduan->nomor_tiket);
+        $this->actingAs($this->analis)->get("/tinjau-lowongan/detail/{$pengaduan->hasilKlasifikasi->id_klasifikasi}")
+            ->assertNotFound();
+        $this->actingAs($this->kepalaBidang)->get('/tindak-lanjut')->assertOk()
+            ->assertDontSee($pengaduan->nomor_tiket);
 
-        $antrean = $this->actingAs($this->analis)->get('/dashboard-analis')->viewData('antrean');
-        $this->assertSame(
-            [$tinggi->nomor_tiket, $sedang->nomor_tiket, $rendah->nomor_tiket],
-            $antrean->map(fn ($hasil) => $hasil->pengaduan->nomor_tiket)->all()
-        );
+        // Masyarakat melihat status akhir beserta alasannya
+        $this->actingAs($this->masyarakat)->get("/status-pengaduan/{$pengaduan->id_pengaduan}")->assertOk()
+            ->assertSee(StatusKasus::SelesaiRisikoRendah->value)
+            ->assertSee(str_replace(':ambang', '70', LokerLensCopy::ALASAN_RISIKO_RENDAH));
+
+        $this->actingAs($this->masyarakat)->get('/riwayat-pengaduan')->assertOk()
+            ->assertSee($pengaduan->nomor_tiket);
     }
 
-    public function test_pengaduan_menunggu_klasifikasi_tetap_terlihat_oleh_analis(): void
+    public function test_alasan_risiko_rendah_tidak_tampil_untuk_status_lain(): void
     {
-        // API ML error: pengaduan tersimpan tanpa skor
-        Http::fake(['*/predict' => Http::response('error', 500)]);
+        $pengaduan = $this->buatPengaduan(0.85);
 
-        $pengaduan = $this->kirimForm('Staff Gudang');
-        $this->assertNull($pengaduan->hasilKlasifikasi);
-        $this->assertSame(StatusKasus::PerluTinjauan, $pengaduan->status_pengaduan);
-
-        $this->actingAs($this->analis)->get('/tinjau-lowongan')->assertOk()
-            ->assertSee(LokerLensCopy::JUDUL_MENUNGGU_KLASIFIKASI_ANALIS)
-            ->assertSee($pengaduan->nomor_tiket);
-
-        $dashboard = $this->actingAs($this->analis)->get('/dashboard-analis')->assertOk();
-        $this->assertSame(1, $dashboard->viewData('ringkasan')[0]['jumlah']);
-        $this->assertSame(1, $dashboard->viewData('jumlahMenungguKlasifikasi'));
+        $this->actingAs($this->masyarakat)->get("/status-pengaduan/{$pengaduan->id_pengaduan}")->assertOk()
+            ->assertDontSee(str_replace(':ambang', '70', LokerLensCopy::ALASAN_RISIKO_RENDAH));
     }
 }

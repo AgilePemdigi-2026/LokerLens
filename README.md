@@ -155,7 +155,7 @@ Ambang prioritas tinggi (default 70) diatur di `LOKERLENS_AMBANG_PRIORITAS` (`we
 - **15 skenario Sprint 1** dari SRS Appendix B (Table B.2–B.5);
 - **32 skenario Sprint 2** dari user story baru US-05 s.d. US-12 (Table B.6–B.13), yang perlu ditambahkan ke SRS. Daftarnya ada di [docs/laporan_kondisi_bdd.md bagian 8](docs/laporan_kondisi_bdd.md);
 - **4 skenario halaman Surat** (US-04, issue #8), juga perlu ditambahkan ke SRS. Daftarnya ada di [docs/laporan_kondisi_bdd.md bagian 9](docs/laporan_kondisi_bdd.md);
-- **2 skenario alur lintas aktor** (`alur_pengaduan.feature`): Masyarakat → Analis → Kepala Bidang → Masyarakat, dengan skor di bawah dan di atas 70%.
+- **2 skenario alur lintas aktor** (`alur_pengaduan.feature`): skor 85% berjalan Masyarakat → Analis → Kepala Bidang → Masyarakat; skor 55% langsung *Selesai - Risiko Rendah* dan tidak masuk ke Analis (BR-05).
 
 Behat dipasang sebagai project Composer terpisah di `web/bdd/`, supaya paket aplikasi Laravel tidak berubah. Perbedaan kalimat skenario dengan SRS dijelaskan di [docs/laporan_kondisi_bdd.md bagian 6](docs/laporan_kondisi_bdd.md).
 

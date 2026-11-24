@@ -34,8 +34,9 @@ class FeatureContext extends MinkContext
     /** Sudah dicek bahwa Chrome terlihat (mode demo), cukup sekali per run. */
     private static bool $chromeTerlihatDicek = false;
 
-    /** Nomor tiket pengaduan terbaru (diisi langkah "the newest complaint is classified ..."). */
+    /** Pengaduan terbaru (diisi langkah "the newest complaint is classified ..."). */
     private ?string $tiketTerbaru = null;
+    private ?int $idPengaduanTerbaru = null;
 
     /**
      * @param bool $modeDemo true pada profil "demo" (behat.yml): semua skenario berjalan
@@ -330,8 +331,9 @@ class FeatureContext extends MinkContext
     /**
      * Memberi skor klasifikasi (0–100) pada pengaduan terbaru di database TEST, supaya skenario
      * tidak bergantung pada model ML (API ML boleh menyala atau mati). Hasil klasifikasi dari API
-     * (jika ada) diganti. Status pengaduan TIDAK diubah: tetap hasil dari aplikasi.
-     * Tanda prioritas mengikuti LOKERLENS_AMBANG_PRIORITAS di .env.behat.
+     * (jika ada) diganti. Status awal dan tanda prioritas mengikuti BR-05, sama dengan
+     * Pengaduan::simpanHasilKlasifikasi(): skor >= LOKERLENS_AMBANG_PRIORITAS (.env.behat)
+     * → "Perlu Tinjauan" (prioritas), di bawahnya → "Selesai - Risiko Rendah".
      *
      * @Given /^the newest complaint is classified with a score of "(?P<skor>\d+(?:\.\d+)?)"$/
      */
@@ -360,7 +362,34 @@ class FeatureContext extends MinkContext
                 'Skor uji Behat',
             ]);
 
+        $status = (float) $skor >= $ambang ? 'Perlu Tinjauan' : 'Selesai - Risiko Rendah';
+        $db->prepare('UPDATE pengaduan SET status_pengaduan = ? WHERE id_pengaduan = ?')
+            ->execute([$status, $pengaduan['id_pengaduan']]);
+        $db->prepare('INSERT INTO riwayat_kasus (id_pengaduan, status_kasus, keterangan, tanggal_update, created_at, updated_at)
+                VALUES (?, ?, ?, NOW(), NOW(), NOW())')
+            ->execute([$pengaduan['id_pengaduan'], $status, 'Klasifikasi diatur oleh skenario Behat.']);
+
         $this->tiketTerbaru = $pengaduan['nomor_tiket'];
+        $this->idPengaduanTerbaru = (int) $pengaduan['id_pengaduan'];
+    }
+
+    /**
+     * @Then /^I should not see the newest complaint ticket$/
+     */
+    public function iShouldNotSeeTheNewestComplaintTicket(): void
+    {
+        $this->assertPageNotContainsText($this->tiketTerbaruAtauGagal());
+    }
+
+    /**
+     * Detail Status Pengaduan milik Masyarakat untuk pengaduan terbaru.
+     *
+     * @Given /^I am on the status detail page for the newest complaint$/
+     */
+    public function iAmOnTheStatusDetailPageForTheNewestComplaint(): void
+    {
+        $this->tiketTerbaruAtauGagal();
+        $this->visitPath('/status-pengaduan/' . $this->idPengaduanTerbaru);
     }
 
     /**

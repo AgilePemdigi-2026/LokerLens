@@ -43,6 +43,12 @@
                         <span class="text-sm font-bold">{{ $progres->labelStatus }}</span>
                     </p>
                     <p class="text-sm text-gray-700 mt-2 leading-relaxed">{{ $progres->penjelasan }}</p>
+                    {{-- BR-05: jelaskan kenapa pengaduan tidak diteruskan ke Analis --}}
+                    @if($pengaduan->status_pengaduan === \App\Enums\StatusKasus::SelesaiRisikoRendah)
+                        <p id="alasan-risiko-rendah" class="text-sm text-gray-700 mt-1 leading-relaxed">
+                            {{ str_replace(':ambang', (int) config('lokerlens.ambang_prioritas'), LokerLensCopy::ALASAN_RISIKO_RENDAH) }}
+                        </p>
+                    @endif
                 </section>
 
                 <!-- b. Skor risiko, kategori hasil, dan kata pemicu -->

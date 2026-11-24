@@ -27,8 +27,8 @@
                     </span>
                 @endif
             </div>
-            <span class="px-2.5 py-1 rounded font-bold text-[11px] tracking-wider uppercase {{ $klasifikasi->status_prioritas ? 'bg-risk-high/20 border border-risk-high text-red-300' : 'bg-navy-800 border border-navy-700 text-gray-300' }}">
-                {{-- Dari hasil_klasifikasi.status_prioritas (skor >= ambang prioritas) --}}
+            <span class="px-2.5 py-1 rounded bg-risk-high/20 border border-risk-high text-red-300 font-bold text-[11px] tracking-wider uppercase">
+                {{-- Dari hasil_klasifikasi.status_prioritas (halaman ini hanya untuk kasus prioritas tinggi) --}}
                 {{ $klasifikasi->status_prioritas ? 'Prioritas tinggi' : 'Bukan prioritas' }}
             </span>
         </div>

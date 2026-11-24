@@ -12,7 +12,7 @@
                     {{ \App\Constants\LokerLensCopy::JUDUL_DASHBOARD_KEPALA_BIDANG }}
                 </h1>
 
-                <p class="text-sm text-gray-300 mt-2 max-w-2xl">
+                <p class="text-sm text-white mt-2 max-w-2xl">
                     {{ \App\Constants\LokerLensCopy::DESKRIPSI_DASHBOARD_KEPALA_BIDANG }}
                 </p>
             </div>

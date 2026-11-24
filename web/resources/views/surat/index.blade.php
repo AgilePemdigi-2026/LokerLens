@@ -9,7 +9,7 @@
             <h1 class="text-3xl font-extrabold text-white tracking-tight">
                 {{ LokerLensCopy::SURAT_JUDUL }}
             </h1>
-            <p class="text-sm text-gray-300 mt-1">
+            <p class="text-sm text-white mt-1">
                 {{ LokerLensCopy::SURAT_DESKRIPSI }}
             </p>
         </div>

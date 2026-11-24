@@ -256,7 +256,7 @@
                             Garis Waktu Riwayat Kasus
                         </h2>
                         <p class="text-[11px] text-gray-500 mt-0.5">
-                            Jejak audit kronologis perubahan status (BR-11)
+                            Jejak audit kronologis perubahan status
                         </p>
                     </div>
 
@@ -293,8 +293,8 @@
                 <div class="bg-gray-50 rounded-card p-4 border border-gray-200 text-xs text-gray-600 space-y-2">
                     <div class="font-bold text-navy-900">Integritas Data Arsip</div>
                     <p class="text-[11px] text-gray-500 leading-relaxed">
-                        Data arsip ini bersifat <em>read-only</em> dan dilindungi integritasnya sesuai prinsip BR-11
-                        (riwayat kasus tidak dapat dihapus atau diubah setelah kasus ditutup).
+                        Data arsip ini bersifat <em>read-only</em> dan dilindungi integritasnya
+(riwayat kasus tidak dapat dihapus atau diubah setelah kasus ditutup).
                     </p>
                     <div class="pt-2 border-t border-gray-200 space-y-1 text-[11px]">
                         <div class="flex justify-between">

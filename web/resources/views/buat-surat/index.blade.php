@@ -1,30 +1,49 @@
+@use('App\Constants\LokerLensCopy')
+
 <x-app-layout>
-    <div class="max-w-5xl mx-auto py-4 space-y-6">
-        @php
-            $lowongan = $pengaduan->lowonganKerja;
-            $perusahaan = $lowongan->perusahaan ?? null;
-            $tindakLanjut = $pengaduan->tindakLanjutKasus;
-        @endphp
+    @php
+        $lowongan = $pengaduan->lowonganKerja;
+        $perusahaan = $lowongan->perusahaan ?? null;
+        $tindakLanjut = $pengaduan->tindakLanjutKasus;
+
+        // Jenis dokumen (issue #8). $jenisTerpilih dari controller: isian terakhir → draf → Laporan Polisi.
+        $LP = LokerLensCopy::JENIS_LAPORAN_POLISI;
+        $ST = LokerLensCopy::JENIS_SURAT_TEGURAN;
+        // Bagian milik jenis yang tidak dipilih disembunyikan sejak awal (tetap benar tanpa JavaScript);
+        // setelah itu Alpine (x-show) yang menampilkan/menyembunyikan saat pilihan diganti.
+        $sembunyi = fn (string $jenis) => $jenisTerpilih !== $jenis ? 'style=display:none' : '';
+        // Tujuan surat teguran: isian terakhir → draf teguran → "Pimpinan {nama perusahaan}"
+        $tujuanTeguran = old('tujuan_teguran', ($surat?->jenis_dokumen === $ST ? $surat->tujuan_instansi : null)
+            ?? sprintf(LokerLensCopy::TUJUAN_TEGURAN_BAWAAN, $perusahaan->nama_perusahaan ?? '-'));
+        $tujuanKepolisian = old('tujuan_kepolisian', $surat?->jenis_dokumen === $LP ? $surat->tujuan_instansi : '');
+    @endphp
+
+    <div class="max-w-5xl mx-auto py-4 space-y-6" x-data="{ jenis: @js($jenisTerpilih) }">
 
         <!-- Navigasi & Breadcrumb -->
         <div class="flex items-center justify-between text-xs text-gray-400">
             <div class="flex items-center space-x-2">
                 <a href="{{ route('tindak-lanjut.index') }}" class="hover:text-teal-400 transition font-medium">← Kembali ke Laporan</a>
                 <span>›</span>
-                <span class="text-white font-medium">Formulir Laporan Polisi</span>
+                <span class="text-white font-medium">
+                    <span x-show="jenis === @js($LP)" {{ $sembunyi($LP) }}>Formulir {{ $LP }}</span>
+                    <span x-show="jenis === @js($ST)" {{ $sembunyi($ST) }}>Formulir {{ $ST }}</span>
+                </span>
             </div>
         </div>
 
-        <!-- Header Halaman Resmi BDD & Hi-Fi (Teks Wajib: "Buat Laporan Polisi") -->
+        <!-- Header Halaman Resmi BDD & Hi-Fi (Teks Wajib: "Buat Laporan Polisi"; judul mengikuti jenis dokumen) -->
         <div class="bg-navy-900 border border-navy-800 rounded-card p-6 sm:p-8 text-white shadow-xl">
             <p class="text-xs uppercase tracking-widest font-bold text-teal-400 mb-1">
                 E-LAPORAN PENEGAKAN HUKUM SIBER
             </p>
             <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">
-                Buat Laporan Polisi
+                <span x-show="jenis === @js($LP)" {{ $sembunyi($LP) }}>{{ LokerLensCopy::JUDUL_BUAT_LAPORAN }}</span>
+                <span x-show="jenis === @js($ST)" {{ $sembunyi($ST) }}>{{ LokerLensCopy::JUDUL_BUAT_TEGURAN }}</span>
             </h1>
             <p class="text-xs sm:text-sm text-gray-300 mt-1 max-w-3xl leading-relaxed">
-                Formulir pembentukan laporan resmi indikasi penipuan rekrutmen tenaga kerja kepada pihak kepolisian / penyidik tindak pidana siber.
+                <span x-show="jenis === @js($LP)" {{ $sembunyi($LP) }}>{{ LokerLensCopy::DESKRIPSI_BUAT_LAPORAN }}</span>
+                <span x-show="jenis === @js($ST)" {{ $sembunyi($ST) }}>{{ LokerLensCopy::DESKRIPSI_BUAT_TEGURAN }}</span>
             </p>
 
             <!-- Banner Pemberitahuan Kewenangan -->
@@ -52,6 +71,31 @@
         {{-- novalidate: validasi oleh server supaya pesan bahasa Indonesia tampil di dekat isian, bukan tooltip bawaan browser. --}}
         <form method="POST" id="form-surat" enctype="multipart/form-data" class="space-y-5" novalidate>
             @csrf
+
+            <!-- [ Jenis Dokumen ] (issue #8): satu kasus hanya punya satu surat, Laporan Polisi ATAU Surat Teguran -->
+            <div class="bg-white rounded-card shadow-lg p-6 text-navy-900 border border-gray-100">
+                <div class="flex items-center justify-between border-b border-gray-100 pb-3 mb-4">
+                    <h3 class="text-base font-bold text-navy-900">{{ LokerLensCopy::LABEL_JENIS_DOKUMEN }}</h3>
+                    <span class="text-xs font-semibold text-risk-high">* Wajib Dipilih</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    @foreach([$LP => LokerLensCopy::KETERANGAN_JENIS_LAPORAN, $ST => LokerLensCopy::KETERANGAN_JENIS_TEGURAN] as $jenis => $keterangan)
+                        <label class="flex items-start gap-3 p-4 rounded-control border cursor-pointer transition"
+                               :class="jenis === @js($jenis) ? 'border-teal-600 bg-teal-50 ring-1 ring-teal-600' : 'border-gray-300 hover:bg-gray-50'">
+                            <input type="radio" name="jenis_dokumen" id="{{ $jenis === $ST ? 'jenis_surat_teguran' : 'jenis_laporan_polisi' }}"
+                                   value="{{ $jenis }}" x-model="jenis" {{ $jenisTerpilih === $jenis ? 'checked' : '' }}
+                                   class="w-4 h-4 mt-0.5 text-teal-600 border-gray-300 focus:ring-teal-500">
+                            <span>
+                                <strong class="block text-sm font-bold text-navy-900">{{ $jenis }}</strong>
+                                <span class="block text-xs text-gray-500 mt-0.5">{{ $keterangan }}</span>
+                            </span>
+                        </label>
+                    @endforeach
+                </div>
+                @error('jenis_dokumen')
+                    <p class="text-xs text-risk-high mt-2">{{ $message }}</p>
+                @enderror
+            </div>
 
             <!-- [ 1. Data Kasus ] (READ-ONLY - FR-ST-03) -->
             <div class="bg-white rounded-card shadow-lg p-6 text-navy-900 border border-gray-100">
@@ -105,7 +149,9 @@
                 </div>
                 <div>
                     <label for="kronologi" class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
-                        Uraian Kronologi Kejadian <span class="text-risk-high">*</span>
+                        <span x-show="jenis === @js($LP)" {{ $sembunyi($LP) }}>{{ LokerLensCopy::LABEL_KRONOLOGI_LAPORAN }}</span>
+                        <span x-show="jenis === @js($ST)" {{ $sembunyi($ST) }}>{{ LokerLensCopy::LABEL_KRONOLOGI_TEGURAN }}</span>
+                        <span class="text-risk-high">*</span>
                     </label>
                     <textarea id="kronologi" name="kronologi" rows="6" required
                         placeholder="Uraikan kronologi pengaduan, modus operandi, bukti transaksi, dan kerugian yang ditimbulkan..."
@@ -192,8 +238,8 @@
                 </div>
             </div>
 
-            <!-- [ 6. Tujuan Kepolisian ] (BDD Hook: select name="tujuan_kepolisian") -->
-            <div class="bg-white rounded-card shadow-lg p-6 text-navy-900 border border-gray-100">
+            <!-- [ 6. Tujuan Kepolisian ] (BDD Hook: select name="tujuan_kepolisian"). Hanya untuk Laporan Polisi. -->
+            <div class="bg-white rounded-card shadow-lg p-6 text-navy-900 border border-gray-100" x-show="jenis === @js($LP)" {{ $sembunyi($LP) }}>
                 <div class="flex items-center justify-between border-b border-gray-100 pb-3 mb-4">
                     <h3 class="text-base font-bold text-navy-900 flex items-center gap-2">
                         <span class="w-6 h-6 rounded bg-navy-900 text-teal-400 flex items-center justify-center text-xs font-mono">6</span>
@@ -207,17 +253,39 @@
                     </label>
                     <select id="tujuan_kepolisian" name="tujuan_kepolisian" required
                         class="w-full px-4 py-2.5 rounded-control border border-gray-300 text-xs sm:text-sm text-navy-900 focus:ring-2 focus:ring-teal-600 focus:outline-none bg-white">
-                        <option value="Subdit Siber Ditreskrimsus Polda Metro Jaya / Wilayah Terkait" {{ old('tujuan_kepolisian', $surat->tujuan_instansi ?? '') === 'Subdit Siber Ditreskrimsus Polda Metro Jaya / Wilayah Terkait' ? 'selected' : '' }}>
+                        <option value="Subdit Siber Ditreskrimsus Polda Metro Jaya / Wilayah Terkait" {{ $tujuanKepolisian === 'Subdit Siber Ditreskrimsus Polda Metro Jaya / Wilayah Terkait' ? 'selected' : '' }}>
                             Subdit Siber Ditreskrimsus Polda Metro Jaya / Wilayah Terkait
                         </option>
-                        <option value="Direktorat Tindak Pidana Siber Bareskrim Polri" {{ old('tujuan_kepolisian', $surat->tujuan_instansi ?? '') === 'Direktorat Tindak Pidana Siber Bareskrim Polri' ? 'selected' : '' }}>
+                        <option value="Direktorat Tindak Pidana Siber Bareskrim Polri" {{ $tujuanKepolisian === 'Direktorat Tindak Pidana Siber Bareskrim Polri' ? 'selected' : '' }}>
                             Direktorat Tindak Pidana Siber Bareskrim Polri
                         </option>
-                        <option value="Satreskrim Polres Wilayah Setempat" {{ old('tujuan_kepolisian', $surat->tujuan_instansi ?? '') === 'Satreskrim Polres Wilayah Setempat' ? 'selected' : '' }}>
+                        <option value="Satreskrim Polres Wilayah Setempat" {{ $tujuanKepolisian === 'Satreskrim Polres Wilayah Setempat' ? 'selected' : '' }}>
                             Satreskrim Polres Wilayah Setempat
                         </option>
                     </select>
                     @error('tujuan_kepolisian')
+                        <p class="text-xs text-risk-high mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+
+            <!-- [ 6. Tujuan Surat Teguran ] (issue #8): perusahaan/pemasang lowongan. Hanya untuk Surat Teguran.
+                 Isian ini ikut terkirim walau tersembunyi, tetapi server hanya memakai tujuan milik jenis terpilih. -->
+            <div class="bg-white rounded-card shadow-lg p-6 text-navy-900 border border-gray-100" x-show="jenis === @js($ST)" {{ $sembunyi($ST) }}>
+                <div class="flex items-center justify-between border-b border-gray-100 pb-3 mb-4">
+                    <h3 class="text-base font-bold text-navy-900 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded bg-navy-900 text-teal-400 flex items-center justify-center text-xs font-mono">6</span>
+                        <span>{{ LokerLensCopy::PANEL_TUJUAN_TEGURAN }}</span>
+                    </h3>
+                    <span class="text-xs font-semibold text-risk-high">* Wajib Diisi</span>
+                </div>
+                <div>
+                    <label for="tujuan_teguran" class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
+                        {{ LokerLensCopy::LABEL_TUJUAN_TEGURAN }} <span class="text-risk-high">*</span>
+                    </label>
+                    <input type="text" id="tujuan_teguran" name="tujuan_teguran" maxlength="255" value="{{ $tujuanTeguran }}"
+                        class="w-full px-4 py-2.5 rounded-control border border-gray-300 text-xs sm:text-sm text-navy-900 focus:ring-2 focus:ring-teal-600 focus:outline-none bg-white">
+                    @error('tujuan_teguran')
                         <p class="text-xs text-risk-high mt-1">{{ $message }}</p>
                     @enderror
                 </div>

@@ -1,9 +1,13 @@
+@use('App\Constants\LokerLensCopy')
+
 <x-app-layout>
     <div class="max-w-4xl mx-auto py-8">
         @php
             $lowongan = $pengaduan->lowonganKerja;
             $perusahaan = $lowongan->perusahaan ?? null;
             $tindakLanjut = $pengaduan->tindakLanjutKasus;
+            // Judul dan label mengikuti jenis dokumen (issue #8)
+            $teguran = $surat->jenis_dokumen === LokerLensCopy::JENIS_SURAT_TEGURAN;
         @endphp
 
         {{-- print-page: area yang dicetak saat menekan "Cetak Tanda Terima" (lihat resources/css/app.css) --}}
@@ -16,12 +20,12 @@
                     </svg>
                 </div>
 
-                <!-- Teks Wajib BDD: "Laporan Polisi Berhasil Diterbitkan" -->
+                <!-- Teks Wajib BDD: "Laporan Polisi Berhasil Diterbitkan" (Surat Teguran: "Surat Teguran Berhasil Diterbitkan") -->
                 <h1 class="text-2xl sm:text-3xl font-extrabold text-navy-900 tracking-tight">
-                    Laporan Polisi Berhasil Diterbitkan
+                    {{ $teguran ? LokerLensCopy::JUDUL_TERBIT_TEGURAN : LokerLensCopy::JUDUL_TERBIT_LAPORAN }}
                 </h1>
                 <p class="text-xs sm:text-sm text-gray-600 mt-2 max-w-xl mx-auto leading-relaxed">
-                    Dokumen laporan resmi dan seluruh berkas bukti digital telah berhasil disahkan serta siap diteruskan ke instansi kepolisian tujuan.
+                    {{ $teguran ? LokerLensCopy::DESKRIPSI_TERBIT_TEGURAN : LokerLensCopy::DESKRIPSI_TERBIT_LAPORAN }}
                 </p>
 
                 <!-- Tiga Chip Resmi (BR-10 & FR-ST-08) -->
@@ -43,6 +47,10 @@
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
+                        <span class="text-gray-500 block text-xs">{{ LokerLensCopy::LABEL_JENIS_DOKUMEN }}:</span>
+                        <strong class="text-navy-900">{{ $surat->jenis_dokumen }}</strong>
+                    </div>
+                    <div>
                         <span class="text-gray-500 block text-xs">Nomor Dokumen Resmi:</span>
                         <strong class="font-mono text-base text-navy-900 font-extrabold">{{ $surat->nomor_surat }}</strong>
                     </div>
@@ -59,7 +67,7 @@
                         <strong class="text-navy-900">{{ $perusahaan->nama_perusahaan ?? '-' }}</strong>
                     </div>
                     <div>
-                        <span class="text-gray-500 block text-xs">Instansi Kepolisian Tujuan:</span>
+                        <span class="text-gray-500 block text-xs">{{ $teguran ? LokerLensCopy::LABEL_DITUJUKAN_KEPADA : LokerLensCopy::LABEL_TUJUAN_KEPOLISIAN }}:</span>
                         <span class="font-medium text-gray-800">{{ $surat->tujuan_instansi }}</span>
                     </div>
                     <div>

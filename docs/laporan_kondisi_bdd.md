@@ -9,6 +9,8 @@ Tanggal: 27 Oktober 2026
 > **Pembaruan Sprint 2 (10 November 2026):** user story dan skenario BDD untuk fitur Sprint 2 (US-05 s.d. US-12, Table B.6–B.13) beserta hasil test-nya ada di **bagian 8**. Semuanya **baru** dan perlu ditambahkan ke SRS.
 >
 > **Pembaruan issue #8 (18 November 2026):** nama menu disamakan dengan SRS dan ada halaman Surat baru untuk Kepala Bidang. Perubahan kalimat skenario ada di **bagian 9**.
+>
+> **Pembaruan issue #8 lanjutan (18 November 2026):** Kepala Bidang bisa memilih jenis dokumen (Laporan Polisi atau Surat Teguran). Catatan revisi SRS ada di **bagian 10**.
 
 ---
 
@@ -425,3 +427,56 @@ Dijalankan 18 November 2026 di Windows 11, MySQL 8.4.3 (Laragon), dan Chrome 157
 |---|---|
 | `composer test-bdd` (dari `web/bdd/`) | **51 skenario lulus (258 langkah)**: 47 lama + 4 baru |
 | `php artisan test` (dari `web/`) | **288 lulus, 0 gagal** (termasuk `SuratTest` baru) |
+
+---
+
+## 10. Pilihan jenis dokumen: Surat Teguran (issue #8, 18 November 2026)
+
+### 10.1 Latar belakang
+
+Fitur US-04 di SRS bernama "Buat Surat Teguran/Laporan Polisi", dan tabel `Surat_Teguran_Laporan_Polisi` (PDM) sudah punya kolom `jenis_dokumen` (enum `Surat Teguran`, `Laporan Polisi`). Sebelumnya aplikasi hanya membuat Laporan Polisi. Isi dan kegunaan Surat Teguran **tidak dijelaskan** di SRS maupun Data Mockup (Data Mockup 2.6 hanya menampilkan Laporan Polisi), jadi rancangan di bawah adalah keputusan tim dan perlu dimasukkan ke SRS.
+
+### 10.2 Keputusan tim
+
+| Hal | Keputusan |
+|---|---|
+| Jumlah dokumen per kasus | Satu: Laporan Polisi **atau** Surat Teguran (constraint unique `id_tindaklanjut`, tanpa migration baru). |
+| Pilihan jenis | Panel "Jenis Dokumen" (radio) di atas form Buat Surat. Bawaan: Laporan Polisi. Bisa diganti selama surat masih draf. |
+| Laporan Polisi | Tidak berubah: tujuan dari dropdown instansi kepolisian (`tujuan_kepolisian`). |
+| Surat Teguran | Peringatan resmi Dinas kepada perusahaan/pemasang lowongan. Tujuan diisi di `tujuan_teguran` (terisi otomatis "Pimpinan {nama perusahaan}", bisa diedit). Kronologi berlabel "Uraian Pelanggaran". Pasal di Detail Pelanggaran sama. |
+| Penyimpanan | Tujuan disimpan di kolom `tujuan_instansi` yang sudah ada. Isian tujuan milik jenis yang tidak dipilih tidak divalidasi dan tidak disimpan. |
+| Nomor surat | Laporan Polisi `#LP-{tahun}/POLRI/{nomor}`, Surat Teguran `#ST-{tahun}/DISNAKER/{nomor}`. Tahun = tahun berjalan. |
+| Setelah terbit | Kedua jenis membuat kasus **Selesai** (BR-10) dan tercatat di Riwayat Kasus ("{jenis} {nomor surat} berhasil diterbitkan…"). Tidak ada status baru. |
+| Teks tombol | Tetap "Simpan Draft" dan "Terbitkan Laporan" untuk kedua jenis (Appendix C no. 11). |
+| Halaman terbit | Judul "Laporan Polisi Berhasil Diterbitkan" atau "Surat Teguran Berhasil Diterbitkan". |
+
+### 10.3 Usulan revisi SRS
+
+| Bagian SRS | Sekarang | Usulan |
+|---|---|---|
+| Appendix C no. 4 | Nama fitur dan "apakah surat teguran termasuk cakupan" masih TBD | Ditutup: Surat Teguran **termasuk** cakupan. Nama fitur: "Buat Surat Teguran/Laporan Polisi". Satu dokumen per kasus. |
+| 4.4 (judul "Buat Surat Teguran", Table 4.9) | Judul bagian dan tabel hanya "Buat Surat Teguran", isinya alur laporan polisi | Judul diseragamkan "Buat Surat Teguran/Laporan Polisi". Deskripsi 4.4.1 menyebut dua jenis dokumen dan kapan dipakai (teguran ke perusahaan, laporan ke kepolisian). Skenario normal UC-04 ditambah langkah "Memilih jenis dokumen". |
+| FR-ST-04 | Isian: Nama Perusahaan (Terlapor), Kronologi Kejadian, Detail Pelanggaran, Bukti Pendukung, Tujuan Kepolisian | Ditambah "Jenis Dokumen (Laporan Polisi/Surat Teguran)". "Tujuan Kepolisian" menjadi "Tujuan: instansi kepolisian (Laporan Polisi) atau perusahaan/pemasang lowongan (Surat Teguran)". |
+| FR baru (usulan FR-ST-10) | — | "Sistem harus memberi nomor surat sesuai jenis dokumen: #LP-{tahun}/POLRI/{nomor} atau #ST-{tahun}/DISNAKER/{nomor}." |
+| NFR-SEC-02, NFR-SAF-03 | Hanya menyebut "Laporan Polisi" | Disebut "Surat Teguran/Laporan Polisi". |
+| Data Mockup 2.6 | Hanya tampilan Laporan Polisi | Perlu gambar panel Jenis Dokumen dan halaman "Surat Teguran Berhasil Diterbitkan". |
+
+### 10.4 Skenario BDD
+
+Tiga skenario B.5 lama **tidak diubah** dan tetap lulus, karena jenis bawaan adalah Laporan Polisi. Dua skenario baru di `buat_surat.feature` (usulan B.5-8 dan B.5-9):
+
+| Kode | Skenario | Langkah utama |
+|---|---|---|
+| B.5-8 | Menerbitkan surat teguran | Di halaman surat `#LKR-8770`: `When I select "Surat Teguran" from "jenis_dokumen"`, isi `kronologi` dan `tujuan_teguran`, tekan "Terbitkan Laporan", lalu terlihat "Surat Teguran Berhasil Diterbitkan", "Kasus terdokumentasi otomatis", dan "Kasus selesai". |
+| B.5-9 | Menyimpan surat teguran sebagai draf | Pilih "Surat Teguran", isi `kronologi` dan `tujuan_teguran`, tekan "Simpan Draft", lalu terlihat "Draf berhasil disimpan", radio `jenis_surat_teguran` tetap terpilih, dan `tujuan_teguran` berisi nilai yang disimpan. |
+
+Tidak ada perubahan `FeatureContext`. Langkah `I select ... from "jenis_dokumen"` dan `the "jenis_surat_teguran" checkbox should be checked` adalah langkah bawaan Mink yang juga berlaku untuk radio.
+
+### 10.5 Hasil test
+
+Dijalankan 18 November 2026 (Windows 11, MySQL 8.4.3 Laragon, Chrome 157 headless, server test port 8010, API ML menyala).
+
+| Perintah | Hasil |
+|---|---|
+| `composer test-bdd` (dari `web/bdd/`) | **53 skenario lulus (276 langkah)** |
+| `php artisan test` (dari `web/`) | **297 lulus, 0 gagal** (termasuk `JenisDokumenSuratTest` baru, 9 test) |

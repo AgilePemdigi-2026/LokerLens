@@ -44,10 +44,9 @@ class DashboardAnalisController extends Controller
 
         // ── 01 Ringkasan Tinjauan ───────────────────────────────────────
         // DB::table dipakai (bukan model) agar status tetap berupa teks biasa.
-                // Hanya pengaduan yang sudah punya hasil klasifikasi (yang bisa ditinjau Analis),
-        // supaya angka kartu cocok dengan antrean Tinjau Lowongan.
+        // Semua pengaduan dihitung, termasuk yang belum punya skor ("Menunggu klasifikasi"),
+        // supaya kartu "Perlu Tinjauan" sama dengan jumlah kasus baru yang masuk.
         $jumlahStatus = DB::table('pengaduan')
-            ->join('hasil_klasifikasi', 'hasil_klasifikasi.id_pengaduan', '=', 'pengaduan.id_pengaduan')
             ->whereBetween('pengaduan.tanggal_pengaduan', [$dari, $sampai])
             ->select('pengaduan.status_pengaduan', DB::raw('COUNT(*) as total'))
             ->groupBy('pengaduan.status_pengaduan')
@@ -87,9 +86,9 @@ class DashboardAnalisController extends Controller
                 'jumlah'  => (int) ($perHari[$hari->format('Y-m-d')] ?? 0),
             ]);
 
-        // ── 04 Antrean Prioritas Tinggi ─────────────────────────────────
-        $queryAntrean = HasilKlasifikasi::where('status_prioritas', true)
-            ->whereHas('pengaduan', fn ($q) => $q
+        // ── 04 Antrean Tinjauan ─────────────────────────────────────────
+        // Semua pengaduan di tahap Analis (berapa pun skornya); prioritas tinggi di urutan atas.
+        $queryAntrean = HasilKlasifikasi::whereHas('pengaduan', fn ($q) => $q
                 ->whereIn('status_pengaduan', $tahapAnalis)
                 ->whereBetween('tanggal_pengaduan', [$dari, $sampai]));
 
@@ -97,16 +96,23 @@ class DashboardAnalisController extends Controller
 
         $antrean = $queryAntrean
             ->with('pengaduan.lowonganKerja.perusahaan')
+            ->orderByDesc('status_prioritas')
             ->orderByDesc('confidence_score')
             ->orderByDesc('tanggal_klasifikasi')
             ->limit(self::BARIS_ANTREAN)
             ->get();
 
+        // Pengaduan baru yang belum punya skor (API ML mati), ditampilkan sebagai catatan di bawah antrean
+        $jumlahMenungguKlasifikasi = Pengaduan::menungguKlasifikasi()
+            ->whereIn('status_pengaduan', $tahapAnalis)
+            ->whereBetween('tanggal_pengaduan', [$dari, $sampai])
+            ->count();
+
         $terakhirDiperbarui = now();
 
         return view('dashboard-analis.index', compact(
             'periode', 'pesanPeriode', 'dari', 'sampai', 'ringkasan', 'distribusi', 'totalSkor',
-            'tren', 'antrean', 'totalAntrean', 'terakhirDiperbarui'
+            'tren', 'antrean', 'totalAntrean', 'jumlahMenungguKlasifikasi', 'terakhirDiperbarui'
         ));
     }
 

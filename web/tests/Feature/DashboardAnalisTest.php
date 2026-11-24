@@ -91,20 +91,20 @@ class DashboardAnalisTest extends TestCase
 
     // ─── Kartu ringkasan ────────────────────────────────────────────────
 
-    public function test_kartu_menghitung_status_dan_mengabaikan_kasus_tanpa_klasifikasi(): void
+    public function test_kartu_menghitung_status_termasuk_kasus_baru_tanpa_klasifikasi(): void
     {
         $this->buatKasus(StatusKasus::PerluTinjauan, 80);
         $this->buatKasus(StatusKasus::PerluTinjauan, 85);
         $this->buatKasus(StatusKasus::SedangDitinjau, 90);
         $this->buatKasus(StatusKasus::MenungguKeputusan, 95);
-        // Belum terklasifikasi: tidak bisa ditinjau, jadi tidak dihitung di kartu.
+        // Belum terklasifikasi (API ML mati): tetap kasus baru, jadi ikut dihitung di kartu.
         $this->buatKasus(StatusKasus::PerluTinjauan, null);
 
         $response = $this->actingAs($this->analis())->get('/dashboard-analis')->assertOk();
 
         $kartu = collect($response->viewData('ringkasan'))->pluck('jumlah', 'label');
 
-        $this->assertSame(2, $kartu['Perlu Tinjauan']);
+        $this->assertSame(3, $kartu['Perlu Tinjauan']);
         $this->assertSame(1, $kartu['Sedang Ditinjau']);
         $this->assertSame(1, $kartu['Menunggu Keputusan']);
         $this->assertSame(0, $kartu['Selesai Ditinjau']);

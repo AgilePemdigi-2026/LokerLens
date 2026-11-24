@@ -9,12 +9,12 @@ Feature: Arsip kasus
     Then I should see "#LKR-8798"
     And I should see "#LKR-8781"
     And I should see "#LKR-8752"
-    And I should not see "#LKR-2025-0842"
+    And I should not see "#LKR-8842"
 
   Scenario: Melihat detail arsip kasus
     Given I am logged in as "Kepala Bidang"
     And I am on the "/arsip-kasus" page
-    When I follow "Buka Detail" in the row for ticket "#LKR-8798"
+    When I follow "Lihat Detail" in the row for ticket "#LKR-8798"
     Then I should see "Dokumen Surat Resmi"
     And I should see "Status Akhir"
 

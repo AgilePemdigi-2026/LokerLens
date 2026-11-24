@@ -401,7 +401,7 @@ class LokerLensSeeder extends Seeder
             'id_pengaduan'        => $pengaduan->id_pengaduan,
             'confidence_score'    => $skor,
             'kategori_hasil'      => $skor >= 75 ? 'Lowongan berpotensi penipuan' : ($skor >= 50 ? 'Lowongan perlu diperiksa lebih lanjut' : 'Lowongan tampak normal'),
-            'status_prioritas'    => StatusKasus::awalDariSkor($skor) === StatusKasus::PerluTinjauan,
+            'status_prioritas'    => HasilKlasifikasi::isSkorPrioritas($skor),
             'metode_analisis'     => 'Mock ML v1.0',
             'tanggal_klasifikasi' => $diajukan,
         ]);

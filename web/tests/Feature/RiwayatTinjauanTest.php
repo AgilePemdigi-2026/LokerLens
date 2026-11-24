@@ -342,7 +342,7 @@ class RiwayatTinjauanTest extends TestCase
             ->assertSee('Tidak Ditindaklanjuti')
             ->assertSee('Rizky Pratama')
             ->assertSee(LokerLensCopy::LABEL_TANGGAL_KEPUTUSAN)
-            ->assertSee('Data contoh seeder.')
+            ->assertSee('Berdasarkan hasil tinjauan analis, kasus ditetapkan sesuai keputusan Kepala Bidang.')
             ->assertDontSee(LokerLensCopy::LABEL_NOMOR_SURAT)
             ->assertDontSee(LokerLensCopy::MENUNGGU_KEPUTUSAN_KABID);
     }

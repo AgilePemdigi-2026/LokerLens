@@ -66,6 +66,16 @@ class HasilKlasifikasi extends Model
     }
 
     /**
+     * Skor (0–100) yang ditandai prioritas tinggi (BR-05): >= ambang prioritas
+     * (config/lokerlens.php, default 70). Prioritas hanya menentukan urutan di
+     * antrean Analis; pengaduan di bawah ambang tetap masuk antrean.
+     */
+    public static function isSkorPrioritas(float $skor): bool
+    {
+        return $skor >= config('lokerlens.ambang_prioritas');
+    }
+
+    /**
      * Tingkat risiko berdasarkan confidence_score (0–100, makin tinggi makin berbahaya):
      *   rendah : di bawah 50 (label model "asli")
      *   sedang : 50 sampai di bawah ambang prioritas (label "palsu", belum prioritas)

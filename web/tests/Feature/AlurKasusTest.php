@@ -76,15 +76,15 @@ class AlurKasusTest extends TestCase
         return $pengaduan->riwayatKasus()->reorder('id_riwayat')->pluck('status_kasus')->all();
     }
 
-    public function test_skor_di_bawah_ambang_langsung_selesai_risiko_rendah(): void
+    public function test_skor_di_bawah_ambang_tetap_masuk_antrean_analis_tanpa_prioritas(): void
     {
         $pengaduan = $this->periksa('Dibutuhkan staff administrasi untuk kantor pusat dengan jam kerja normal dan kontrak resmi.', 0.2);
 
-        $this->assertSame(StatusKasus::SelesaiRisikoRendah, $pengaduan->status_pengaduan);
+        $this->assertSame(StatusKasus::PerluTinjauan, $pengaduan->status_pengaduan);
         $this->assertFalse($pengaduan->hasilKlasifikasi->status_prioritas);
-        $this->assertSame([StatusKasus::SelesaiRisikoRendah->value], $this->riwayat($pengaduan));
+        $this->assertSame([StatusKasus::PerluTinjauan->value], $this->riwayat($pengaduan));
 
-        $this->actingAs($this->analis)->get('/tinjau-lowongan')->assertDontSee($pengaduan->nomor_tiket);
+        $this->actingAs($this->analis)->get('/tinjau-lowongan')->assertSee($pengaduan->nomor_tiket);
     }
 
     public function test_alur_lengkap_sampai_surat_terbit_dan_tercatat_di_riwayat(): void

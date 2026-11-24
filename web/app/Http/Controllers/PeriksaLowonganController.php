@@ -70,8 +70,8 @@ class PeriksaLowonganController extends Controller
                 'informasi_tambahan'  => $request->informasi_tambahan,
             ]);
 
-            // Buat pengaduan. Status sementara "Perlu Tinjauan"; jika klasifikasi
-            // berhasil, statusnya langsung disesuaikan dengan skor (BR-05).
+            // Buat pengaduan dengan status "Perlu Tinjauan": semua pengaduan baru masuk
+            // antrean Analis, termasuk yang masih "Menunggu klasifikasi" (API ML mati).
             $pengaduan = Pengaduan::create([
                 'id_lowongan'     => $lowongan->id_lowongan,
                 'id_pengguna'     => Auth::id(),

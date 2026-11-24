@@ -14,7 +14,7 @@ Feature: Dashboard Kepala Bidang
     And I am on the "/dashboard-kepala-bidang" page
     When I follow "Lihat semua"
     Then I should see "Daftar Laporan"
-    And I should see "#LKR-2025-0842"
+    And I should see "#LKR-8842"
 
   Scenario: Peran lain tidak bisa membuka dashboard Kepala Bidang
     Given I am logged in as "Analis"

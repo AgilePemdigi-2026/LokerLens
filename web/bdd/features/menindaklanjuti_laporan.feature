@@ -14,7 +14,7 @@ Feature: Menindaklanjuti laporan lowongan kerja yang mencurigakan
 
   @javascript
   Scenario: Menandai laporan tidak ditindaklanjuti
-    Given I am on the report detail page for ticket "#LKR-2025-0842"
+    Given I am on the report detail page for ticket "#LKR-8842"
     When I select "Tidak Ditindaklanjuti" from "keputusan"
     And I press "Konfirmasi Keputusan"
     And I press "Ya, Konfirmasi" in the pop-up
@@ -22,7 +22,7 @@ Feature: Menindaklanjuti laporan lowongan kerja yang mencurigakan
 
   @javascript
   Scenario: Menindaklanjuti laporan ke pembuatan surat
-    Given I am on the report detail page for ticket "#LKR-2025-0842"
+    Given I am on the report detail page for ticket "#LKR-8842"
     When I select "Tindaklanjuti" from "keputusan"
     And I press "Konfirmasi Keputusan"
     And I press "Ya, Konfirmasi" in the pop-up

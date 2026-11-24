@@ -325,7 +325,7 @@ class LokerLensSeeder extends Seeder
         SuratTeguranLaporanPolisi::create([
             'id_tindaklanjut'    => $tindakLanjut->id_tindaklanjut,
             'jenis_dokumen'      => 'Laporan Polisi',
-            'kronologi_kejadian' => 'Draf: pelapor diminta mentransfer biaya pelatihan Rp250.000 sebelum mulai bekerja.',
+            'kronologi_kejadian' => 'Pelapor diminta mentransfer biaya pelatihan Rp250.000 sebelum mulai bekerja.',
             'tujuan_instansi'    => 'Satreskrim Polres Wilayah Setempat',
             'status_penerbitan'  => 'Draft',
         ]);
@@ -481,7 +481,7 @@ class LokerLensSeeder extends Seeder
             'id_pengaduan'      => $pengaduan->id_pengaduan,
             'id_pengguna'       => $kepalaBidang->id,
             'keputusan'         => $keputusan,
-            'catatan_keputusan' => 'Data contoh seeder.',
+            'catatan_keputusan' => 'Berdasarkan hasil tinjauan analis, kasus ditetapkan sesuai keputusan Kepala Bidang.',
             'tanggal_keputusan' => $this->tanggalStatus($pengaduan, $statusKeputusan),
         ]);
     }

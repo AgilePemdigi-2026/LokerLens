@@ -4,14 +4,22 @@
 {{-- Daftar Surat Kepala Bidang (issue #8). Gaya mengikuti Riwayat Tinjauan dan Arsip Kasus. --}}
 <x-app-layout>
     <div class="max-w-7xl mx-auto py-4 space-y-6">
-        <!-- Header Halaman -->
-        <div>
-            <h1 class="text-3xl font-extrabold text-white tracking-tight">
-                {{ LokerLensCopy::SURAT_JUDUL }}
-            </h1>
-            <p class="text-sm text-white mt-1">
-                {{ LokerLensCopy::SURAT_DESKRIPSI }}
-            </p>
+                <!-- Header Halaman -->
+        <div class="relative overflow-hidden bg-navy-900 border border-navy-800 rounded-card p-6 sm:p-8 text-white shadow-xl">
+            <div class="relative z-10">
+                <p class="text-xs uppercase tracking-widest font-bold text-teal-400 mb-2">
+                    DOKUMEN RESMI
+                </p>
+                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">
+                    {{ LokerLensCopy::SURAT_JUDUL }}
+                </h1>
+                <p class="text-sm text-white mt-2 max-w-2xl">
+                    {{ LokerLensCopy::SURAT_DESKRIPSI }}
+                </p>
+            </div>
+
+            <div class="absolute -right-8 -bottom-12 w-40 h-40 rounded-full border-[20px] border-teal-400/10"></div>
+            <div class="absolute -right-2 -bottom-6 w-24 h-24 rounded-full border-[12px] border-teal-400/10"></div>
         </div>
 
         <!-- Kotak Angka: dari semua surat (tanpa filter) -->

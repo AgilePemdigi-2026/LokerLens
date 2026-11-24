@@ -1,0 +1,3 @@
+﻿,accuracy,precision_palsu,recall_palsu,f1_palsu,roc_auc
+Model lama,1.0,1.0,1.0,1.0,1.0
+Model hasil pelatihan ulang,1.0,1.0,1.0,1.0,1.0

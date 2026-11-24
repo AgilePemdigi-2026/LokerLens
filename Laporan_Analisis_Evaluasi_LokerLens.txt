@@ -1,0 +1,81 @@
+LAPORAN ANALISIS HASIL EVALUASI MODEL LOKERLENS
+Model: Logistic Regression
+Sumber: Notebook LokerLens_Evaluasi_Model.ipynb
+Tanggal penyusunan: 24 November 2026
+
+1. TUJUAN
+Analisis ini dilakukan untuk meninjau performa model klasifikasi lowongan kerja LokerLens, memahami kesalahan prediksi, mengevaluasi hasil pengujian eksternal, serta menentukan tindak lanjut sebelum model diperbarui.
+
+2. HASIL EVALUASI INTERNAL
+Pengujian internal dilakukan terhadap 165 data, terdiri dari 100 lowongan asli dan 65 lowongan palsu, dengan ambang klasifikasi 0,50.
+
+Hasil:
+- Accuracy: 0,9818 (98,18%)
+- Precision kelas palsu: 0,9844
+- Recall kelas palsu: 0,9692
+- F1-score kelas palsu: 0,9767
+- Precision kelas asli: 0,9802
+- Recall kelas asli: 0,9900
+- F1-score kelas asli: 0,9851
+- ROC-AUC: 0,9986
+- PR-AUC: 0,9980
+
+Terdapat 3 kesalahan prediksi dari 165 data:
+- 1 False Positive (FP): lowongan asli diprediksi palsu.
+- 2 False Negative (FN): lowongan palsu diprediksi asli.
+
+False Negative perlu diperhatikan karena lowongan yang sebenarnya palsu dapat lolos dari penandaan model. Namun, hasil prediksi tetap merupakan indikasi awal dan bukan keputusan final mengenai keaslian lowongan.
+
+3. ANALISIS KESALAHAN PREDIKSI
+Ketiga kesalahan memiliki skor prediksi yang dekat dengan ambang 0,50:
+- LK-0529: label asli, diprediksi palsu, skor 0,510. Ini merupakan FP dan hanya sedikit melewati ambang.
+- LK-0060: label palsu, diprediksi asli, skor 0,397. Ini merupakan FN.
+- LK-0217: label palsu, diprediksi asli, skor 0,389. Ini merupakan FN.
+
+Ketiga kasus berada pada rentang 0,35 sampai 0,65 sehingga dapat dikategorikan sebagai prediksi yang dekat dengan batas klasifikasi. Hal ini menunjukkan bahwa teks pada kasus-kasus tersebut memiliki pola yang tidak cukup tegas bagi model untuk membedakan kedua kelas.
+
+Kata yang paling berkontribusi pada prediksi menurut analisis fitur:
+- LK-0529 (FP): antara lain "staff", "bpjs", dan "helper".
+- LK-0060 (FN): antara lain "mampu", "bekerja", dan "tim".
+- LK-0217 (FN): antara lain "tiktok", "tim", dan "pengalaman".
+
+Kata-kata tersebut merupakan fitur yang berkontribusi pada keputusan model, bukan bukti bahwa kata tersebut menjadi penyebab tunggal kesalahan. Penyebab pastinya perlu diperiksa dengan membaca deskripsi lengkap dan memverifikasi label sumber data. Notebook yang diperiksa belum memuat hasil pengisian kategori penyebab manual pada file analisis_kesalahan.csv, sehingga penyebab spesifik belum dapat dipastikan.
+
+4. HASIL PENGUJIAN EKSTERNAL
+Pengujian eksternal dilakukan terhadap 69 data, terdiri dari 30 data berlabel asli dan 39 data berlabel palsu. Hasil metrik pada dataset tersebut menunjukkan:
+- Accuracy: 1,0000 (100%)
+- Precision, recall, dan F1-score untuk kedua kelas: 1,0000
+- ROC-AUC dan PR-AUC: 1,0000
+
+Seluruh prediksi sesuai dengan label yang tersedia pada dataset eksternal. Hasil ini merupakan hasil pada kumpulan data eksternal yang digunakan, bukan jaminan bahwa model akan selalu benar pada semua lowongan kerja.
+
+Terdapat keterbatasan yang perlu diperhatikan. Data asli didominasi lowongan dari PT Puriasri Bhaktikarya, sedangkan data palsu banyak berasal dari teks hasil OCR poster lowongan. Perbedaan sumber dan gaya penulisan ini berpotensi membuat model mengenali pola sumber atau format teks, bukan hanya ciri keaslian lowongan. Selain itu, label eksternal perlu dipastikan berdasarkan verifikasi sumber, bukan semata-mata karena data berasal dari folder atau kelompok "asli" dan "palsu".
+
+5. ANALISIS AMBANG KLASIFIKASI
+Notebook menguji beberapa nilai ambang pada data internal. Hasil penting:
+- Ambang 0,30: recall palsu 1,000, tetapi terdapat 17 FP.
+- Ambang 0,50: precision palsu 0,984 dan recall palsu 0,969, dengan 1 FP dan 2 FN.
+- Ambang 0,60: tidak ada FP, tetapi FN meningkat menjadi 5.
+- Ambang 0,70: FN meningkat menjadi 12.
+- Ambang 0,80: recall palsu turun menjadi 0,415 dan FN menjadi 38.
+- Ambang 0,90: recall palsu turun menjadi 0,062 dan FN menjadi 61.
+
+Berdasarkan hasil tersebut, ambang 0,50 masih menjadi pilihan yang lebih seimbang untuk klasifikasi pada pengujian ini. Ambang 0,80 tidak disarankan sebagai ambang klasifikasi utama karena banyak lowongan palsu tidak tertandai. Pengaturan skor untuk prioritas peninjauan pada aplikasi perlu dibedakan dari ambang klasifikasi asli/palsu.
+
+6. KESIMPULAN DAN TINDAK LANJUT
+Secara umum, model Logistic Regression menunjukkan performa tinggi pada pengujian internal dan hasil yang sangat baik pada dataset eksternal yang digunakan. Namun, terdapat tiga kesalahan pada pengujian internal dan keterbatasan keragaman serta verifikasi label pada data eksternal.
+
+Tindak lanjut yang disarankan:
+1. Periksa kembali tiga data yang salah diprediksi beserta sumber dan label aslinya. Pastikan label benar sebelum menjadikannya dasar perbaikan model.
+2. Tambahkan data asli dan palsu yang lebih beragam, terutama dari sumber berbeda dan dengan gaya penulisan yang bervariasi. Usahakan kedua kelas memiliki variasi sumber yang sebanding.
+3. Pertahankan ambang klasifikasi 0,50 untuk sementara karena memberikan keseimbangan precision dan recall yang baik pada pengujian internal.
+4. Belum perlu melakukan pelatihan ulang hanya untuk mengejar angka metrik yang lebih tinggi. Pelatihan ulang dilakukan setelah tersedia data tambahan yang sudah diperiksa dan kebutuhan perbaikannya jelas.
+5. Setelah penambahan data dan pelatihan ulang, lakukan pengujian ulang menggunakan pembagian data yang sama agar hasil sebelum dan sesudah perbaikan dapat dibandingkan secara adil.
+6. Pada penggunaan aplikasi, hasil model tetap ditampilkan sebagai prediksi atau indikasi awal disertai saran verifikasi. Keputusan akhir mengenai keaslian lowongan tidak hanya bergantung pada skor model.
+
+7. STATUS PLAN
+Plan 2 - Menganalisis kesalahan prediksi dan menyusun laporan evaluasi:
+Status: Analisis awal dan laporan evaluasi telah disusun. Pemeriksaan manual terhadap label dan isi lengkap ketiga kasus salah prediksi masih menjadi tindak lanjut.
+
+Plan 3 - Memperbarui model berdasarkan hasil evaluasi dan melakukan pengujian ulang:
+Status: Belum dilakukan. Rekomendasi saat ini adalah menyiapkan data tambahan yang beragam dan terverifikasi terlebih dahulu, kemudian melakukan pelatihan ulang dan pengujian perbandingan. Model tidak perlu diperbarui tanpa dasar perbaikan yang jelas.

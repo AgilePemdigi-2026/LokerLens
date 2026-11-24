@@ -1,0 +1,28 @@
+{
+  "model_final": "Logistic Regression",
+  "tanggal_pelatihan_ulang": "2026-11-25T00:16:18",
+  "dataset": "dataset_lokerlens_bersih.csv",
+  "jumlah_data_setelah_pembersihan": 824,
+  "jumlah_asli": 498,
+  "jumlah_palsu": 326,
+  "kolom_teks": "deskripsi",
+  "parameter_tfidf": {
+    "ngram_range": [
+      1,
+      2
+    ],
+    "min_df": 2,
+    "max_df": 0.9,
+    "max_features": 20000,
+    "sublinear_tf": true
+  },
+  "parameter_logistic_regression": {
+    "max_iter": 2000,
+    "class_weight": "balanced",
+    "random_state": 42
+  },
+  "ambang_evaluasi": 0.5,
+  "model_produksi_lama": "ml\\models\\model_lokerlens.joblib",
+  "dataset_uji_eksternal": "ml\\data\\external\\dataset_uji_eksternal.csv",
+  "catatan": "Kandidat model; model produksi lama tidak ditimpa otomatis."
+}

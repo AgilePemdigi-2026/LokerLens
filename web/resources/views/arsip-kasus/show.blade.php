@@ -162,6 +162,11 @@
                                 <span class="text-gray-500 block">Keputusan:</span>
                                 <span class="font-bold text-slate-700 text-sm">Tidak Terbukti (Ditutup oleh Analis)</span>
                             </div>
+                        @elseif(! $tinjauan)
+    <div class="sm:col-span-2 text-center text-gray-400 py-4">
+        Kasus ditutup otomatis oleh sistem karena skor di bawah ambang prioritas.
+        Tidak ada tinjauan analis maupun keputusan Kepala Bidang.
+    </div>
                         @endif
 
                         @if($tinjauan)
@@ -194,10 +199,7 @@
                             <span class="text-gray-500 block">Perusahaan:</span>
                             <strong class="text-navy-900">{{ $perusahaan->nama_perusahaan ?? '-' }}</strong>
                         </div>
-                        <div>
-                            <span class="text-gray-500 block">Sumber Lowongan:</span>
-                            <span class="text-gray-700">{{ $lowongan->sumber_lowongan ?? '-' }}</span>
-                        </div>
+                        
                         <div>
                             <span class="text-gray-500 block">Link Lowongan:</span>
                             @if($lowongan->link_lowongan)

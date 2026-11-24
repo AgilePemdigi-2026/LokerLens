@@ -198,13 +198,13 @@
             </div>
         </div>
 
-        {{-- 04 Antrean Tinjauan: semua pengaduan baru, prioritas tinggi di urutan atas --}}
+        {{-- 04 Antrean Prioritas Tinggi --}}
         <div>
             <div class="mb-4">
                 <h2 class="text-lg font-bold text-white">
-                    <span class="text-xs text-teal-400 mr-2">04</span>Antrean Tinjauan
+                    <span class="text-xs text-teal-400 mr-2">04</span>Antrean Prioritas Tinggi
                 </h2>
-                <p class="text-xs text-gray-400 mt-1">Prioritas tinggi (skor ≥ {{ (int) config('lokerlens.ambang_prioritas') }}%) di urutan atas, lalu skor tertinggi.</p>
+                <p class="text-xs text-gray-400 mt-1">Urutan berdasarkan skor tertinggi.</p>
             </div>
 
             @if($antrean->isNotEmpty())
@@ -224,12 +224,7 @@
                                 @foreach($antrean as $hasil)
                                     <tr>
                                         <td class="px-6 py-4">
-                                            <p class="text-[11px] font-mono text-teal-700">
-                                                {{ $hasil->pengaduan->nomor_tiket }}
-                                                @if($hasil->status_prioritas)
-                                                    <span class="ml-1 font-sans font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-red-100 text-risk-high border border-red-200">{{ \App\Constants\LokerLensCopy::LABEL_PRIORITAS }}</span>
-                                                @endif
-                                            </p>
+                                            <p class="text-[11px] font-mono text-teal-700">{{ $hasil->pengaduan->nomor_tiket }}</p>
                                             <p class="font-semibold">{{ $hasil->pengaduan->lowonganKerja->posisi_lowongan ?? '-' }}</p>
                                             <p class="text-xs text-gray-500">{{ $hasil->pengaduan->lowonganKerja->perusahaan->nama_perusahaan ?? '-' }}</p>
                                         </td>
@@ -271,12 +266,6 @@
                         </a>
                     @endif
                 </div>
-            @endif
-
-            @if($jumlahMenungguKlasifikasi > 0)
-                <p id="catatan-menunggu-klasifikasi" class="mt-3 text-xs text-amber-300">
-                    {{ $jumlahMenungguKlasifikasi }} pengaduan baru {{ strtolower(\App\Constants\LokerLensCopy::MENUNGGU_KLASIFIKASI) }}, belum masuk tabel karena skor belum tersedia.
-                </p>
             @endif
         </div>
 

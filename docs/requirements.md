@@ -34,7 +34,7 @@ Semua path controller relatif terhadap `web/app/Http/Controllers/`. Status ditul
 | Kode | Kebutuhan (SRS) | Route / Controller | Status | Catatan |
 |---|---|---|---|---|
 | FR-ML-01 | Sistem harus hanya mengizinkan Analis yang sudah login mengakses fitur ini. | Middleware `auth` + `role:Analis` (`routes/web.php`) | ✅ | |
-| FR-ML-02 | Sistem harus menampilkan Daftar Lowongan Prioritas Tinggi yang hanya memuat lowongan berstatus prioritas tinggi pada Hasil_Klasifikasi. | `GET /tinjau-lowongan` → `TinjauLowonganController@index` | ✅ | Ambang prioritas diambil dari `config/lokerlens.php` (default 70). Daftar memuat semua kasus berstatus *Perlu Tinjauan* / *Sedang Ditinjau*; prioritas tinggi ditandai dan tampil paling atas. Pengaduan yang masih *Menunggu klasifikasi* ditampilkan di bagian terpisah. |
+| FR-ML-02 | Sistem harus menampilkan Daftar Lowongan Prioritas Tinggi yang hanya memuat lowongan berstatus prioritas tinggi pada Hasil_Klasifikasi. | `GET /tinjau-lowongan` → `TinjauLowonganController@index` | ✅ | Ambang prioritas diambil dari `config/lokerlens.php` (default 70). Daftar hanya memuat kasus berstatus *Perlu Tinjauan* / *Sedang Ditinjau*. |
 | FR-ML-03 | Sistem harus menampilkan daftar sesuai kriteria ketika Analis memilih filter skor dan urutan skor. | `TinjauLowonganController@index` | 🟡 | Urutan "Skor Terendah" dan "Terbaru" tidak berpengaruh karena urutan default (skor tertinggi) selalu dipasang lebih dulu. |
 | FR-ML-04 | Sistem harus menampilkan lowongan yang sesuai ketika Analis memasukkan nomor tiket dan menekan "Cari". | `TinjauLowonganController@index` | ✅ | Juga bisa mencari nama perusahaan. |
 | FR-ML-05 | Sistem harus menampilkan "Data lowongan tidak ditemukan" jika nomor tiket atau data lowongan tidak ditemukan. | `TinjauLowonganController@index`, `@detail` | 🟡 | Daftar sudah menampilkan pesan. Untuk detail dengan ID salah, sistem menampilkan 404, bukan notifikasi + kembali ke daftar (SRS UC-02 skenario alternatif). |
@@ -127,7 +127,7 @@ Semua path controller relatif terhadap `web/app/Http/Controllers/`. Status ditul
 | BR-02 | Keputusan hanya Tindaklanjuti atau Tidak Ditindaklanjuti. | Validasi `in:` di `TindakLanjutController` + enum DB | ✅ | |
 | BR-03 | Laporan Tidak Ditindaklanjuti ditandai tidak dilanjuti dan diarsipkan. | `TindakLanjutController@simpanKeputusan` | ✅ | |
 | BR-04 | Hasil pemeriksaan sistem adalah prediksi pendukung keputusan, bukan penetapan penipuan. | View hasil | 🟡 | Lihat NFR-SAF-01. |
-| BR-05 | Hanya lowongan berprioritas tinggi yang masuk daftar tinjauan Analis. Ambang batas TBD. | `Pengaduan::simpanHasilKlasifikasi()` (`status_prioritas`) | 🟡 | **Revisi:** semua pengaduan baru masuk antrean Analis; skor ≥ ambang ditandai prioritas dan tampil paling atas. Ambang di `config/lokerlens.php` (`LOKERLENS_AMBANG_PRIORITAS`, default 70). **[PERLU DISKUSI]** Nilai final. |
+| BR-05 | Hanya lowongan berprioritas tinggi yang masuk daftar tinjauan Analis. Ambang batas TBD. | `PeriksaLowonganController@store` (`status_prioritas`) | 🟡 | Ambang di `config/lokerlens.php` (`LOKERLENS_AMBANG_PRIORITAS`, default 70). **[PERLU DISKUSI]** Nilai final. |
 | BR-06 | *(SRS)* Analis hanya memberikan catatan dan hasil tinjauan, dan tidak membuat keputusan akhir. | `TinjauLowonganController@simpanTinjauan` | ✅ | Diterapkan sesuai keputusan tim (lihat §4): Analis menutup kasus "Tidak Terbukti". |
 | BR-07 | *(SRS)* Laporan yang telah selesai ditinjau Analis diteruskan ke proses tindak lanjut oleh Kepala Bidang. | `TinjauLowonganController@simpanTinjauan` | ✅ | Diterapkan sesuai keputusan tim (lihat §4): hanya "Terkonfirmasi Mencurigakan" yang diteruskan. |
 | BR-08 | Surat hanya dibuat dan diterbitkan Kepala Bidang, dan hanya untuk laporan Tindaklanjuti. | `BuatSuratController` + `role:Kepala Bidang` | ✅ | |
@@ -174,8 +174,8 @@ Semua path controller relatif terhadap `web/app/Http/Controllers/`. Status ditul
 
 | Status | Jenis | Siapa yang memicu | Status berikutnya yang boleh |
 |---|---|---|---|
-| Selesai - Risiko Rendah | **Akhir** | Hanya data lama. Pengaduan baru tidak lagi diberi status ini. | — |
-| Perlu Tinjauan | Awal | Sistem (semua pengaduan baru, berapa pun skornya) | Sedang Ditinjau |
+| Selesai - Risiko Rendah | **Akhir** | Sistem (skor < ambang prioritas) | — |
+| Perlu Tinjauan | Awal | Sistem (skor ≥ ambang prioritas) | Sedang Ditinjau |
 | Sedang Ditinjau | Proses | Analis membuka/meninjau kasus | Tidak Terbukti, Menunggu Keputusan |
 | Tidak Terbukti | **Akhir** | Analis memilih "Tidak Terbukti" | — |
 | Menunggu Keputusan | Proses | Analis memilih "Terkonfirmasi Mencurigakan" | Tindak Lanjut Disetujui, Tidak Ditindaklanjuti |
@@ -191,7 +191,7 @@ Aturan:
 **Implementasi:**
 - Daftar status ada di satu tempat: `web/app/Enums/StatusKasus.php` (beserta aturan status berikutnya). Hasil tinjauan Analis ada di `web/app/Enums/HasilTinjauan.php`.
 - Semua perubahan status lewat `Pengaduan::ubahStatus()`. Perubahan yang melompat, mundur, atau dari status akhir ditolak dengan pesan error, dan setiap perubahan otomatis dicatat ke Riwayat Kasus.
-- Ambang prioritas ada di `web/config/lokerlens.php` (`LOKERLENS_AMBANG_PRIORITAS`, default 70). Skor ≥ ambang hanya menandai kasus sebagai prioritas (`status_prioritas`) dan menaruhnya di urutan atas antrean Analis. Skor di bawah ambang tetap masuk antrean.
+- Ambang prioritas ada di `web/config/lokerlens.php` (`LOKERLENS_AMBANG_PRIORITAS`, default 70).
 - Migration `2026_10_20_000001_ubah_status_pengaduan_dan_unique_surat` mengganti nilai enum `status_pengaduan` dan memindahkan data lama: "Perlu Tinjauan Segera" → "Perlu Tinjauan", "Kasus selesai" / "Kasus terdokumentasi otomatis" → "Selesai", "Tidak dilanjuti" → "Tidak Ditindaklanjuti". Migration yang sama memasang constraint unique pada `surat_teguran_laporan_polisi.id_tindaklanjut`.
 - Catatan lama di tabel `riwayat_kasus` **tidak diubah**, karena merupakan jejak audit dan boleh tetap memuat label lama.
 - Teks "Kasus terdokumentasi otomatis" dan "Kasus selesai" tetap dipakai sebagai **pesan** di halaman hasil terbit (SRS FR-ST-08, BDD Table B.5), bukan sebagai status.

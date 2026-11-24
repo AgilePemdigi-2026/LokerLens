@@ -6,7 +6,7 @@ namespace App\Enums;
  * Status resmi kasus (pengaduan) LokerLens — satu-satunya sumber daftar status.
  * Alur sesuai keputusan tim (docs/requirements.md §5):
  *
- *   Selesai - Risiko Rendah                      (akhir, hanya data lama; pengaduan baru tidak lagi diberi status ini)
+ *   Selesai - Risiko Rendah                      (akhir, skor di bawah ambang)
  *   Perlu Tinjauan → Sedang Ditinjau → Tidak Terbukti            (akhir)
  *                                    → Menunggu Keputusan → Tindak Lanjut Disetujui → Selesai (akhir)
  *                                                         → Tidak Ditindaklanjuti            (akhir)
@@ -70,6 +70,16 @@ enum StatusKasus: string
             self::TindakLanjutDisetujui              => 'bg-green-100 text-green-800',
             self::TidakDitindaklanjuti               => 'bg-red-100 text-red-800',
         };
+    }
+
+    /**
+     * Status awal kasus baru berdasarkan probabilitas penipuan (0–100).
+     */
+    public static function awalDariSkor(float $skor): self
+    {
+        return $skor >= config('lokerlens.ambang_prioritas')
+            ? self::PerluTinjauan
+            : self::SelesaiRisikoRendah;
     }
 
     /**

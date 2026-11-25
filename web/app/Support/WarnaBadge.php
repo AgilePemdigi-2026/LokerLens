@@ -61,6 +61,21 @@ class WarnaBadge
         };
     }
 
+    /**
+     * Nada untuk badge kelompok pengaduan Masyarakat (kunci LokerLensCopy::KELOMPOK_PENGADUAN).
+     * Warna mengikuti teks yang terlihat, bukan status detail: satu teks = satu warna.
+     */
+    public static function kelompok(string $kelompok): string
+    {
+        return match ($kelompok) {
+            ProgresPengaduan::FILTER_MENUNGGU     => self::KUNING,
+            ProgresPengaduan::FILTER_AKTIF        => self::BIRU,
+            ProgresPengaduan::KELOMPOK_SELESAI    => self::HIJAU,
+            ProgresPengaduan::KELOMPOK_DIHENTIKAN => self::ABU_GELAP,
+            default                               => self::ABU,
+        };
+    }
+
     /** Nada untuk hasil tinjauan Analis. */
     public static function hasilTinjauan(HasilTinjauan|string|null $hasil): string
     {

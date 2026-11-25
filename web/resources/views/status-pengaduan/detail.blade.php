@@ -37,7 +37,7 @@
                     <p class="text-sm text-gray-600">{{ $lowongan->perusahaan->nama_perusahaan ?? '-' }}</p>
 
                     <p id="status-pengaduan" class="flex flex-wrap items-center gap-2 mt-4">
-                        <x-badge-status :status="$progres->labelStatus">{{ $progres->labelKelompok }}</x-badge-status>
+                        <x-badge :nada="WarnaBadge::kelompok($progres->kelompok)" :titik="true">{{ $progres->labelKelompok }}</x-badge>
                         <span class="text-gray-400" aria-hidden="true">·</span>
                         <span class="text-sm font-bold">{{ $progres->labelStatus }}</span>
                     </p>
@@ -94,11 +94,13 @@
                                     ProgresPengaduan::DIHENTIKAN  => WarnaBadge::badge(WarnaBadge::ABU_GELAP),
                                     default                       => 'bg-gray-100 border border-gray-200 text-gray-400',
                                 };
-                                $label = match ($keadaan) {
-                                    ProgresPengaduan::SELESAI     => 'bg-teal-50 text-teal-700 border border-teal-200',
-                                    ProgresPengaduan::BERLANGSUNG => 'bg-teal-600 text-white',
-                                    ProgresPengaduan::DIHENTIKAN  => WarnaBadge::badge(WarnaBadge::ABU_GELAP),
-                                    default                       => 'bg-gray-100 text-gray-500 border border-gray-200',
+                                // Teks label yang sama dengan badge (Selesai, Dihentikan, Menunggu klasifikasi) memakai warna badge itu
+                                $label = match (true) {
+                                    $tahap['label'] === LokerLensCopy::MENUNGGU_KLASIFIKASI => WarnaBadge::badge(WarnaBadge::status($tahap['label'])),
+                                    $keadaan === ProgresPengaduan::SELESAI     => WarnaBadge::badge(WarnaBadge::kelompok(ProgresPengaduan::KELOMPOK_SELESAI)),
+                                    $keadaan === ProgresPengaduan::DIHENTIKAN  => WarnaBadge::badge(WarnaBadge::kelompok(ProgresPengaduan::KELOMPOK_DIHENTIKAN)),
+                                    $keadaan === ProgresPengaduan::BERLANGSUNG => 'bg-teal-600 text-white',
+                                    default                                    => 'bg-gray-100 text-gray-500 border border-gray-200',
                                 };
                                 $kotak = match ($keadaan) {
                                     ProgresPengaduan::BERLANGSUNG => 'bg-teal-50',

@@ -1,5 +1,6 @@
 @use('App\Constants\LokerLensCopy')
 @use('App\Support\ProgresPengaduan')
+@use('App\Support\WarnaBadge')
 
 {{-- Status Pengaduan — daftar pengaduan berjalan (issue #11). Detail ada di status-pengaduan/detail.blade.php. --}}
 <x-app-layout>
@@ -68,8 +69,8 @@
                            class="flex flex-col bg-white rounded-card shadow-lg p-5 border-2 border-transparent transition hover:shadow-xl hover:border-teal-600">
                             <div class="flex flex-wrap items-center justify-between gap-2">
                                 <x-nomor-tiket>{{ $item->nomor_tiket }}</x-nomor-tiket>
-                                {{-- Teks badge = kelompok (Menunggu/Aktif), warna = status kasus --}}
-                                <x-badge-status :status="$progresItem->labelStatus">{{ $progresItem->labelKelompok }}</x-badge-status>
+                                {{-- Warna mengikuti teks kelompok (Menunggu/Aktif) --}}
+                                <x-badge :nada="WarnaBadge::kelompok($progresItem->kelompok)" :titik="true">{{ $progresItem->labelKelompok }}</x-badge>
                             </div>
 
                             <h3 class="text-lg font-bold text-navy-900 mt-3 leading-snug">

@@ -143,7 +143,8 @@
                             </div>
 
                             <div class="flex items-center space-x-3">
-                                <x-badge-status :status="$item->status_pengaduan" />
+                                {{-- Belum ada hasil klasifikasi → "Menunggu klasifikasi", sama dengan Status Pengaduan --}}
+                                <x-badge-status :status="$klas ? $item->status_pengaduan : \App\Constants\LokerLensCopy::MENUNGGU_KLASIFIKASI" />
                                 <a href="{{ route('periksa-lowongan.hasil', $item->id_pengaduan) }}" class="relative z-10 text-xs font-bold text-teal-700 hover:underline">
                                     Hasil Analisis →
                                 </a>

@@ -9,6 +9,7 @@ use App\Models\IndikatorMencurigakan;
 use App\Models\Pengaduan;
 use App\Models\User;
 use App\Support\ProgresPengaduan;
+use App\Support\WarnaBadge;
 use Database\Seeders\LokerLensSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -516,5 +517,31 @@ class StatusPengaduanTest extends TestCase
         $this->actingAs($this->akunDemo())->get("/periksa-lowongan/hasil/{$pengaduan->id_pengaduan}")
             ->assertOk()
             ->assertSee('Hasil analisis sistem LokerLens merupakan rekomendasi pendukung keputusan berbasis kecerdasan buatan, bukan penetapan penipuan secara hukum.');
+    }
+
+    /** Beranda: kasus tanpa hasil klasifikasi tertulis "Menunggu klasifikasi", bukan "Perlu Tinjauan". */
+    public function test_beranda_menampilkan_menunggu_klasifikasi(): void
+    {
+        // Sisakan hanya #LKR-8805 (belum diklasifikasi) di Beranda
+        Pengaduan::where('nomor_tiket', '!=', '#LKR-8805')->delete();
+
+        $this->actingAs($this->akunDemo())->get('/beranda')
+            ->assertOk()
+            ->assertSee('#LKR-8805')
+            ->assertSee(LokerLensCopy::MENUNGGU_KLASIFIKASI)
+            ->assertDontSee(StatusKasus::PerluTinjauan->value);
+    }
+
+    /** Satu teks badge = satu warna: warna badge kelompok mengikuti teksnya, bukan status detail. */
+    public function test_warna_badge_kelompok_mengikuti_teks(): void
+    {
+        $this->assertSame(WarnaBadge::KUNING, WarnaBadge::kelompok(ProgresPengaduan::FILTER_MENUNGGU));
+        $this->assertSame(WarnaBadge::BIRU, WarnaBadge::kelompok(ProgresPengaduan::FILTER_AKTIF));
+        $this->assertSame(WarnaBadge::HIJAU, WarnaBadge::kelompok(ProgresPengaduan::KELOMPOK_SELESAI));
+        $this->assertSame(WarnaBadge::ABU_GELAP, WarnaBadge::kelompok(ProgresPengaduan::KELOMPOK_DIHENTIKAN));
+
+        // Semua badge "Aktif" di halaman memakai kelas warna yang sama walaupun statusnya berbeda
+        $html = $this->actingAs($this->akunDemo())->get('/status-pengaduan?filter=aktif')->assertOk()->getContent();
+        $this->assertSame(3, substr_count($html, WarnaBadge::badge(WarnaBadge::BIRU)));
     }
 }

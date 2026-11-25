@@ -1,13 +1,12 @@
 <x-app-layout>
     @php
         $ambang = (int) config('lokerlens.ambang_prioritas');
-        $warnaKartu = ['bg-red-500', 'bg-sky-500', 'bg-amber-500', 'bg-teal-500'];
 
-        // Donat distribusi skor
+        // Donat distribusi skor (warna risk-low / risk-mid / risk-high di tailwind.config.js)
         $segmen = [
-            ['kunci' => 'rendah', 'label' => 'Rendah', 'rentang' => '0–49%',                 'warna' => '#94a3b8'],
-            ['kunci' => 'sedang', 'label' => 'Sedang', 'rentang' => '50–' . ($ambang - 1) . '%', 'warna' => '#d97706'],
-            ['kunci' => 'tinggi', 'label' => 'Tinggi', 'rentang' => $ambang . '–100%',        'warna' => '#dc2626'],
+            ['kunci' => 'rendah', 'label' => 'Rendah', 'rentang' => '0–49%',                 'warna' => '#1e8449'],
+            ['kunci' => 'sedang', 'label' => 'Sedang', 'rentang' => '50–' . ($ambang - 1) . '%', 'warna' => '#d68910'],
+            ['kunci' => 'tinggi', 'label' => 'Tinggi', 'rentang' => $ambang . '–100%',        'warna' => '#c0392b'],
         ];
         $geser = 25; // mulai dari jam 12
 
@@ -28,29 +27,16 @@
     <div class="space-y-8 py-2">
 
         {{-- Header --}}
-        <div class="relative overflow-hidden bg-navy-900 border border-navy-800 rounded-card p-6 sm:p-8 text-white shadow-xl">
-            <div class="relative z-10 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-                <div>
-                    <p class="text-xs uppercase tracking-widest font-bold text-teal-400 mb-2">PUSAT ANALISIS PENGADUAN</p>
-                    <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">
-                        {{ \App\Constants\LokerLensCopy::JUDUL_DASHBOARD_ANALIS }}
-                    </h1>
-                    <p class="text-sm text-gray-300 mt-2 max-w-2xl">
-                        {{ \App\Constants\LokerLensCopy::DESKRIPSI_DASHBOARD_ANALIS }}
-                    </p>
-                </div>
-                <div class="rounded-lg bg-navy-800/80 border border-navy-700/80 px-4 py-3 shrink-0">
-                    <p class="text-[10px] uppercase tracking-widest text-gray-400">Terakhir diperbarui</p>
-                    <p class="text-sm font-semibold">{{ $terakhirDiperbarui->locale('id')->translatedFormat('d M Y, H.i') }} WIB</p>
-                </div>
+        <x-judul-halaman label="PUSAT ANALISIS PENGADUAN" :judul="\App\Constants\LokerLensCopy::JUDUL_DASHBOARD_ANALIS" :deskripsi="\App\Constants\LokerLensCopy::DESKRIPSI_DASHBOARD_ANALIS">
+            <div class="rounded-control bg-navy-800/80 border border-navy-800 px-4 py-3">
+                <p class="text-[10px] uppercase tracking-widest text-gray-400">Terakhir diperbarui</p>
+                <p class="text-sm font-semibold">{{ $terakhirDiperbarui->locale('id')->translatedFormat('d M Y, H.i') }} WIB</p>
             </div>
-            <div class="absolute -right-8 -bottom-12 w-40 h-40 rounded-full border-[20px] border-teal-400/10"></div>
-            <div class="absolute -right-2 -bottom-6 w-24 h-24 rounded-full border-[12px] border-teal-400/10"></div>
-        </div>
+        </x-judul-halaman>
 
         {{-- Filter periode --}}
         <div x-data="{ kustom: {{ $periode === 'kustom' || $pesanPeriode ? 'true' : 'false' }} }"
-             class="bg-white rounded-card border border-gray-100 shadow-sm p-4 sm:p-5 text-navy-900">
+             class="bg-white rounded-card border border-gray-100 shadow-lg p-4 sm:p-5 text-navy-900">
             <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div>
                     <p class="text-[10px] uppercase tracking-widest text-gray-400">Periode laporan</p>
@@ -60,13 +46,10 @@
                 </div>
 
                 <div class="flex flex-col sm:flex-row sm:items-center gap-3">
-                    <div class="inline-flex rounded-lg bg-gray-100 p-1 text-sm font-medium">
-                        <a href="{{ route('dashboard-analis.index', ['periode' => 7]) }}"
-                           class="px-4 py-1.5 rounded-md transition {{ $periode === '7' ? 'bg-white shadow text-navy-900 font-semibold' : 'text-gray-500 hover:text-navy-900' }}">7 hari</a>
-                        <a href="{{ route('dashboard-analis.index', ['periode' => 30]) }}"
-                           class="px-4 py-1.5 rounded-md transition {{ $periode === '30' ? 'bg-white shadow text-navy-900 font-semibold' : 'text-gray-500 hover:text-navy-900' }}">30 hari</a>
-                        <button type="button" @click="kustom = true"
-                                class="px-4 py-1.5 rounded-md transition {{ $periode === 'kustom' ? 'bg-white shadow text-navy-900 font-semibold' : 'text-gray-500 hover:text-navy-900' }}">Kustom</button>
+                    <div class="flex flex-wrap gap-2">
+                        <x-pil-filter :href="route('dashboard-analis.index', ['periode' => 7])" :aktif="$periode === '7'">7 hari</x-pil-filter>
+                        <x-pil-filter :href="route('dashboard-analis.index', ['periode' => 30])" :aktif="$periode === '30'">30 hari</x-pil-filter>
+                        <x-pil-filter @click="kustom = true" :aktif="$periode === 'kustom'">Kustom</x-pil-filter>
                     </div>
 
                     {{-- novalidate: tanggal kosong/tidak valid dicek server, pesannya tampil di bawah isian tanggal --}}
@@ -75,12 +58,12 @@
                         <input type="hidden" name="periode" value="kustom">
                         <input type="date" name="dari" required max="{{ now()->format('Y-m-d') }}"
                                value="{{ $periode === 'kustom' ? $dari->format('Y-m-d') : '' }}"
-                               class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-teal-600">
+                               class="px-3 py-2 rounded-control border border-gray-300 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-teal-600">
                         <span class="text-gray-400">sampai</span>
                         <input type="date" name="sampai" required max="{{ now()->format('Y-m-d') }}"
                                value="{{ $periode === 'kustom' ? $sampai->format('Y-m-d') : '' }}"
-                               class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-teal-600">
-                        <button type="submit" class="px-4 py-1.5 rounded-lg bg-navy-900 hover:bg-navy-800 text-white font-semibold transition">Terapkan</button>
+                               class="px-3 py-2 rounded-control border border-gray-300 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-teal-600">
+                        <x-tombol type="submit">Terapkan</x-tombol>
                         @if ($pesanPeriode)
                             <p class="w-full text-xs text-risk-high">{{ $pesanPeriode }}</p>
                         @endif
@@ -98,16 +81,12 @@
                 <a href="{{ request()->fullUrl() }}" class="text-xs font-semibold text-teal-400 hover:text-teal-300 transition-colors">Perbarui data</a>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                @foreach($ringkasan as $i => $kartu)
-                    <div class="bg-white rounded-card border border-gray-100 shadow-sm overflow-hidden">
-                        <div class="h-1 {{ $warnaKartu[$i] }}"></div>
-                        <div class="p-6">
-                            <p class="text-4xl font-extrabold text-navy-900">{{ str_pad($kartu['jumlah'], 2, '0', STR_PAD_LEFT) }}</p>
-                            <p class="text-sm font-semibold text-navy-900 mt-2">{{ $kartu['label'] }}</p>
-                            <p class="text-xs text-gray-500 mt-1">Pada periode terpilih</p>
-                        </div>
-                    </div>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                @foreach($ringkasan as $kartu)
+                    {{-- Garis atas kartu mengikuti warna status; "Selesai Ditinjau" bukan status (netral) --}}
+                    @php $statusKartu = \App\Enums\StatusKasus::tryFrom($kartu['label']); @endphp
+                    <x-kartu-angka :label="$kartu['label']" :angka="str_pad($kartu['jumlah'], 2, '0', STR_PAD_LEFT)"
+                        :nada="$statusKartu ? \App\Support\WarnaBadge::status($statusKartu) : null" keterangan="Pada periode terpilih" />
                 @endforeach
             </div>
         </div>
@@ -116,7 +95,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
             {{-- 02 Distribusi Skor Risiko --}}
-            <div class="bg-white rounded-card border border-gray-100 shadow-sm p-6 text-navy-900">
+            <div class="bg-white rounded-card border border-gray-100 shadow-lg p-6 text-navy-900">
                 <h2 class="text-lg font-bold pb-3 border-b border-gray-100">
                     <span class="text-xs text-teal-700 mr-2">02</span>Distribusi Skor Risiko
                 </h2>
@@ -160,7 +139,7 @@
             </div>
 
             {{-- 03 Tren Pengaduan --}}
-            <div class="bg-white rounded-card border border-gray-100 shadow-sm p-6 text-navy-900">
+            <div class="bg-white rounded-card border border-gray-100 shadow-lg p-6 text-navy-900">
                 <h2 class="text-lg font-bold pb-3 border-b border-gray-100">
                     <span class="text-xs text-teal-700 mr-2">03</span>Tren Pengaduan
                 </h2>
@@ -208,64 +187,44 @@
             </div>
 
             @if($antrean->isNotEmpty())
-                <div class="bg-white rounded-card border border-gray-100 shadow-sm overflow-hidden text-navy-900">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm">
-                            <thead class="bg-gray-50 text-[11px] uppercase tracking-wider text-gray-500">
-                                <tr>
-                                    <th class="text-left font-semibold px-6 py-3">Lowongan</th>
-                                    <th class="text-left font-semibold px-4 py-3">Skor risiko</th>
-                                    <th class="text-left font-semibold px-4 py-3">Status</th>
-                                    <th class="text-left font-semibold px-4 py-3">Waktu masuk</th>
-                                    <th class="px-6 py-3"></th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-100">
-                                @foreach($antrean as $hasil)
-                                    <tr>
-                                        <td class="px-6 py-4">
-                                            <p class="text-[11px] font-mono text-teal-700">{{ $hasil->pengaduan->nomor_tiket }}</p>
-                                            <p class="font-semibold">{{ $hasil->pengaduan->lowonganKerja->posisi_lowongan ?? '-' }}</p>
-                                            <p class="text-xs text-gray-500">{{ $hasil->pengaduan->lowonganKerja->perusahaan->nama_perusahaan ?? '-' }}</p>
-                                        </td>
-                                        <td class="px-4 py-4">
-                                            <span class="text-lg font-extrabold">{{ number_format($hasil->confidence_score, 0) }}</span><span class="text-xs text-gray-500">%</span>
-                                        </td>
-                                        <td class="px-4 py-4">
-                                            <span class="px-2.5 py-1 rounded-md text-xs font-semibold {{ $hasil->pengaduan->status_pengaduan->warnaBadge() }}">
-                                                {{ $hasil->pengaduan->status_pengaduan->value }}
-                                            </span>
-                                        </td>
-                                        <td class="px-4 py-4 text-xs text-gray-500">
-                                            {{ $hasil->pengaduan->tanggal_pengaduan?->locale('id')->diffForHumans() }}
-                                        </td>
-                                        <td class="px-6 py-4 text-right">
-                                            <a href="{{ route('tinjau-lowongan.detail', $hasil->id_klasifikasi) }}"
-                                               class="inline-block px-3 py-1.5 rounded-lg bg-navy-900 hover:bg-navy-800 text-white text-xs font-semibold transition">
-                                                {{ \App\Constants\LokerLensCopy::BTN_LIHAT_DETAIL }}
-                                            </a>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="flex items-center justify-between px-6 py-3 bg-gray-50 text-xs text-gray-500">
+                <div class="bg-white rounded-card border border-gray-100 shadow-lg p-6 text-navy-900">
+                    <x-tabel>
+                        <x-slot:kepala>
+                            <th>Lowongan</th>
+                            <th>Skor risiko</th>
+                            <th>Status</th>
+                            <th class="whitespace-nowrap">Waktu masuk</th>
+                            <th></th>
+                        </x-slot:kepala>
+                        @foreach($antrean as $hasil)
+                            <tr class="hover:bg-gray-50 transition">
+                                <td>
+                                    <p class="font-mono font-bold text-teal-800 whitespace-nowrap">{{ $hasil->pengaduan->nomor_tiket }}</p>
+                                    <p class="font-semibold">{{ $hasil->pengaduan->lowonganKerja->posisi_lowongan ?? '-' }}</p>
+                                    <p class="text-xs text-gray-500">{{ $hasil->pengaduan->lowonganKerja->perusahaan->nama_perusahaan ?? '-' }}</p>
+                                </td>
+                                <td><x-badge-skor :klasifikasi="$hasil" /></td>
+                                <td><x-badge-status :status="$hasil->pengaduan->status_pengaduan" /></td>
+                                <td class="text-gray-600 whitespace-nowrap">
+                                    {{ $hasil->pengaduan->tanggal_pengaduan?->locale('id')->diffForHumans() }}
+                                </td>
+                                <td class="text-right">
+                                    <x-tombol ukuran="sm" :href="route('tinjau-lowongan.detail', $hasil->id_klasifikasi)">{{ \App\Constants\LokerLensCopy::BTN_LIHAT_DETAIL }}</x-tombol>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </x-tabel>
+                    <div class="flex flex-wrap items-center justify-between gap-3 pt-4 text-xs text-gray-600">
                         <span>Menampilkan {{ $antrean->count() }} dari {{ $totalAntrean }} pengaduan</span>
                         <a href="{{ route('tinjau-lowongan.index') }}" class="font-semibold text-teal-700 hover:text-teal-900 transition-colors">Lihat seluruh antrean</a>
                     </div>
                 </div>
             @else
-                <div class="bg-white rounded-card border border-gray-100 shadow-sm text-navy-900 text-center px-6 py-14">
-                    <h3 class="text-xl font-bold">{{ \App\Constants\LokerLensCopy::ANTREAN_ANALIS_KOSONG_JUDUL }}</h3>
-                    <p class="text-sm text-gray-500 mt-2">{{ \App\Constants\LokerLensCopy::ANTREAN_ANALIS_KOSONG_KETERANGAN }}</p>
+                <x-pesan-kosong :judul="\App\Constants\LokerLensCopy::ANTREAN_ANALIS_KOSONG_JUDUL" :keterangan="\App\Constants\LokerLensCopy::ANTREAN_ANALIS_KOSONG_KETERANGAN">
                     @if($periode !== '7')
-                        <a href="{{ route('dashboard-analis.index', ['periode' => 7]) }}"
-                           class="inline-block mt-5 px-4 py-2 rounded-lg border border-navy-900 text-navy-900 text-sm font-semibold hover:bg-gray-50 transition">
-                            {{ \App\Constants\LokerLensCopy::BTN_TAMPILKAN_7_HARI }}
-                        </a>
+                        <x-tombol varian="sekunder" :href="route('dashboard-analis.index', ['periode' => 7])">{{ \App\Constants\LokerLensCopy::BTN_TAMPILKAN_7_HARI }}</x-tombol>
                     @endif
-                </div>
+                </x-pesan-kosong>
             @endif
         </div>
 

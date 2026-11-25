@@ -7,7 +7,6 @@ use App\Exceptions\PerubahanStatusTidakValid;
 use App\Support\ProgresPengaduan;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
-   use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Pengaduan extends Model
 {
@@ -57,10 +56,7 @@ class Pengaduan extends Model
     {
         return $this->hasMany(RiwayatKasus::class, 'id_pengaduan', 'id_pengaduan')->orderBy('tanggal_update', 'desc');
     }
-       protected function warnaBadge(): Attribute
-   {
-       return Attribute::get(fn () => $this->status_pengaduan->warnaBadge());
-   }
+
     /**
      * Ubah status kasus satu langkah maju dan catat ke Riwayat Kasus (BR-11, NFR-SAF-06).
      * Perubahan yang melompat, mundur, atau dari status akhir ditolak.

@@ -22,9 +22,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm mb-4">
         <div>
             <span class="text-gray-500 block text-xs">{{ LokerLensCopy::RIWAYAT_TINJAUAN_LABEL_HASIL }}:</span>
-            <span class="inline-block mt-0.5 px-2.5 py-0.5 rounded text-xs font-semibold {{ $tidakTerbukti ? 'bg-gray-100 text-gray-700 border border-gray-200' : 'bg-red-100 text-risk-high border border-red-200' }}">
-                {{ $tinjauan->hasil_tinjauan }}
-            </span>
+            <x-badge :nada="\App\Support\WarnaBadge::hasilTinjauan($tinjauan->hasil_tinjauan)" class="mt-0.5">{{ $tinjauan->hasil_tinjauan }}</x-badge>
         </div>
         <div>
             <span class="text-gray-500 block text-xs">{{ LokerLensCopy::KOLOM_ANALIS }}:</span>
@@ -36,9 +34,7 @@
         </div>
         <div>
             <span class="text-gray-500 block text-xs">{{ LokerLensCopy::LABEL_STATUS_KASUS_SEKARANG }}:</span>
-            <span class="inline-block mt-0.5 px-2.5 py-0.5 rounded text-xs font-semibold {{ $pengaduan->warna_badge }}">
-                {{ $pengaduan->status_pengaduan }}
-            </span>
+            <x-badge-status :status="$pengaduan->status_pengaduan" class="mt-0.5" />
         </div>
     </div>
     <div>
@@ -48,7 +44,7 @@
 </div>
 
 <!-- 5. Hasil Akhir Kasus (hanya baca) -->
-<div id="hasil-akhir-kasus" class="bg-navy-900 text-white rounded-card shadow-xl p-6 sm:p-8 border border-navy-800">
+<div id="hasil-akhir-kasus" class="bg-navy-900 text-white rounded-card shadow-lg p-6 sm:p-8 border border-navy-800">
     <h3 class="text-xl font-bold text-teal-400 border-b border-navy-800 pb-4 mb-5">
         {{ LokerLensCopy::JUDUL_HASIL_AKHIR_KASUS }}
     </h3>
@@ -95,8 +91,6 @@
     @endif
 
     <div class="pt-5 mt-5 border-t border-navy-800">
-        <a href="{{ route('riwayat-tinjauan.index') }}" class="inline-block px-5 py-2.5 rounded-control border border-navy-700 text-gray-300 hover:bg-navy-800 text-xs font-semibold transition">
-            {{ LokerLensCopy::BTN_KEMBALI_RIWAYAT_TINJAUAN }}
-        </a>
+        <x-tombol varian="sekunder-gelap" :href="route('riwayat-tinjauan.index')">{{ LokerLensCopy::BTN_KEMBALI_RIWAYAT_TINJAUAN }}</x-tombol>
     </div>
 </div>

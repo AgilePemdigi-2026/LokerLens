@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\WarnaBadge;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
@@ -94,16 +95,18 @@ class HasilKlasifikasi extends Model
 
     /**
      * Kelas warna Tailwind sesuai tingkat risiko (warna dari tailwind.config.js:
-     * risk-high merah, risk-mid oranye, risk-low hijau).
+     * risk-high merah, risk-mid oranye, risk-low hijau). Warna badge dari App\Support\WarnaBadge.
      *
      * @return array{teks: string, bar: string, badge: string, kotak: string}
      */
     public function getWarnaRisikoAttribute(): array
     {
+        $badge = WarnaBadge::badge(WarnaBadge::risiko($this->tingkat_risiko));
+
         return match ($this->tingkat_risiko) {
-            'tinggi' => ['teks' => 'text-risk-high', 'bar' => 'bg-risk-high', 'badge' => 'bg-red-100 text-risk-high border border-red-200', 'kotak' => 'bg-red-50 border-red-200'],
-            'sedang' => ['teks' => 'text-risk-mid', 'bar' => 'bg-risk-mid', 'badge' => 'bg-amber-100 text-risk-mid border border-amber-200', 'kotak' => 'bg-amber-50 border-amber-200'],
-            default  => ['teks' => 'text-risk-low', 'bar' => 'bg-risk-low', 'badge' => 'bg-emerald-100 text-risk-low border border-emerald-200', 'kotak' => 'bg-emerald-50 border-emerald-200'],
+            'tinggi' => ['teks' => 'text-risk-high', 'bar' => 'bg-risk-high', 'badge' => $badge, 'kotak' => 'bg-red-50 border-red-200'],
+            'sedang' => ['teks' => 'text-risk-mid', 'bar' => 'bg-risk-mid', 'badge' => $badge, 'kotak' => 'bg-amber-50 border-amber-200'],
+            default  => ['teks' => 'text-risk-low', 'bar' => 'bg-risk-low', 'badge' => $badge, 'kotak' => 'bg-emerald-50 border-emerald-200'],
         };
     }
 }

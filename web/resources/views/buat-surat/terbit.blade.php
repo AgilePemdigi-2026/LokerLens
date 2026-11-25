@@ -11,7 +11,7 @@
         @endphp
 
         {{-- print-page: area yang dicetak saat menekan "Cetak Tanda Terima" (lihat resources/css/app.css) --}}
-        <div class="print-page bg-white rounded-2xl shadow-2xl p-6 sm:p-10 text-navy-900 border border-gray-100 animate-fadeIn space-y-8">
+        <div class="print-page bg-white rounded-card shadow-lg p-6 sm:p-10 text-navy-900 border border-gray-100 animate-fadeIn space-y-8">
             <!-- Icon Sukses Besar -->
             <div class="text-center">
                 <div class="w-16 h-16 rounded-full bg-emerald-100 text-risk-low flex items-center justify-center mx-auto mb-4 shadow">
@@ -30,12 +30,8 @@
 
                 <!-- Tiga Chip Resmi (BR-10 & FR-ST-08) -->
                 <div class="flex flex-wrap items-center justify-center gap-2 mt-4">
-                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-risk-low border border-emerald-200">
-                        Kasus terdokumentasi otomatis
-                    </span>
-                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-risk-low border border-emerald-200">
-                        Kasus selesai
-                    </span>
+                    <x-badge :nada="\App\Support\WarnaBadge::status(\App\Enums\StatusKasus::Selesai)">Kasus terdokumentasi otomatis</x-badge>
+                    <x-badge :nada="\App\Support\WarnaBadge::status(\App\Enums\StatusKasus::Selesai)">Kasus selesai</x-badge>
                 </div>
             </div>
 
@@ -115,7 +111,7 @@
             </div>
 
             <!-- Keterangan langkah berikutnya (hanya di layar, tidak ikut tercetak) -->
-            <div id="keterangan-surat-terbit" class="no-print bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg text-xs sm:text-sm text-amber-900 leading-relaxed">
+            <div id="keterangan-surat-terbit" class="no-print bg-amber-50 border-l-4 border-risk-mid p-4 rounded-r-control text-xs sm:text-sm text-amber-900 leading-relaxed">
                 {{ sprintf(\App\Constants\LokerLensCopy::KETERANGAN_SURAT_TERBIT, $surat->tujuan_instansi ?: '-') }}
             </div>
 
@@ -124,27 +120,22 @@
             <div class="no-print flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
                 {{-- Teks tombol tetap "Cetak Tanda Terima" (Data Mockup Gambar 2.16); keterangannya di bawah tombol --}}
                 <div class="w-full sm:w-auto sm:max-w-xs">
-                    <button type="button" onclick="window.print()"
-                        class="w-full sm:w-auto px-5 py-2.5 rounded-control border border-gray-300 bg-white text-gray-800 hover:bg-gray-50 text-xs font-semibold shadow transition flex items-center justify-center space-x-1.5">
+                    <x-tombol varian="sekunder" onclick="window.print()" class="w-full sm:w-auto">
                         <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                         <span>Cetak Tanda Terima</span>
-                    </button>
+                    </x-tombol>
                     <p id="keterangan-tombol-cetak" class="text-[11px] text-gray-500 mt-1.5 leading-snug">
                         {{ \App\Constants\LokerLensCopy::KETERANGAN_TOMBOL_CETAK }}
                     </p>
                 </div>
 
-                <div class="flex items-center space-x-3 w-full sm:w-auto">
-                    <a href="{{ route('tindak-lanjut.index') }}"
-                       class="w-full sm:w-auto px-5 py-2.5 rounded-control border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs font-semibold transition text-center">
-                        Kembali ke Laporan
-                    </a>
+                <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+                    <x-tombol varian="sekunder" :href="route('tindak-lanjut.index')" class="w-full sm:w-auto">Kembali ke Laporan</x-tombol>
 
-                    <a href="{{ route('arsip-kasus.show', $pengaduan->id_pengaduan) }}"
-                       class="w-full sm:w-auto px-6 py-2.5 rounded-control bg-navy-900 hover:bg-navy-800 text-white text-xs font-semibold shadow-lg transition flex items-center justify-center space-x-1.5">
+                    <x-tombol :href="route('arsip-kasus.show', $pengaduan->id_pengaduan)" class="w-full sm:w-auto">
                         <span>Lihat Arsip Kasus</span>
                         <span>→</span>
-                    </a>
+                    </x-tombol>
                 </div>
             </div>
         </div>

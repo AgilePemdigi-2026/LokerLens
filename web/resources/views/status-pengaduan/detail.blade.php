@@ -1,5 +1,6 @@
 @use('App\Constants\LokerLensCopy')
 @use('App\Support\ProgresPengaduan')
+@use('App\Support\WarnaBadge')
 
 {{-- Status Pengaduan — detail satu pengaduan (issue #11).
      Layar besar: kiri info + skor, kanan progres + catatan. HP: bertumpuk. --}}
@@ -30,15 +31,13 @@
             <!-- ═══ Kiri: info pengaduan + skor ═══ -->
             <div class="lg:col-span-2 space-y-6">
                 <!-- a. Identitas pengaduan, badge kelompok + status lengkap, penjelasan -->
-                <section class="bg-white rounded-card shadow-xl p-6 border border-gray-100 text-navy-900">
-                    <span class="font-mono text-xs font-bold text-teal-800 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
-                        {{ $pengaduan->nomor_tiket }}
-                    </span>
-                    <h1 class="font-serif text-2xl sm:text-3xl font-bold mt-3 leading-snug">{{ $lowongan->posisi_lowongan ?? '-' }}</h1>
+                <section class="bg-white rounded-card shadow-lg p-6 border border-gray-100 text-navy-900">
+                    <x-nomor-tiket>{{ $pengaduan->nomor_tiket }}</x-nomor-tiket>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight mt-3 leading-snug">{{ $lowongan->posisi_lowongan ?? '-' }}</h1>
                     <p class="text-sm text-gray-600">{{ $lowongan->perusahaan->nama_perusahaan ?? '-' }}</p>
 
                     <p id="status-pengaduan" class="flex flex-wrap items-center gap-2 mt-4">
-                        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold {{ $progres->warnaKelompok }}">{{ $progres->labelKelompok }}</span>
+                        <x-badge-status :status="$progres->labelStatus">{{ $progres->labelKelompok }}</x-badge-status>
                         <span class="text-gray-400" aria-hidden="true">·</span>
                         <span class="text-sm font-bold">{{ $progres->labelStatus }}</span>
                     </p>
@@ -58,7 +57,7 @@
                         @if($klasifikasi)
                             <div class="flex flex-wrap items-center gap-2 mt-2">
                                 <span class="text-4xl font-black font-mono {{ $klasifikasi->warna_risiko['teks'] }}">{{ number_format($klasifikasi->confidence_score, 0) }}%</span>
-                                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold {{ $klasifikasi->warna_risiko['badge'] }}">{{ $klasifikasi->label_risiko }}</span>
+                                <x-badge :nada="WarnaBadge::risiko($klasifikasi->tingkat_risiko)">{{ $klasifikasi->label_risiko }}</x-badge>
                             </div>
                             <p class="text-sm text-gray-700 mt-1">{{ $klasifikasi->kategori_hasil }}</p>
                         @else
@@ -92,18 +91,18 @@
                                 $ikon = match ($keadaan) {
                                     ProgresPengaduan::SELESAI     => 'bg-teal-600 text-white',
                                     ProgresPengaduan::BERLANGSUNG => 'bg-white border-2 border-teal-600 text-teal-700',
-                                    ProgresPengaduan::DIHENTIKAN  => 'bg-red-50 border-2 border-risk-high text-risk-high',
+                                    ProgresPengaduan::DIHENTIKAN  => WarnaBadge::badge(WarnaBadge::ABU_GELAP),
                                     default                       => 'bg-gray-100 border border-gray-200 text-gray-400',
                                 };
                                 $label = match ($keadaan) {
                                     ProgresPengaduan::SELESAI     => 'bg-teal-50 text-teal-700 border border-teal-200',
                                     ProgresPengaduan::BERLANGSUNG => 'bg-teal-600 text-white',
-                                    ProgresPengaduan::DIHENTIKAN  => 'bg-red-100 text-risk-high border border-red-200',
+                                    ProgresPengaduan::DIHENTIKAN  => WarnaBadge::badge(WarnaBadge::ABU_GELAP),
                                     default                       => 'bg-gray-100 text-gray-500 border border-gray-200',
                                 };
                                 $kotak = match ($keadaan) {
                                     ProgresPengaduan::BERLANGSUNG => 'bg-teal-50',
-                                    ProgresPengaduan::DIHENTIKAN  => 'bg-red-50',
+                                    ProgresPengaduan::DIHENTIKAN  => 'bg-slate-100',
                                     default                       => '',
                                 };
                             @endphp
@@ -145,11 +144,7 @@
 
                     @if($progres->pesanBerhenti)
                         <!-- Penutup: pengaduan berhenti di tahap ini -->
-                        @php $dihentikan = last($progres->tahap)['keadaan'] === ProgresPengaduan::DIHENTIKAN; @endphp
-                        <div id="pesan-berhenti" role="status"
-                             class="mt-4 border-l-4 p-3 rounded-r-lg text-sm leading-relaxed {{ $dihentikan ? 'bg-red-50 border-risk-high text-red-900' : 'bg-emerald-50 border-risk-low text-emerald-900' }}">
-                            {{ $progres->pesanBerhenti }}
-                        </div>
+                        <x-pesan tipe="netral" id="pesan-berhenti" role="status" class="mt-4">{{ $progres->pesanBerhenti }}</x-pesan>
                     @endif
                 </section>
 
@@ -165,11 +160,10 @@
                     <p class="text-xs text-gray-500 italic leading-relaxed">
                         * Catatan: {{ LokerLensCopy::CATATAN_PENDUKUNG_KEPUTUSAN }}
                     </p>
-                    <a href="{{ route('periksa-lowongan.hasil', $pengaduan->id_pengaduan) }}"
-                       class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-2.5 rounded-control bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold shadow transition gap-1.5">
+                    <x-tombol :href="route('periksa-lowongan.hasil', $pengaduan->id_pengaduan)" class="w-full sm:w-auto">
                         <span>{{ LokerLensCopy::BTN_LIHAT_HASIL_PERIKSA }}</span>
                         <span>→</span>
-                    </a>
+                    </x-tombol>
                 </section>
             </div>
         </div>

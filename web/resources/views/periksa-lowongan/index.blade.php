@@ -30,28 +30,15 @@
         }
     }">
         <!-- Header Halaman (Bagian 6.3) -->
-        <div class="mb-6">
-            <h1 class="text-3xl font-extrabold text-white tracking-tight">
-                Periksa Lowongan Kerja
-            </h1>
-            <p class="text-sm text-gray-300 mt-1">
-                Kenali indikasi penipuan sebelum melanjutkan proses lamaran kerja.
-            </p>
-        </div>
+        <x-judul-halaman class="mb-6" judul="Periksa Lowongan Kerja"
+            deskripsi="Kenali indikasi penipuan sebelum melanjutkan proses lamaran kerja." />
 
         <!-- Notifikasi Error Validasi Resmi (FR-PL-02, FR-PL-10, NFR-SAF-05) -->
         @if ($errors->any())
-            <div class="mb-6 bg-red-900/40 border-l-4 border-risk-high p-4 rounded-r-xl shadow-lg">
-                <div class="flex items-center space-x-3 text-red-200">
-                    <svg class="h-6 w-6 text-risk-high shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                    </svg>
-                    <div>
-                        <p class="font-bold text-sm">Data belum lengkap, mohon lengkapi terlebih dahulu</p>
-                        <p class="text-xs text-red-300 mt-0.5">Pastikan Nama Perusahaan, Posisi, dan Deskripsi Lowongan (minimal 50 karakter) telah terisi dengan benar.</p>
-                    </div>
-                </div>
-            </div>
+            <x-pesan tipe="galat" class="mb-6">
+                <p class="font-bold">Data belum lengkap, mohon lengkapi terlebih dahulu</p>
+                <p class="text-xs mt-0.5">Pastikan Nama Perusahaan, Posisi, dan Deskripsi Lowongan (minimal 50 karakter) telah terisi dengan benar.</p>
+            </x-pesan>
         @endif
 
         <!-- Panel Progres Loading Simulasi (Gambar 2.6) -->
@@ -90,7 +77,7 @@
         </div>
 
         <!-- Kartu Utama: Formulir Analisis Lowongan -->
-        <div class="bg-white rounded-card shadow-xl p-6 sm:p-8 text-navy-900 border border-gray-100 relative">
+        <div class="bg-white rounded-card shadow-lg p-6 sm:p-8 text-navy-900 border border-gray-100 relative">
             <div class="flex justify-between items-start border-b border-gray-100 pb-4 mb-6">
                 <div>
                     <h2 class="text-xl font-bold tracking-tight text-navy-900">
@@ -215,16 +202,15 @@
 
                 <!-- Tombol Aksi: Reset Form & Periksa Sekarang (Bagian 6.3 & 9) -->
                 <div class="flex flex-col-reverse sm:flex-row items-center justify-between pt-4 border-t border-gray-100 gap-3">
-                    <button type="button" @click="resetForm()" :disabled="submitting"
-                        class="w-full sm:w-auto px-5 py-2.5 rounded-control border border-gray-300 text-gray-700 hover:bg-gray-100 text-sm font-medium transition flex items-center justify-center space-x-2 disabled:opacity-50">
+                    {{-- "::disabled" = atribut Alpine (bukan PHP) pada komponen Blade --}}
+                    <x-tombol varian="sekunder" @click="resetForm()" ::disabled="submitting" class="w-full sm:w-auto">
                         <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                         </svg>
                         <span>Reset Form</span>
-                    </button>
+                    </x-tombol>
 
-                    <button type="submit" :disabled="submitting"
-                        class="w-full sm:w-auto px-7 py-2.5 rounded-control bg-navy-900 hover:bg-navy-800 text-white text-sm font-semibold shadow-lg transition flex items-center justify-center space-x-2 disabled:opacity-60 disabled:cursor-not-allowed">
+                    <x-tombol type="submit" ::disabled="submitting" class="w-full sm:w-auto">
                         <template x-if="!submitting">
                             <div class="flex items-center space-x-2">
                                 <span>Periksa Sekarang</span>
@@ -242,7 +228,7 @@
                                 <span>Sedang Memeriksa...</span>
                             </div>
                         </template>
-                    </button>
+                    </x-tombol>
                 </div>
             </form>
         </div>

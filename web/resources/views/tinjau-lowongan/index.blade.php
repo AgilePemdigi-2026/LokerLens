@@ -4,24 +4,11 @@
 <x-app-layout>
     <div class="max-w-7xl mx-auto py-4 space-y-6">
         <!-- Header Halaman (Bagian 6.4.1) -->
-        <div>
-            <h1 class="text-3xl font-extrabold text-white tracking-tight">
-                Meninjau Lowongan Kerja dengan Prioritas Tinggi
-            </h1>
-            <p class="text-sm text-gray-300 mt-1">
-                Daftar antrean verifikasi laporan indikasi penipuan lowongan kerja yang membutuhkan tinjauan manual prioritas.
-            </p>
-        </div>
-
-        <!-- Banner Flash Sukses -->
-        @if(session('success'))
-            <div class="bg-teal-800 border-l-4 border-teal-400 p-4 rounded-r-lg text-white text-sm shadow">
-                {{ session('success') }}
-            </div>
-        @endif
+        <x-judul-halaman judul="Meninjau Lowongan Kerja dengan Prioritas Tinggi"
+            deskripsi="Daftar antrean verifikasi laporan indikasi penipuan lowongan kerja yang membutuhkan tinjauan manual prioritas." />
 
         <!-- Kartu Utama: Daftar Lowongan Prioritas Tinggi -->
-        <div class="bg-white rounded-card shadow-xl p-6 sm:p-8 text-navy-900 border border-gray-100">
+        <div class="bg-white rounded-card shadow-lg p-6 sm:p-8 text-navy-900 border border-gray-100">
             <!-- Header Kartu & Jumlah Antrean -->
             <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-6 border-b border-gray-100 gap-2">
                 <div>
@@ -33,57 +20,31 @@
                         Laporan otomatis dengan confidence score tinggi yang dialokasikan ke Analis.
                     </p>
                 </div>
-                <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-risk-high border border-red-200">
-                    <span class="w-2 h-2 rounded-full bg-risk-high mr-2 animate-ping"></span>
+                <x-badge :nada="\App\Support\WarnaBadge::MERAH">
+                    <span class="w-2 h-2 rounded-full bg-risk-high mr-2 animate-ping" aria-hidden="true"></span>
                     {{ $hasilKlasifikasi->total() }} Menunggu Verifikasi Manual
-                </div>
+                </x-badge>
             </div>
 
             <!-- Formulir Filter & Pencarian (BDD Hooks: nomor_tiket, filter_skor, urutan, Cari).
                  filterOtomatis (resources/js/app.js): dropdown langsung terkirim, pencarian setelah berhenti mengetik. -->
-            <form method="GET" action="{{ route('tinjau-lowongan.index') }}" x-data="filterOtomatis" class="grid grid-cols-1 md:grid-cols-12 gap-3 mb-6 bg-gray-50 p-4 rounded-xl border border-gray-200">
-                <!-- Input Pencarian -->
-                <div class="md:col-span-5">
-                    <label for="nomor_tiket" class="block text-xs font-semibold text-gray-700 mb-1">Pencarian Laporan</label>
-                    <div class="relative">
-                        <input type="text" id="nomor_tiket" name="nomor_tiket" value="{{ request('nomor_tiket') }}"
-                            placeholder="Cari ID / Perusahaan / Kata kunci"
-                            class="w-full pl-3 pr-10 py-2 rounded-control border border-gray-300 text-xs sm:text-sm text-navy-900 focus:ring-2 focus:ring-teal-600 focus:outline-none" />
-                        @if(request('nomor_tiket'))
-                            <a href="{{ route('tinjau-lowongan.index') }}" class="absolute right-3 top-2.5 text-xs text-gray-400 hover:text-gray-600">✕</a>
-                        @endif
-                    </div>
-                </div>
+            <x-filter :action="route('tinjau-lowongan.index')" class="mb-6">
+                <x-filter.cari name="nomor_tiket" label="Pencarian Laporan" placeholder="Cari ID / Perusahaan / Kata kunci" :hapus="route('tinjau-lowongan.index')" />
 
-                <!-- Select Filter Skor -->
-                <div class="md:col-span-3">
-                    <label for="filter_skor" class="block text-xs font-semibold text-gray-700 mb-1">Filter Skor</label>
-                    <select id="filter_skor" name="filter_skor" class="w-full px-3 py-2 rounded-control border border-gray-300 text-xs sm:text-sm text-navy-900 focus:ring-2 focus:ring-teal-600 focus:outline-none bg-white">
-                        <option value="">Semua Skor</option>
-                        {{-- Batas mengikuti ambang prioritas (config/lokerlens.php) --}}
-                        @php $ambang = (int) config('lokerlens.ambang_prioritas'); @endphp
-                        <option value="Skor Tinggi" {{ request('filter_skor') === 'Skor Tinggi' ? 'selected' : '' }}>Skor Tinggi (≥ {{ $ambang }}%)</option>
-                        <option value="Skor Sedang" {{ request('filter_skor') === 'Skor Sedang' ? 'selected' : '' }}>Skor Sedang (50% - {{ $ambang - 1 }}%)</option>
-                    </select>
-                </div>
+                <x-filter.pilih name="filter_skor" label="Filter Skor">
+                    <option value="">Semua Skor</option>
+                    {{-- Batas mengikuti ambang prioritas (config/lokerlens.php) --}}
+                    @php $ambang = (int) config('lokerlens.ambang_prioritas'); @endphp
+                    <option value="Skor Tinggi" {{ request('filter_skor') === 'Skor Tinggi' ? 'selected' : '' }}>Skor Tinggi (≥ {{ $ambang }}%)</option>
+                    <option value="Skor Sedang" {{ request('filter_skor') === 'Skor Sedang' ? 'selected' : '' }}>Skor Sedang (50% - {{ $ambang - 1 }}%)</option>
+                </x-filter.pilih>
 
-                <!-- Select Urutan -->
-                <div class="md:col-span-3">
-                    <label for="urutan" class="block text-xs font-semibold text-gray-700 mb-1">Urutkan</label>
-                    <select id="urutan" name="urutan" class="w-full px-3 py-2 rounded-control border border-gray-300 text-xs sm:text-sm text-navy-900 focus:ring-2 focus:ring-teal-600 focus:outline-none bg-white">
-                        <option value="Skor Tertinggi" {{ request('urutan') === 'Skor Tertinggi' ? 'selected' : '' }}>Skor Tertinggi</option>
-                        <option value="Skor Terendah" {{ request('urutan') === 'Skor Terendah' ? 'selected' : '' }}>Skor Terendah</option>
-                        <option value="Terbaru" {{ request('urutan') === 'Terbaru' ? 'selected' : '' }}>Terbaru</option>
-                    </select>
-                </div>
-
-                <!-- Tombol Cari -->
-                <div class="md:col-span-1 flex items-end">
-                    <button type="submit" class="w-full py-2 px-3 rounded-control bg-navy-900 hover:bg-navy-800 text-white font-semibold text-xs transition flex items-center justify-center">
-                        Cari
-                    </button>
-                </div>
-            </form>
+                <x-filter.pilih name="urutan" label="Urutkan">
+                    <option value="Skor Tertinggi" {{ request('urutan') === 'Skor Tertinggi' ? 'selected' : '' }}>Skor Tertinggi</option>
+                    <option value="Skor Terendah" {{ request('urutan') === 'Skor Terendah' ? 'selected' : '' }}>Skor Terendah</option>
+                    <option value="Terbaru" {{ request('urutan') === 'Terbaru' ? 'selected' : '' }}>Terbaru</option>
+                </x-filter.pilih>
+            </x-filter>
 
             <!-- Label Kriteria Filter / Hasil Pencarian (BDD Hooks) -->
             @if(request('nomor_tiket') && $hasilKlasifikasi->count() > 0)
@@ -99,19 +60,15 @@
             @endif
 
             <!-- Tabel Daftar Lowongan Prioritas Tinggi (Bagian 6.4.1) -->
-            <div class="overflow-x-auto rounded-xl border border-gray-200">
-                <table class="min-w-full divide-y divide-gray-200 text-left text-xs sm:text-sm">
-                    <thead class="bg-gray-100 text-gray-700 font-bold uppercase tracking-wider text-[11px]">
-                        <tr>
-                            <th class="px-4 py-3 whitespace-nowrap">{{ LokerLensCopy::KOLOM_NOMOR_TIKET }}</th>
-                            <th class="px-4 py-3 min-w-[12rem]">NAMA PERUSAHAAN</th>
-                            <th class="px-4 py-3 min-w-[10rem]">POSISI DITAWARKAN</th>
-                            <th class="px-4 py-3 whitespace-nowrap">CONFIDENCE SCORE</th>
-                            <th class="px-4 py-3 whitespace-nowrap">STATUS SISTEM</th>
-                            <th class="px-4 py-3 text-right whitespace-nowrap">AKSI</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200 bg-white">
+            <x-tabel>
+                <x-slot:kepala>
+                    <th class="whitespace-nowrap">{{ LokerLensCopy::KOLOM_NOMOR_TIKET }}</th>
+                    <th class="min-w-[12rem]">NAMA PERUSAHAAN</th>
+                    <th class="min-w-[10rem]">POSISI DITAWARKAN</th>
+                    <th class="whitespace-nowrap">CONFIDENCE SCORE</th>
+                    <th class="whitespace-nowrap">STATUS SISTEM</th>
+                    <th class="text-right whitespace-nowrap">AKSI</th>
+                </x-slot:kepala>
                         @forelse($hasilKlasifikasi as $item)
                             @php
                                 $pengaduan = $item->pengaduan;
@@ -119,14 +76,14 @@
                                 $perusahaan = $lowongan->perusahaan ?? null;
                                 $sudahDitinjau = $item->tinjauanAnalis !== null;
                             @endphp
-                            <tr class="hover:bg-gray-50/80 transition">
+                            <tr class="hover:bg-gray-50 transition">
                                 <!-- ID Lowongan / Tiket -->
-                                <td class="px-4 py-3.5 font-mono font-bold text-teal-800 whitespace-nowrap">
+                                <td class="font-mono font-bold text-teal-800 whitespace-nowrap">
                                     {{ $pengaduan->nomor_tiket }}
                                 </td>
 
                                 <!-- Nama Perusahaan -->
-                                <td class="px-4 py-3.5">
+                                <td>
                                     <div class="font-bold text-navy-900">
                                         {{ $perusahaan->nama_perusahaan ?? '-' }}
                                     </div>
@@ -137,66 +94,44 @@
                                 </td>
 
                                 <!-- Posisi Ditawarkan -->
-                                <td class="px-4 py-3.5 font-medium text-gray-900">
+                                <td class="font-medium text-gray-900">
                                     {{ $lowongan->posisi_lowongan ?? '-' }}
                                 </td>
 
                                 <!-- Confidence Score: warna & keterangan sesuai tingkat risiko -->
-                                <td class="px-4 py-3.5">
+                                <td>
                                     <x-badge-skor :klasifikasi="$item" />
                                 </td>
 
                                 <!-- Status Sistem -->
-                                <td class="px-4 py-3.5">
-                                    <span class="inline-flex items-center whitespace-nowrap px-2.5 py-0.5 rounded text-xs font-semibold {{ $pengaduan->warna_badge ?? 'bg-yellow-100 text-yellow-800' }}">
-                                        {{ $pengaduan->status_pengaduan }}
-                                    </span>
+                                <td>
+                                    <x-badge-status :status="$pengaduan->status_pengaduan" />
                                 </td>
 
                                 <!-- Aksi: teks tombol beda dari teks status. Atribut title "Lihat Detail ..."
                                      dipakai langkah BDD 'I follow "Lihat Detail"' (Mink juga mencocokkan title). -->
-                                <td class="px-4 py-3.5 text-right whitespace-nowrap">
-                                    <a href="{{ route('tinjau-lowongan.detail', $item->id_klasifikasi) }}"
-                                       title="{{ LokerLensCopy::BTN_LIHAT_DETAIL }} {{ $pengaduan->nomor_tiket }}"
-                                       class="inline-flex items-center whitespace-nowrap px-3 py-1.5 rounded-control bg-navy-900 hover:bg-navy-800 text-white font-semibold text-xs shadow transition">
+                                <td class="text-right whitespace-nowrap">
+                                    <x-tombol ukuran="sm" :href="route('tinjau-lowongan.detail', $item->id_klasifikasi)"
+                                        title="{{ LokerLensCopy::BTN_LIHAT_DETAIL }} {{ $pengaduan->nomor_tiket }}">
                                         {{ $pengaduan->status_pengaduan === StatusKasus::SedangDitinjau ? LokerLensCopy::BTN_LANJUTKAN_TINJAUAN : LokerLensCopy::BTN_MULAI_TINJAU }}
-                                    </a>
+                                    </x-tombol>
                                 </td>
                             </tr>
                         @empty
                             <!-- Pesan BDD Jika Tidak Ditemukan: "Data Lowongan Tidak Ditemukan" -->
                             <tr>
-                                <td colspan="6" class="px-6 py-12 text-center text-gray-500">
-                                    <div class="max-w-xs mx-auto">
-                                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        <p class="mt-3 text-base font-bold text-navy-900">
-                                            Data Lowongan Tidak Ditemukan
-                                        </p>
-                                        <p class="text-xs text-gray-500 mt-1">
-                                            Tidak ada lowongan prioritas tinggi yang cocok dengan kata kunci atau filter yang Anda pilih.
-                                        </p>
-                                        <a href="{{ route('tinjau-lowongan.index') }}" class="mt-4 inline-block text-xs font-semibold text-teal-600 hover:underline">
-                                            Reset Filter Pencarian
-                                        </a>
-                                    </div>
+                                <td colspan="6">
+                                    <x-pesan-kosong :kartu="false" judul="Data Lowongan Tidak Ditemukan"
+                                        keterangan="Tidak ada lowongan prioritas tinggi yang cocok dengan kata kunci atau filter yang Anda pilih.">
+                                        <x-tombol varian="sekunder" :href="route('tinjau-lowongan.index')">Reset Filter Pencarian</x-tombol>
+                                    </x-pesan-kosong>
                                 </td>
                             </tr>
                         @endforelse
-                    </tbody>
-                </table>
-            </div>
+            </x-tabel>
 
             <!-- Paginasi (Bagian 6.4.1) -->
-            <div class="mt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-600 gap-3 border-t border-gray-100 pt-4">
-                <div>
-                    Menampilkan {{ $hasilKlasifikasi->firstItem() ?? 0 }} - {{ $hasilKlasifikasi->lastItem() ?? 0 }} dari {{ $hasilKlasifikasi->total() }} Lowongan Prioritas
-                </div>
-                <div>
-                    {{ $hasilKlasifikasi->links() }}
-                </div>
-            </div>
+            <x-paginasi :daftar="$hasilKlasifikasi" satuan="Lowongan Prioritas" />
         </div>
     </div>
 </x-app-layout>

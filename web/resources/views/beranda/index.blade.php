@@ -1,7 +1,7 @@
 <x-app-layout>
     <div class="space-y-10 py-2">
         <!-- 1. Hero Section (Gambar 2.4 - Bagian 7.1) -->
-        <div class="bg-navy-900 border border-navy-800 rounded-2xl p-8 sm:p-12 text-white shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
+        <div class="bg-navy-900 border border-navy-800 rounded-card p-8 sm:p-12 text-white shadow-lg relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
             <div class="space-y-4 max-w-xl z-10">
                 <p class="text-xs uppercase tracking-widest font-bold text-teal-400">
                     AJUKAN LAPORAN PENIPUAN KERJA
@@ -15,16 +15,12 @@
 
                 <!-- Dua Tombol Pintasan (Bagian 7.1) -->
                 <div class="flex flex-wrap items-center gap-3 pt-3">
-                    <a href="{{ route('periksa-lowongan.index') }}"
-                       class="px-6 py-3 rounded-control bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs uppercase tracking-wider shadow-lg transition flex items-center space-x-2">
+                    <x-tombol varian="aksi" :href="route('periksa-lowongan.index')">
                         <span>{{ \App\Constants\LokerLensCopy::NAV_PERIKSA_LOWONGAN }}</span>
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-                    </a>
+                    </x-tombol>
                     {{-- Cek Status Pengaduan: mengarah ke halaman Status Pengaduan (#11) --}}
-                    <a href="{{ route('status-pengaduan.index') }}"
-                       class="px-6 py-3 rounded-control bg-navy-800 hover:bg-navy-700 text-white font-semibold text-xs border border-navy-700 transition">
-                        Cek Status Pengaduan
-                    </a>
+                    <x-tombol varian="sekunder-gelap" :href="route('status-pengaduan.index')">Cek Status Pengaduan</x-tombol>
                 </div>
             </div>
 
@@ -83,7 +79,7 @@
                     </div>
 
                     {{-- Kartu 03: Riwayat Pengaduan --}}
-                    <div class="bg-white rounded-card shadow-lg p-6 border border-gray-100 flex flex-col justify-between">
+                    <div class="bg-white rounded-card shadow-lg p-6 border border-gray-100 flex flex-col justify-between hover:shadow-xl transition">
                         <div>
                             <span class="text-xs font-mono font-bold text-teal-600 bg-teal-50 px-2.5 py-1 rounded">03</span>
                             <h3 class="text-lg font-bold text-navy-900 mt-3">Riwayat Pengaduan</h3>
@@ -91,7 +87,7 @@
                                 {{ \App\Constants\LokerLensCopy::BERANDA_KARTU_RIWAYAT }}
                             </p>
                         </div>
-                        <a href="{{ route('riwayat-pengaduan.index') }}" class="mt-6 inline-flex items-center text-xs font-bold text-teal-600 hover:text-teal-700 gap-1">
+                        <a href="{{ route('riwayat-pengaduan.index') }}" class="mt-6 inline-flex items-center text-xs font-bold text-teal-700 hover:text-teal-800 gap-1">
                             <span>Buka Riwayat</span>
                             <span aria-hidden="true">&rarr;</span>
                         </a>
@@ -117,21 +113,10 @@
 
             @if($pengaduanTerbaru->isEmpty())
                 <!-- Teks Wajib BDD & Panduan Bagian 7.1: "Belum ada pengaduan yang diajukan" -->
-                <div class="py-12 text-center text-gray-500">
-                    <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                    </svg>
-                    <p class="text-base font-bold text-navy-900">
-                        Belum ada pengaduan yang diajukan
-                    </p>
-                    <p class="text-xs text-gray-500 mt-1 mb-5">
-                        Anda belum memiliki riwayat pemeriksaan atau laporan lowongan kerja mencurigakan.
-                    </p>
-                    <a href="{{ route('periksa-lowongan.index') }}"
-                       class="inline-flex items-center px-6 py-2.5 rounded-control bg-navy-900 hover:bg-navy-800 text-white text-xs font-semibold shadow transition">
-                        {{ \App\Constants\LokerLensCopy::NAV_PERIKSA_LOWONGAN }}
-                    </a>
-                </div>
+                <x-pesan-kosong :kartu="false" judul="Belum ada pengaduan yang diajukan"
+                    keterangan="Anda belum memiliki riwayat pemeriksaan atau laporan lowongan kerja mencurigakan.">
+                    <x-tombol :href="route('periksa-lowongan.index')">{{ \App\Constants\LokerLensCopy::NAV_PERIKSA_LOWONGAN }}</x-tombol>
+                </x-pesan-kosong>
             @else
                 <div class="divide-y divide-gray-100">
                     @foreach($pengaduanTerbaru as $item)
@@ -145,9 +130,7 @@
                         <div class="relative py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-gray-50/60 px-3 rounded-lg transition">
                             <div class="space-y-1">
                                 <div class="flex items-center gap-2">
-                                    <span class="font-mono text-xs font-bold text-teal-800 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
-                                        {{ $item->nomor_tiket }}
-                                    </span>
+                                    <x-nomor-tiket>{{ $item->nomor_tiket }}</x-nomor-tiket>
                                     <span class="text-xs text-gray-400">
                                         {{ $item->tanggal_pengaduan->translatedFormat('d M Y, H:i') }} WIB
                                     </span>
@@ -160,9 +143,7 @@
                             </div>
 
                             <div class="flex items-center space-x-3">
-                                <span class="px-2.5 py-0.5 rounded text-xs font-semibold {{ $item->warna_badge ?? 'bg-yellow-100 text-yellow-800' }}">
-                                    {{ $item->status_pengaduan }}
-                                </span>
+                                <x-badge-status :status="$item->status_pengaduan" />
                                 <a href="{{ route('periksa-lowongan.hasil', $item->id_pengaduan) }}" class="relative z-10 text-xs font-bold text-teal-700 hover:underline">
                                     Hasil Analisis →
                                 </a>

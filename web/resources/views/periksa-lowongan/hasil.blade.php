@@ -1,7 +1,7 @@
 <x-app-layout>
     <div class="max-w-4xl mx-auto py-4 space-y-6">
         <!-- Breadcrumb & Navigasi Atas -->
-        <div class="flex items-center justify-between text-xs text-gray-400">
+        <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-gray-400">
             <div class="flex items-center space-x-2">
                 <a href="{{ route('periksa-lowongan.index') }}" class="hover:text-teal-400 transition">Periksa Lowongan</a>
                 <span>›</span>
@@ -21,21 +21,18 @@
             // Aturan tingkat risiko & warna ada di model HasilKlasifikasi (sama dengan detail Analis)
             $isPalsu = $klasifikasi?->is_palsu;
             $labelRisiko = $klasifikasi?->label_risiko;
-            $warna = $klasifikasi?->warna_risiko ?? ['teks' => '', 'bar' => '', 'badge' => ''];
+            $warna = $klasifikasi?->warna_risiko ?? ['teks' => '', 'bar' => ''];
             $warnaTeks = $warna['teks'];
             $warnaBar = $warna['bar'];
-            $warnaBadge = $warna['badge'];
             // Lebar bar selalu 0–100%
             $lebarBar = max(0, min(100, (float) $score));
         @endphp
 
         @if(! $klasifikasi)
         <!-- 1a. API ML mati/timeout: pengaduan tersimpan, klasifikasi menyusul -->
-        <div class="bg-white rounded-card shadow-xl p-6 sm:p-8 text-navy-900 border border-gray-100">
+        <div class="bg-white rounded-card shadow-lg p-6 sm:p-8 text-navy-900 border border-gray-100">
             <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
-                <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-100 text-risk-mid border border-amber-200">
-                    {{ \App\Constants\LokerLensCopy::MENUNGGU_KLASIFIKASI }}
-                </span>
+                <x-badge-status :status="\App\Constants\LokerLensCopy::MENUNGGU_KLASIFIKASI" />
                 <span class="text-xs text-gray-500 font-mono">
                     ID Tiket: <strong>{{ $pengaduan->nomor_tiket }}</strong>
                 </span>
@@ -46,22 +43,16 @@
             <p class="text-sm text-gray-600 mt-0.5 mb-4">
                 {{ $perusahaan->nama_perusahaan ?? '-' }} • {{ $lowongan->posisi_lowongan }}
             </p>
-            <div class="bg-amber-50 border-l-4 border-risk-mid p-4 rounded-r-lg text-sm text-amber-900 leading-relaxed" role="alert">
-                {{ \App\Constants\LokerLensCopy::KLASIFIKASI_TERTUNDA }}
-            </div>
+            <x-pesan tipe="peringatan" role="alert">{{ \App\Constants\LokerLensCopy::KLASIFIKASI_TERTUNDA }}</x-pesan>
         </div>
         @else
 
         <!-- 1. Kartu Ringkasan Risiko (Gambar 2.7) -->
-        <div class="bg-white rounded-card shadow-xl p-6 sm:p-8 text-navy-900 border border-gray-100">
+        <div class="bg-white rounded-card shadow-lg p-6 sm:p-8 text-navy-900 border border-gray-100">
             <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
                 <div class="flex items-center space-x-2">
-                    <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">
-                        Analisis selesai
-                    </span>
-                    <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider {{ $warnaBadge }}">
-                        {{ $labelRisiko }}
-                    </span>
+                    <x-badge>Analisis selesai</x-badge>
+                    <x-badge :nada="\App\Support\WarnaBadge::risiko($klasifikasi->tingkat_risiko)">{{ $labelRisiko }}</x-badge>
                 </div>
                 <span class="text-xs text-gray-500 font-mono">
                     ID Tiket: <strong>{{ $pengaduan->nomor_tiket }}</strong>
@@ -115,7 +106,7 @@
 
             @if($isPalsu)
             <!-- Banner Peringatan Merah Resmi (NFR-SAF-01 & BR-04) -->
-            <div class="bg-red-50 border-l-4 border-risk-high p-4 rounded-r-lg text-xs sm:text-sm text-red-900 leading-relaxed">
+            <x-pesan tipe="galat">
                 <div class="flex items-start space-x-2.5">
                     <svg class="w-5 h-5 text-risk-high shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
@@ -127,10 +118,10 @@
                         </p>
                     </div>
                 </div>
-            </div>
+            </x-pesan>
             @else
             <!-- Kotak Info Hijau untuk hasil asli (NFR-SAF-01 & BR-04) -->
-            <div class="bg-emerald-50 border-l-4 border-risk-low p-4 rounded-r-lg text-xs sm:text-sm text-gray-700 leading-relaxed">
+            <x-pesan>
                 <div class="flex items-start space-x-2.5">
                     <svg class="w-5 h-5 text-risk-low shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
@@ -142,7 +133,7 @@
                         </p>
                     </div>
                 </div>
-            </div>
+            </x-pesan>
             @endif
         </div>
         @endif
@@ -192,9 +183,7 @@
                 <h3 class="text-base font-bold text-navy-900">
                     Indikasi Bahaya yang Terdeteksi
                 </h3>
-                <span class="text-xs bg-red-100 text-risk-high px-2 py-0.5 rounded font-bold">
-                    {{ $klasifikasi->indikator_unik->count() }} Indikator
-                </span>
+                <x-badge :nada="\App\Support\WarnaBadge::MERAH">{{ $klasifikasi->indikator_unik->count() }} Indikator</x-badge>
             </div>
 
             <!-- Kontainer Resmi BDD hook kata-pemicu -->
@@ -241,18 +230,14 @@
 
             <div class="mt-6 pt-4 border-t border-navy-800 flex flex-wrap items-center justify-between gap-3">
                 <div class="flex flex-wrap items-center gap-3">
-                    <a href="{{ route('riwayat-pengaduan.index') }}" class="px-5 py-2 rounded-control bg-navy-800 hover:bg-navy-700 text-gray-200 text-xs font-semibold transition">
-                        Lihat Riwayat
-                    </a>
+                    <x-tombol varian="sekunder-gelap" :href="route('riwayat-pengaduan.index')">Lihat Riwayat</x-tombol>
                     {{-- Pantau perkembangan pengaduan ini di halaman Status Pengaduan (#11) --}}
-                    <a href="{{ route('status-pengaduan.detail', $pengaduan->id_pengaduan) }}" class="px-5 py-2 rounded-control border border-teal-600 text-teal-300 hover:bg-teal-600 hover:text-white text-xs font-semibold transition">
-                        {{ \App\Constants\LokerLensCopy::BTN_PANTAU_STATUS }}
-                    </a>
+                    <x-tombol varian="sekunder-gelap" :href="route('status-pengaduan.detail', $pengaduan->id_pengaduan)">{{ \App\Constants\LokerLensCopy::BTN_PANTAU_STATUS }}</x-tombol>
                 </div>
-                <a href="{{ route('periksa-lowongan.index') }}" class="px-6 py-2 rounded-control bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold shadow transition flex items-center space-x-1.5">
+                <x-tombol varian="aksi" :href="route('periksa-lowongan.index')">
                     <span>Periksa Lowongan Lain</span>
                     <span>→</span>
-                </a>
+                </x-tombol>
             </div>
         </div>
     </div>

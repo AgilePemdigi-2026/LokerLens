@@ -9,7 +9,7 @@
 
         @if($isTindaklanjuti)
             <!-- A. Kasus Disetujui untuk Tindaklanjuti (Gambar 2.13) -->
-            <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-10 text-navy-900 border border-gray-100 animate-fadeIn">
+            <div class="bg-white rounded-card shadow-lg p-6 sm:p-10 text-navy-900 border border-gray-100 animate-fadeIn">
                 <!-- Icon Sukses Hijau -->
                 <div class="w-16 h-16 rounded-full bg-emerald-100 text-risk-low flex items-center justify-center mx-auto mb-4 shadow-sm">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -38,9 +38,7 @@
                     </div>
                     <div class="flex justify-between pb-2 border-b border-gray-200">
                         <span class="text-gray-500">Keputusan yang Dipilih:</span>
-                        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-100 text-teal-800">
-                            Tindaklanjuti
-                        </span>
+                        <strong class="text-risk-low">Tindaklanjuti</strong>
                     </div>
                     <div class="flex justify-between pb-2 border-b border-gray-200">
                         <span class="text-gray-500">Tanggal Keputusan:</span>
@@ -48,7 +46,7 @@
                     </div>
                     <div class="flex justify-between pb-2 border-b border-gray-200">
                         <span class="text-gray-500">Status Kasus Terbaru:</span>
-                        <strong class="text-risk-low font-bold">{{ $pengaduan->status_pengaduan }}</strong>
+                        <x-badge-status :status="$pengaduan->status_pengaduan" class="self-center shrink-0" />
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-500">Riwayat Kasus:</span>
@@ -58,21 +56,17 @@
 
                 <!-- Tombol Navigasi: Kembali ke Daftar Laporan & Lanjut ke Pembuatan Surat (Bagian 6.5.4 & 9) -->
                 <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
-                    <a href="{{ route('tindak-lanjut.index') }}"
-                       class="w-full sm:w-auto px-6 py-2.5 rounded-control border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs font-semibold transition text-center">
-                        Kembali ke Daftar Laporan
-                    </a>
+                    <x-tombol varian="sekunder" :href="route('tindak-lanjut.index')" class="w-full sm:w-auto">Kembali ke Daftar Laporan</x-tombol>
 
-                    <a href="{{ route('buat-surat.index', $pengaduan->id_pengaduan) }}"
-                       class="w-full sm:w-auto px-7 py-2.5 rounded-control bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold shadow-lg transition flex items-center justify-center space-x-2">
+                    <x-tombol :href="route('buat-surat.index', $pengaduan->id_pengaduan)" class="w-full sm:w-auto">
                         <span>Lanjut ke Pembuatan Surat</span>
                         <span>→</span>
-                    </a>
+                    </x-tombol>
                 </div>
             </div>
         @else
             <!-- B. Kasus Tidak Ditindaklanjuti (FR-TL-05, BR-03) -->
-            <div class="bg-white rounded-2xl shadow-xl p-8 sm:p-12 text-navy-900 border border-gray-100 text-center animate-fadeIn">
+            <div class="bg-white rounded-card shadow-lg p-8 sm:p-12 text-navy-900 border border-gray-100 text-center animate-fadeIn">
                 <div class="w-16 h-16 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center mx-auto mb-4">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>
@@ -88,10 +82,7 @@
                 </p>
 
                 <div class="mt-8">
-                    <a href="{{ route('tindak-lanjut.index') }}"
-                       class="inline-flex items-center px-6 py-2.5 rounded-control bg-navy-900 hover:bg-navy-800 text-white text-xs font-semibold shadow transition">
-                        Kembali ke Daftar Laporan
-                    </a>
+                    <x-tombol :href="route('tindak-lanjut.index')">Kembali ke Daftar Laporan</x-tombol>
                 </div>
             </div>
         @endif

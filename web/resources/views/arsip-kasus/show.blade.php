@@ -11,7 +11,7 @@
         @endphp
 
         {{-- Breadcrumb --}}
-        <div class="flex items-center justify-between text-xs text-gray-400">
+        <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-gray-400">
             <div class="flex items-center space-x-2">
                 <a href="{{ route('arsip-kasus.index') }}" class="hover:text-teal-400 transition font-medium">← Kembali ke Daftar Arsip</a>
                 <span>›</span>
@@ -19,13 +19,11 @@
                 <span>›</span>
                 <span class="text-white font-medium">{{ $pengaduan->nomor_tiket }}</span>
             </div>
-            <span class="px-2.5 py-0.5 rounded bg-gray-700 text-gray-300 text-[11px] font-bold uppercase">
-                Kasus Ditutup Permanen
-            </span>
+            <x-badge :nada="\App\Support\WarnaBadge::ABU_GELAP">Kasus Ditutup Permanen</x-badge>
         </div>
 
         {{-- 1. Header Kasus --}}
-        <div class="bg-navy-900 rounded-2xl p-6 sm:p-8 text-white border border-navy-800 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="bg-navy-900 rounded-card p-6 sm:p-8 text-white border border-navy-800 shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
                 <span class="text-xs font-bold uppercase tracking-widest text-teal-400">
                     REKAM ARSIP PENGAWASAN RESMI
@@ -40,7 +38,7 @@
             </div>
             <div class="shrink-0 text-left md:text-right">
                 <span class="text-xs text-gray-400 block mb-1">Status Akhir</span>
-                <x-badge-status :status="$status" size="sm" />
+                <x-badge-status :status="$status" />
             </div>
         </div>
 
@@ -51,20 +49,16 @@
             <div class="lg:col-span-2 space-y-6">
 
                 {{-- Dokumen Surat Resmi yang Diterbitkan --}}
-                <div class="bg-white rounded-card shadow-md border border-gray-200 p-6 text-navy-900 space-y-4">
+                <div class="bg-white rounded-card shadow-lg border border-gray-100 p-6 text-navy-900 space-y-4">
                     <div class="flex items-center justify-between border-b border-gray-100 pb-3">
                         <h2 class="text-base font-bold text-navy-900 flex items-center gap-2">
                             <span class="text-lg">🚔</span>
                             <span>Dokumen Surat Resmi</span>
                         </h2>
                         @if($surat && $surat->status_penerbitan === 'Terbit')
-                            <span class="text-xs bg-emerald-50 text-emerald-700 px-2.5 py-0.5 rounded font-bold border border-emerald-200">
-                                Terbit Resmi
-                            </span>
+                            <x-badge :nada="\App\Support\WarnaBadge::surat(true)">Terbit Resmi</x-badge>
                         @else
-                            <span class="text-xs bg-gray-100 text-gray-500 px-2.5 py-0.5 rounded font-bold border border-gray-200">
-                                Tidak Diterbitkan
-                            </span>
+                            <x-badge>Tidak Diterbitkan</x-badge>
                         @endif
                     </div>
 
@@ -99,11 +93,10 @@
                         </div>
 
                         <div class="flex items-center justify-end">
-                            <a href="{{ route('buat-surat.terbit', ['pengaduanId' => $pengaduan->id_pengaduan, 'suratId' => $surat->id_surat]) }}"
-                               class="px-4 py-2 bg-navy-900 hover:bg-navy-800 text-white text-xs font-bold rounded-control transition flex items-center gap-1.5 shadow-sm">
+                            <x-tombol :href="route('buat-surat.terbit', ['pengaduanId' => $pengaduan->id_pengaduan, 'suratId' => $surat->id_surat])">
                                 <span>Buka Lembar Surat Resmi</span>
                                 <span>↗</span>
-                            </a>
+                            </x-tombol>
                         </div>
                     @else
                         <div class="p-6 text-center text-xs text-gray-400 space-y-2">
@@ -124,7 +117,7 @@
                 </div>
 
                 {{-- Ringkasan Penetapan Keputusan --}}
-                <div class="bg-white rounded-card shadow-md border border-gray-200 p-6 text-navy-900 space-y-4">
+                <div class="bg-white rounded-card shadow-lg border border-gray-100 p-6 text-navy-900 space-y-4">
                     <h2 class="text-base font-bold text-navy-900 border-b border-gray-100 pb-3">
                         Ringkasan Penetapan & Hasil Investigasi
                     </h2>
@@ -133,7 +126,7 @@
                         @if($tl)
                             <div>
                                 <span class="text-gray-500 block">Keputusan Kepala Bidang:</span>
-                                <span class="font-bold {{ $tl->keputusan === 'Tindaklanjuti' ? 'text-teal-700' : 'text-gray-700' }} text-sm">
+                                <span class="font-bold {{ $tl->keputusan === 'Tindaklanjuti' ? 'text-risk-low' : 'text-slate-600' }} text-sm">
                                     {{ $tl->keputusan }}
                                 </span>
                             </div>
@@ -160,7 +153,7 @@
                         @elseif($status === \App\Enums\StatusKasus::TidakTerbukti)
                             <div class="sm:col-span-2">
                                 <span class="text-gray-500 block">Keputusan:</span>
-                                <span class="font-bold text-slate-700 text-sm">Tidak Terbukti (Ditutup oleh Analis)</span>
+                                <span class="font-bold text-slate-600 text-sm">Tidak Terbukti (Ditutup oleh Analis)</span>
                             </div>
                         @elseif(! $tinjauan)
     <div class="sm:col-span-2 text-center text-gray-400 py-4">
@@ -186,7 +179,7 @@
                 </div>
 
                 {{-- Informasi Lowongan yang Dilaporkan --}}
-                <div class="bg-white rounded-card shadow-md border border-gray-200 p-6 text-navy-900 space-y-3">
+                <div class="bg-white rounded-card shadow-lg border border-gray-100 p-6 text-navy-900 space-y-3">
                     <h2 class="text-base font-bold text-navy-900 border-b border-gray-100 pb-3">
                         Informasi Lowongan yang Dilaporkan
                     </h2>
@@ -252,7 +245,7 @@
             <div class="space-y-6">
 
                 {{-- Garis Waktu Riwayat Kasus (BR-11) --}}
-                <div class="bg-white rounded-card shadow-md border border-gray-200 p-6 text-navy-900 space-y-4">
+                <div class="bg-white rounded-card shadow-lg border border-gray-100 p-6 text-navy-900 space-y-4">
                     <div class="border-b border-gray-100 pb-3">
                         <h2 class="text-sm font-bold text-navy-900">
                             Garis Waktu Riwayat Kasus
@@ -265,19 +258,8 @@
                     @if($pengaduan->riwayatKasus && $pengaduan->riwayatKasus->count() > 0)
                         <div class="relative pl-6 space-y-5 before:content-[''] before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-200">
                             @foreach($pengaduan->riwayatKasus->reverse() as $riwayat)
-                                @php
-                                    $dotColor = match($riwayat->status_kasus) {
-                                        \App\Enums\StatusKasus::Selesai->value => 'bg-emerald-600',
-                                        \App\Enums\StatusKasus::TindakLanjutDisetujui->value => 'bg-teal-500',
-                                        \App\Enums\StatusKasus::MenungguKeputusan->value => 'bg-amber-500',
-                                        \App\Enums\StatusKasus::SedangDitinjau->value => 'bg-blue-500',
-                                        \App\Enums\StatusKasus::TidakDitindaklanjuti->value => 'bg-gray-500',
-                                        \App\Enums\StatusKasus::TidakTerbukti->value => 'bg-slate-400',
-                                        default => 'bg-gray-400',
-                                    };
-                                @endphp
                                 <div class="relative">
-                                    <div class="absolute -left-6 top-0 w-4 h-4 rounded-full {{ $dotColor }} border-2 border-white shadow"></div>
+                                    <div class="absolute -left-6 top-0 w-4 h-4 rounded-full {{ \App\Support\WarnaBadge::titik(\App\Support\WarnaBadge::status($riwayat->status_kasus)) }} border-2 border-white shadow"></div>
                                     <span class="text-[10px] text-gray-400 block font-mono">
                                         {{ $riwayat->tanggal_update ? $riwayat->tanggal_update->translatedFormat('d M Y, H:i') . ' WIB' : '-' }}
                                     </span>

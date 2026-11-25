@@ -33,7 +33,7 @@
         </div>
 
         <!-- Header Halaman Resmi BDD & Hi-Fi (Teks Wajib: "Buat Laporan Polisi"; judul mengikuti jenis dokumen) -->
-        <div class="bg-navy-900 border border-navy-800 rounded-card p-6 sm:p-8 text-white shadow-xl">
+        <div class="bg-navy-900 border border-navy-800 rounded-card p-6 sm:p-8 text-white shadow-lg">
             <p class="text-xs uppercase tracking-widest font-bold text-teal-400 mb-1">
                 E-LAPORAN PENEGAKAN HUKUM SIBER
             </p>
@@ -54,18 +54,6 @@
                 </span>
             </div>
         </div>
-
-        <!-- Flash Alert Error/Success -->
-        @if(session('error'))
-            <div class="bg-risk-high text-white px-4 py-3 rounded-card text-xs sm:text-sm font-semibold shadow">
-                {{ session('error') }}
-            </div>
-        @endif
-        @if(session('success'))
-            <div class="bg-teal-700 text-white px-4 py-3 rounded-card text-xs sm:text-sm font-semibold shadow">
-                {{ session('success') }}
-            </div>
-        @endif
 
         <!-- Formulir Pembuatan Laporan Polisi (6 Panel Bernomor - Bagian 6.6) -->
         {{-- novalidate: validasi oleh server supaya pesan bahasa Indonesia tampil di dekat isian, bukan tooltip bawaan browser. --}}
@@ -104,7 +92,7 @@
                         <span class="w-6 h-6 rounded bg-navy-900 text-teal-400 flex items-center justify-center text-xs font-mono">1</span>
                         <span>Data Kasus</span>
                     </h3>
-                    <span class="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded font-mono font-medium">Read-Only</span>
+                    <x-badge>Read-Only</x-badge>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm">
                     <div>
@@ -126,7 +114,7 @@
                         <span>Nama Perusahaan (Terlapor)</span>
                     </h3>
                     {{-- Status dari tabel perusahaan (Terdaftar / Tidak Terdaftar / Belum Diverifikasi) --}}
-                    <span class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded font-semibold">{{ $perusahaan->status_terdaftar ?? '-' }}</span>
+                    <x-badge>{{ $perusahaan->status_terdaftar ?? '-' }}</x-badge>
                 </div>
                 <div class="text-xs sm:text-sm space-y-1">
                     <strong class="text-base text-navy-900 block font-bold">
@@ -169,7 +157,7 @@
                         <span class="w-6 h-6 rounded bg-navy-900 text-teal-400 flex items-center justify-center text-xs font-mono">4</span>
                         <span>Detail Pelanggaran</span>
                     </h3>
-                    <span class="text-xs text-teal-700 bg-teal-50 px-2 py-0.5 rounded font-semibold">Berdasarkan Regulasi Hukum</span>
+                    <x-badge class="!whitespace-normal">Berdasarkan Regulasi Hukum</x-badge>
                 </div>
                 @php
                     // Pasal yang dicentang: isian terakhir (jika validasi gagal) → pilihan di draf →
@@ -212,7 +200,7 @@
                                 <span class="font-medium text-navy-900">{{ $bukti->nama_file }} ({{ number_format($bukti->ukuran_file / 1048576, 1) }} MB)</span>
                             </div>
                             <div class="flex items-center gap-2 shrink-0">
-                                <span class="text-[11px] font-semibold text-risk-low bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Terlampir</span>
+                                <x-badge :nada="\App\Support\WarnaBadge::HIJAU">Terlampir</x-badge>
                                 {{-- Berkas di disk private: dibuka lewat route yang dicek perannya --}}
                                 <a href="{{ route('bukti.lihat', $bukti) }}" target="_blank" rel="noopener" class="text-[11px] font-semibold text-teal-700 hover:underline">
                                     {{ \App\Constants\LokerLensCopy::BTN_LIHAT_BUKTI }}
@@ -306,16 +294,14 @@
 
             <!-- Tombol Aksi: Simpan Draft & Terbitkan Laporan (Bagian 6.6 & 9) -->
             <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-navy-800">
-                <button type="submit" formaction="{{ route('buat-surat.draft', $pengaduan->id_pengaduan) }}"
-                    class="w-full sm:w-auto px-6 py-2.5 rounded-control border border-gray-300 bg-white text-gray-800 hover:bg-gray-50 text-xs font-semibold shadow transition">
+                <x-tombol type="submit" varian="sekunder" formaction="{{ route('buat-surat.draft', $pengaduan->id_pengaduan) }}" class="w-full sm:w-auto">
                     Simpan Draft
-                </button>
+                </x-tombol>
 
-                <button type="submit" formaction="{{ route('buat-surat.terbitkan', $pengaduan->id_pengaduan) }}"
-                    class="w-full sm:w-auto px-8 py-2.5 rounded-control bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold shadow-xl transition flex items-center justify-center space-x-2">
+                <x-tombol type="submit" varian="aksi" formaction="{{ route('buat-surat.terbitkan', $pengaduan->id_pengaduan) }}" class="w-full sm:w-auto">
                     <span>Terbitkan Laporan</span>
                     <span>→</span>
-                </button>
+                </x-tombol>
             </div>
         </form>
     </div>

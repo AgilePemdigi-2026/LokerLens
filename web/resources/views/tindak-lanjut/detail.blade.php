@@ -20,7 +20,7 @@
         @endphp
 
         <!-- Navigasi & Breadcrumb -->
-        <div class="flex items-center justify-between text-xs text-gray-400">
+        <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-gray-400">
             <div class="flex items-center space-x-2">
                 <a href="{{ route('tindak-lanjut.index') }}" class="hover:text-teal-400 transition font-medium">← Kembali ke Daftar</a>
                 <span>›</span>
@@ -34,7 +34,7 @@
         </div>
 
         <!-- 1. Header Detail Laporan (Teks Wajib BDD: "Detail Laporan Lowongan Mencurigakan") -->
-        <div class="bg-navy-900 border border-navy-800 rounded-card p-6 sm:p-8 text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="bg-navy-900 border border-navy-800 rounded-card p-6 sm:p-8 text-white shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
                 <span class="text-xs font-bold uppercase tracking-widest text-teal-400">
                     LAPORAN ESKALASI PENANGANAN
@@ -48,9 +48,7 @@
             </div>
             <div class="text-left md:text-right shrink-0">
                 <span class="text-[11px] text-gray-400 block font-semibold">Status Saat Ini</span>
-                <span class="inline-block mt-0.5 px-3 py-1 rounded-full text-xs font-bold {{ $pengaduan->warna_badge ?? 'bg-yellow-100 text-yellow-800' }}">
-                    {{ $pengaduan->status_pengaduan }}
-                </span>
+                <x-badge-status :status="$pengaduan->status_pengaduan" class="mt-0.5" />
             </div>
         </div>
 
@@ -85,7 +83,11 @@
                 <div>
                     <span class="text-gray-500 block text-xs">Tingkat Prioritas:</span>
                     {{-- Mengikuti confidence_score: <50 rendah, 50–69 sedang, ≥70 tinggi (config/lokerlens.php) --}}
-                    <span class="{{ $warna['teks'] }} font-bold">{{ $klasifikasi?->label_risiko ?? '-' }}</span>
+                    @if($klasifikasi)
+                        <x-badge :nada="\App\Support\WarnaBadge::risiko($klasifikasi->tingkat_risiko)">{{ $klasifikasi->label_risiko }}</x-badge>
+                    @else
+                        <span>-</span>
+                    @endif
                 </div>
             </div>
         </div>
@@ -160,9 +162,7 @@
                 @if($klasifikasi && $klasifikasi->indikator_unik->isNotEmpty())
                     <div class="flex flex-wrap gap-2">
                         @foreach($klasifikasi->indikator_unik as $indikator)
-                            <span class="px-2.5 py-1 rounded bg-red-100 text-risk-high text-xs font-semibold border border-red-200">
-                                "{{ $indikator->nama_tampil }}"
-                            </span>
+                            <x-badge :nada="\App\Support\WarnaBadge::MERAH" class="!whitespace-normal">"{{ $indikator->nama_tampil }}"</x-badge>
                         @endforeach
                     </div>
                 @else
@@ -180,7 +180,7 @@
                 <div>
                     <span class="text-gray-500 block text-xs">Hasil Verifikasi Analis:</span>
                     {{-- Semua isi bagian ini dari tabel tinjauan_analis --}}
-                    <strong class="text-teal-900 text-sm font-bold">{{ $tinjauan?->hasil_tinjauan ?: '-' }}</strong>
+                    <x-badge :nada="\App\Support\WarnaBadge::hasilTinjauan($tinjauan?->hasil_tinjauan)" class="mt-0.5">{{ $tinjauan?->hasil_tinjauan ?: '-' }}</x-badge>
                 </div>
                 <div>
                     <span class="text-gray-500 block text-xs">Catatan Pemeriksaan & Rekomendasi:</span>
@@ -269,7 +269,7 @@
 
         <!-- 7. Panel Keputusan Kepala Bidang (BR-01, BR-02: Tindaklanjuti / Tidak Ditindaklanjuti) -->
         @if($bisaDiputuskan)
-            <div class="bg-navy-900 rounded-card shadow-xl p-6 sm:p-8 text-white border border-navy-800">
+            <div class="bg-navy-900 rounded-card shadow-lg p-6 sm:p-8 text-white border border-navy-800">
                 <div class="border-b border-navy-800 pb-4 mb-6">
                     <h2 class="text-xl font-bold text-teal-400">
                         Keputusan Kepala Bidang
@@ -299,8 +299,8 @@
 
                         <!-- Opsi 2: Tidak Ditindaklanjuti -->
                         <label class="p-4 rounded-xl border cursor-pointer transition flex items-start space-x-3"
-                               :class="keputusan === 'Tidak Ditindaklanjuti' ? 'border-red-500 bg-navy-800 ring-2 ring-red-500' : 'border-navy-700 bg-navy-900 hover:bg-navy-800/60'">
-                            <input type="radio" name="keputusan" value="Tidak Ditindaklanjuti" x-model="keputusan" class="mt-1 text-red-600 focus:ring-red-500 bg-navy-800 border-navy-600">
+                               :class="keputusan === 'Tidak Ditindaklanjuti' ? 'border-gray-300 bg-navy-800 ring-2 ring-gray-300' : 'border-navy-700 bg-navy-900 hover:bg-navy-800/60'">
+                            <input type="radio" name="keputusan" value="Tidak Ditindaklanjuti" x-model="keputusan" class="mt-1 text-teal-600 focus:ring-teal-500 bg-navy-800 border-navy-600">
                             <div>
                                 <span class="font-bold text-sm text-white block">Tidak Ditindaklanjuti</span>
                                 <span class="text-xs text-gray-300 mt-1 block">
@@ -328,15 +328,12 @@
 
                     <!-- Tombol Aksi: Kembali ke Daftar & Konfirmasi Keputusan (Bagian 6.5.2 & 9) -->
                     <div class="flex flex-col-reverse sm:flex-row items-center justify-between pt-4 border-t border-navy-800 gap-3">
-                        <a href="{{ route('tindak-lanjut.index') }}" class="w-full sm:w-auto px-5 py-2.5 rounded-control border border-navy-700 text-gray-300 hover:bg-navy-800 text-xs font-semibold transition text-center">
-                            Kembali ke Daftar
-                        </a>
+                        <x-tombol varian="sekunder-gelap" :href="route('tindak-lanjut.index')" class="w-full sm:w-auto">Kembali ke Daftar</x-tombol>
 
-                        <button type="button" @click="openConfirm()"
-                            class="w-full sm:w-auto px-7 py-2.5 rounded-control bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold shadow-lg transition flex items-center justify-center space-x-1.5">
+                        <x-tombol varian="aksi" @click="openConfirm()" class="w-full sm:w-auto">
                             <span>Konfirmasi Keputusan</span>
                             <span>→</span>
-                        </button>
+                        </x-tombol>
                     </div>
                 </form>
             </div>
@@ -347,14 +344,10 @@
                 <p class="text-xs text-gray-300 mt-1">
                     Keputusan: <strong class="text-white">{{ $pengaduan->tindakLanjutKasus->keputusan }}</strong> • Tanggal: {{ $pengaduan->tindakLanjutKasus->tanggal_keputusan->translatedFormat('d F Y, H:i') }}
                 </p>
-                <div class="mt-4 flex gap-3">
-                    <a href="{{ route('tindak-lanjut.index') }}" class="px-4 py-2 rounded bg-navy-800 text-xs font-semibold hover:bg-navy-700">
-                        Kembali ke Daftar Laporan
-                    </a>
+                <div class="mt-4 flex flex-wrap gap-3">
+                    <x-tombol varian="sekunder-gelap" :href="route('tindak-lanjut.index')">Kembali ke Daftar Laporan</x-tombol>
                     @if($pengaduan->status_pengaduan === \App\Enums\StatusKasus::TindakLanjutDisetujui)
-                        <a href="{{ route('buat-surat.index', $pengaduan->id_pengaduan) }}" class="px-4 py-2 rounded bg-teal-600 text-xs font-semibold hover:bg-teal-500">
-                            Lanjut ke Pembuatan Surat →
-                        </a>
+                        <x-tombol varian="aksi" :href="route('buat-surat.index', $pengaduan->id_pengaduan)">Lanjut ke Pembuatan Surat →</x-tombol>
                     @endif
                 </div>
             </div>
@@ -368,7 +361,7 @@
             <div class="space-y-3">
                 @forelse($pengaduan->riwayatKasus as $riwayat)
                     <div class="flex items-start space-x-3 text-xs pb-3 border-b border-gray-100 last:border-0 last:pb-0">
-                        <span class="w-2.5 h-2.5 rounded-full bg-teal-600 mt-1 shrink-0"></span>
+                        <span class="w-2.5 h-2.5 rounded-full {{ \App\Support\WarnaBadge::titik(\App\Support\WarnaBadge::status($riwayat->status_kasus)) }} mt-1 shrink-0"></span>
                         <div class="flex-1">
                             <div class="flex items-center justify-between">
                                 <strong class="text-navy-900 font-semibold">{{ $riwayat->status_kasus }}</strong>
@@ -386,7 +379,7 @@
         <!-- 9. Pop-up Konfirmasi Keputusan (Gambar 2.12 - Bagian 6.5.3) -->
         <div x-show="showModal" x-cloak
              class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-            <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 sm:p-8 text-navy-900 relative animate-scaleIn">
+            <div class="bg-white rounded-card shadow-2xl max-w-lg w-full p-6 sm:p-8 text-navy-900 relative animate-scaleIn">
                 <!-- Tombol Tutup X -->
                 <button type="button" @click="showModal = false" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
                     ✕
@@ -410,7 +403,7 @@
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-500">Keputusan yang Dipilih:</span>
-                        <strong class="text-sm" :class="keputusan === 'Tindaklanjuti' ? 'text-teal-700' : 'text-risk-high'" x-text="keputusan"></strong>
+                        <strong class="text-sm" :class="keputusan === 'Tindaklanjuti' ? 'text-risk-low' : 'text-slate-600'" x-text="keputusan"></strong>
                     </div>
                     <div class="pt-2 border-t border-gray-200">
                         <span class="text-gray-500 block">Catatan Keputusan:</span>
@@ -424,15 +417,11 @@
 
                 <!-- Tombol Pop-up: Batal & Ya, Konfirmasi (Bagian 6.5.3 & 9) -->
                 <div class="flex items-center justify-end space-x-3">
-                    <button type="button" @click="showModal = false"
-                        class="px-5 py-2.5 rounded-control border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs font-semibold transition">
-                        Batal
-                    </button>
-                    <button type="button" @click="document.getElementById('form-keputusan').submit()"
-                        class="px-6 py-2.5 rounded-control bg-navy-900 hover:bg-navy-800 text-white text-xs font-semibold shadow-lg transition flex items-center space-x-1.5">
+                    <x-tombol varian="sekunder" @click="showModal = false">Batal</x-tombol>
+                    <x-tombol @click="document.getElementById('form-keputusan').submit()">
                         <span>Ya, Konfirmasi</span>
                         <span>→</span>
-                    </button>
+                    </x-tombol>
                 </div>
             </div>
         </div>

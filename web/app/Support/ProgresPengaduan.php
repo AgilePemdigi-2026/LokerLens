@@ -43,14 +43,6 @@ class ProgresPengaduan
     public const KELOMPOK_SELESAI    = 'selesai';
     public const KELOMPOK_DIHENTIKAN = 'dihentikan';
 
-    /** Warna badge kelompok: Menunggu kuning, Aktif teal, Selesai abu-abu, Dihentikan merah. */
-    private const WARNA_KELOMPOK = [
-        self::FILTER_MENUNGGU     => 'bg-amber-100 text-amber-800 border border-amber-200',
-        self::FILTER_AKTIF        => 'bg-teal-600 text-white border border-teal-600',
-        self::KELOMPOK_SELESAI    => 'bg-gray-100 text-gray-600 border border-gray-200',
-        self::KELOMPOK_DIHENTIKAN => 'bg-red-100 text-risk-high border border-red-200',
-    ];
-
     /** Status di Riwayat Kasus yang menjadi tanggal tiap tahap (tahap 1 memakai tanggal pengaduan). */
     private const STATUS_PER_TAHAP = [
         1 => [StatusKasus::SelesaiRisikoRendah],
@@ -69,7 +61,6 @@ class ProgresPengaduan
         public readonly string $labelStatus,     // nama status lengkap, mis. "Perlu Tinjauan"
         public readonly string $kelompok,        // menunggu | aktif | selesai | dihentikan (kunci LokerLensCopy::KELOMPOK_PENGADUAN)
         public readonly string $labelKelompok,   // teks badge, mis. "Menunggu"
-        public readonly string $warnaKelompok,   // kelas Tailwind badge kelompok
         public readonly string $penjelasan,      // penjelasan status dalam bahasa sederhana
         public readonly ?string $pesanBerhenti,  // diisi jika pengaduan berhenti di tengah
         public readonly bool $ditutup,           // true jika status sudah akhir
@@ -135,7 +126,6 @@ class ProgresPengaduan
             labelStatus: $labelStatus,
             kelompok: $kelompok,
             labelKelompok: LokerLensCopy::KELOMPOK_PENGADUAN[$kelompok],
-            warnaKelompok: self::WARNA_KELOMPOK[$kelompok],
             penjelasan: LokerLensCopy::PENJELASAN_STATUS[$labelStatus],
             pesanBerhenti: $pesanBerhenti,
             ditutup: $status->isAkhir(),

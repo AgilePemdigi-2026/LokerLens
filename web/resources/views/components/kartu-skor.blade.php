@@ -28,7 +28,7 @@
 
     $textColorClass = $isHigh ? 'text-risk-high' : ($isMid ? 'text-risk-mid' : 'text-risk-low');
     $barBgClass    = $isHigh ? 'bg-risk-high' : ($isMid ? 'bg-risk-mid' : 'bg-risk-low');
-    $badgeBgClass  = $isHigh ? 'bg-red-100 text-risk-high border-red-200' : ($isMid ? 'bg-amber-100 text-risk-mid border-amber-200' : 'bg-emerald-100 text-risk-low border-emerald-200');
+    $badgeBgClass  = \App\Support\WarnaBadge::badge(\App\Support\WarnaBadge::risiko($isHigh ? 'tinggi' : ($isMid ? 'sedang' : 'rendah')));
     $hexStroke     = $isHigh ? '#c0392b' : ($isMid ? '#d68910' : '#1e8449');
 
     // Perhitungan lingkaran SVG (r = 40, keliling = 251.327)
@@ -78,7 +78,7 @@
             <!-- Keterangan Skor Lingkaran -->
             <div class="flex-1 text-center sm:text-left space-y-1.5">
                 <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold border {{ $badgeBgClass }}">
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold {{ $badgeBgClass }}">
                         {{ $kategori }}
                     </span>
                     <span class="text-xs font-bold uppercase tracking-wider text-gray-500">
@@ -103,7 +103,7 @@
                     @endif
                 </div>
                 <div class="flex items-center gap-2">
-                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold border {{ $badgeBgClass }}">
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold {{ $badgeBgClass }}">
                         {{ $kategori }}
                     </span>
                     <span class="text-2xl sm:text-3xl font-black font-mono tracking-tight {{ $textColorClass }}">

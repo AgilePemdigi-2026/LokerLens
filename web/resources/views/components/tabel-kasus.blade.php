@@ -15,19 +15,15 @@
 
 <div class="space-y-4">
     <!-- Kontainer Tabel Responsif -->
-    <div class="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
-        <table class="min-w-full divide-y divide-gray-200 text-left text-xs sm:text-sm">
-            <thead class="bg-gray-100 text-gray-700 font-bold uppercase tracking-wider text-[11px]">
-                <tr>
-                    <th scope="col" class="px-4 py-3 whitespace-nowrap">{{ $isKepalaBidang ? 'ID LAPORAN' : LokerLensCopy::KOLOM_NOMOR_TIKET }}</th>
-                    <th scope="col" class="px-4 py-3 min-w-[12rem]">NAMA PERUSAHAAN</th>
-                    <th scope="col" class="px-4 py-3 min-w-[10rem]">POSISI DITAWARKAN</th>
-                    <th scope="col" class="px-4 py-3 whitespace-nowrap">{{ $isKepalaBidang ? 'SKOR KECURIGAAN' : 'CONFIDENCE SCORE' }}</th>
-                    <th scope="col" class="px-4 py-3 whitespace-nowrap">{{ $isKepalaBidang ? 'STATUS KASUS' : 'STATUS SISTEM' }}</th>
-                    <th scope="col" class="px-4 py-3 text-right whitespace-nowrap">AKSI</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200 bg-white">
+    <x-tabel>
+        <x-slot:kepala>
+            <th class="whitespace-nowrap">{{ $isKepalaBidang ? 'ID LAPORAN' : LokerLensCopy::KOLOM_NOMOR_TIKET }}</th>
+            <th class="min-w-[12rem]">NAMA PERUSAHAAN</th>
+            <th class="min-w-[10rem]">POSISI DITAWARKAN</th>
+            <th class="whitespace-nowrap">{{ $isKepalaBidang ? 'SKOR KECURIGAAN' : 'CONFIDENCE SCORE' }}</th>
+            <th class="whitespace-nowrap">{{ $isKepalaBidang ? 'STATUS KASUS' : 'STATUS SISTEM' }}</th>
+            <th class="text-right whitespace-nowrap">AKSI</th>
+        </x-slot:kepala>
                 @forelse($kasus as $item)
                     @php
                         // Normalisasi model apakah berupa HasilKlasifikasi atau Pengaduan
@@ -59,7 +55,7 @@
                     @endphp
                     <tr class="hover:bg-gray-50/80 transition">
                         <!-- ID Lowongan / Tiket -->
-                        <td class="px-4 py-3.5 font-mono font-bold text-teal-800 whitespace-nowrap">
+                        <td class="font-mono font-bold text-teal-800 whitespace-nowrap">
                             {{ $pengaduan?->nomor_tiket ?? '-' }}
                             @if($isKepalaBidang && $pengaduan?->tanggal_pengaduan)
                                 <div class="text-[10px] text-gray-400 font-sans font-normal mt-0.5">
@@ -69,7 +65,7 @@
                         </td>
 
                         <!-- Nama Perusahaan & Status Legalitas -->
-                        <td class="px-4 py-3.5">
+                        <td>
                             <div class="font-bold text-navy-900">
                                 {{ $perusahaan?->nama_perusahaan ?? 'Entitas Tidak Terdaftar' }}
                             </div>
@@ -82,40 +78,37 @@
                         </td>
 
                         <!-- Posisi Ditawarkan -->
-                        <td class="px-4 py-3.5 font-medium text-gray-900">
+                        <td class="font-medium text-gray-900">
                             {{ $lowongan?->posisi_lowongan ?? '-' }}
                         </td>
 
                         <!-- Confidence Score / Skor Kecurigaan: warna & keterangan sesuai tingkat risiko -->
-                        <td class="px-4 py-3.5 whitespace-nowrap">
+                        <td class="whitespace-nowrap">
                             <x-badge-skor :klasifikasi="$klasifikasi" />
                         </td>
 
                         <!-- Status Kasus / Sistem (Komponen badge-status) -->
-                        <td class="px-4 py-3.5 whitespace-nowrap">
+                        <td class="whitespace-nowrap">
                             <x-badge-status :status="$status" />
                         </td>
 
                         <!-- Tombol Aksi -->
-                        <td class="px-4 py-3.5 text-right whitespace-nowrap">
+                        <td class="text-right whitespace-nowrap">
                             <div class="inline-flex items-center gap-1.5 justify-end">
                                 {{-- Analis: teks tombol beda dari teks status; title tetap "Lihat Detail ..." --}}
-                                <a href="{{ $detailUrl }}"
-                                   title="{{ LokerLensCopy::BTN_LIHAT_DETAIL }} {{ $pengaduan?->nomor_tiket }}"
-                                   class="inline-flex items-center whitespace-nowrap px-3 py-1.5 rounded-control bg-navy-900 hover:bg-navy-800 text-white font-semibold text-xs shadow transition">
+                                <x-tombol ukuran="sm" :href="$detailUrl" title="{{ LokerLensCopy::BTN_LIHAT_DETAIL }} {{ $pengaduan?->nomor_tiket }}">
                                     @if($isKepalaBidang)
                                         {{ LokerLensCopy::BTN_LIHAT_DETAIL }}
                                     @else
                                         {{ $isSedangDitinjau ? LokerLensCopy::BTN_LANJUTKAN_TINJAUAN : LokerLensCopy::BTN_MULAI_TINJAU }}
                                     @endif
-                                </a>
+                                </x-tombol>
 
                                 @if($isKepalaBidang && $isTindakLanjutDisetujui && $pengaduan)
-                                    <a href="{{ route('buat-surat.index', $pengaduan->id_pengaduan) }}"
-                                       class="inline-flex items-center whitespace-nowrap px-2.5 py-1.5 rounded-control bg-teal-600 hover:bg-teal-500 text-white font-semibold text-xs shadow transition"
-                                       title="{{ \App\Constants\LokerLensCopy::JUDUL_BUAT_LAPORAN }} / {{ \App\Constants\LokerLensCopy::JUDUL_BUAT_TEGURAN }}">
-                                        {{ \App\Constants\LokerLensCopy::BTN_BUAT_SURAT }}
-                                    </a>
+                                    <x-tombol ukuran="sm" varian="aksi" :href="route('buat-surat.index', $pengaduan->id_pengaduan)"
+                                        title="{{ LokerLensCopy::JUDUL_BUAT_LAPORAN }} / {{ LokerLensCopy::JUDUL_BUAT_TEGURAN }}">
+                                        {{ LokerLensCopy::BTN_BUAT_SURAT }}
+                                    </x-tombol>
                                 @endif
                             </div>
                         </td>
@@ -123,46 +116,23 @@
                 @empty
                     <!-- Tampilan Pesan Kosong -->
                     <tr>
-                        <td colspan="6" class="px-6 py-12 text-center text-gray-500">
-                            <div class="max-w-xs mx-auto">
-                                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                @if($isKepalaBidang)
-                                    <p class="mt-3 text-base font-bold text-navy-900">
-                                        Belum Ada Laporan yang Menunggu Keputusan
-                                    </p>
-                                    <p class="text-xs text-gray-500 mt-1">
-                                        Semua laporan dari analis telah diproses atau belum ada eskalasi baru.
-                                    </p>
-                                @else
-                                    <p class="mt-3 text-base font-bold text-navy-900">
-                                        Data Lowongan Tidak Ditemukan
-                                    </p>
-                                    <p class="text-xs text-gray-500 mt-1">
-                                        Tidak ada lowongan prioritas tinggi yang cocok dengan kata kunci atau filter yang Anda pilih.
-                                    </p>
-                                    <a href="{{ route('tinjau-lowongan.index') }}" class="mt-4 inline-block text-xs font-semibold text-teal-600 hover:underline">
-                                        Reset Filter Pencarian
-                                    </a>
-                                @endif
-                            </div>
+                        <td colspan="6">
+                            @if($isKepalaBidang)
+                                <x-pesan-kosong :kartu="false" judul="Belum Ada Laporan yang Menunggu Keputusan"
+                                    keterangan="Semua laporan dari analis telah diproses atau belum ada eskalasi baru." />
+                            @else
+                                <x-pesan-kosong :kartu="false" judul="Data Lowongan Tidak Ditemukan"
+                                    keterangan="Tidak ada lowongan prioritas tinggi yang cocok dengan kata kunci atau filter yang Anda pilih.">
+                                    <x-tombol varian="sekunder" :href="route('tinjau-lowongan.index')">Reset Filter Pencarian</x-tombol>
+                                </x-pesan-kosong>
+                            @endif
                         </td>
                     </tr>
                 @endforelse
-            </tbody>
-        </table>
-    </div>
+    </x-tabel>
 
     <!-- Paginasi -->
     @if($tampilkanPaginasi && is_object($kasus) && method_exists($kasus, 'links') && method_exists($kasus, 'total') && $kasus->total() > 0)
-        <div class="flex flex-col sm:flex-row items-center justify-between text-xs text-gray-600 gap-3 border-t border-gray-100 pt-4">
-            <div>
-                Menampilkan {{ $kasus->firstItem() ?? 0 }} - {{ $kasus->lastItem() ?? 0 }} dari {{ $kasus->total() }} {{ $isKepalaBidang ? 'Laporan' : 'Lowongan Prioritas' }}
-            </div>
-            <div>
-                {{ $kasus->links() }}
-            </div>
-        </div>
+        <x-paginasi :daftar="$kasus" :satuan="$isKepalaBidang ? 'Laporan' : 'Lowongan Prioritas'" />
     @endif
 </div>
